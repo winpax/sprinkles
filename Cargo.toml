@@ -4,12 +4,15 @@ description = "A Rust based abstraction layer for Scoop"
 edition = "2021"
 homepage = "https://github.com/winpax/sprinkles"
 license = "Apache-2.0"
-name = "sprinkles"
+name = "sprinkles-rs"
 repository = "https://github.com/winpax/sprinkles"
 rust-version = "1.75.0"
 version = "0.13.4"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "sprinkles"
 
 [features]
 beta = []

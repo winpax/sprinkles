@@ -3050,7 +3050,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sprinkles"
+name = "sprinkles-rs"
 version = "0.13.4"
 dependencies = [
  "anyhow",
