@@ -11,3 +11,19 @@
 Sprinkles is a library for interacting with Scoop, a Windows package manager.
 
 It provides a high-level API for interacting with Scoop, such as installing, updating, and removing packages.
+
+## Example Usage
+
+If you want a more in depth example of how to use the library, check out the [sfsu](https://github.com/winpax/sfsu) project.
+
+```rust
+use sprinkles::contexts::User;
+
+let ctx = User::new();
+
+let apps = ctx.installed_apps()?;
+
+println!("You have {} apps installed", apps.len());
+```
+
+**Made with 💗 by Juliette Cordor**
