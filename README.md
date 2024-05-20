@@ -8,9 +8,12 @@
 ![Crates.io License](https://img.shields.io/crates/l/sprinkles-rs)
 ![Crates.io MSRV](https://img.shields.io/crates/msrv/sprinkles-rs)
 
-Sprinkles is a library for interacting with Scoop, a Windows package manager.
+**Please note this library is currently in an early stage of development, and is not recommended for use in production.
+There are likely to be breaking changes in the future, and there is no guarantee that the API will remain stable until v1.0.**
 
-It provides a high-level API for interacting with Scoop, such as installing, updating, and removing packages.
+Sprinkles is a library for interacting with [Scoop](https://scoop.sh/), the Windows package manager.
+
+It provides a high-level API for interacting with [Scoop](https://scoop.sh/), such as installing, updating, and removing packages.
 
 ## Example Usage
 
