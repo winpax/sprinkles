@@ -30,10 +30,12 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Generate docs
         run: cargo doc --all-features --no-deps
+      - name: Generate pages adapter
+        run: echo "<meta http-equiv=\"refresh\" content=\"0; url=sprinkles\">" > target/doc/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./target/doc/sprinkles"
+          path: "./target/doc"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
