@@ -10,14 +10,6 @@ use reqwest::header::HeaderMap;
 
 use crate::config;
 
-#[must_use]
-#[deprecated(note = "Use `USER_AGENT` instead")]
-#[cfg(not(feature = "v1"))]
-/// Get user agent for sfsu
-pub const fn user_agent<'a>() -> &'a str {
-    USER_AGENT
-}
-
 /// User agent for sfsu
 pub const USER_AGENT: &str = {
     use const_format::formatcp;
