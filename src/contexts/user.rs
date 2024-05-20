@@ -81,14 +81,6 @@ impl super::ScoopContext<config::Scoop> for User {
         &self.path
     }
 
-    /// Get the git executable path
-    ///
-    /// # Errors
-    /// - Could not find `git` in path
-    fn git_path() -> Result<PathBuf, which::Error> {
-        which::which("git")
-    }
-
     #[must_use]
     /// Gets the user's scoop apps path
     fn apps_path(&self) -> PathBuf {

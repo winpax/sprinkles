@@ -139,11 +139,6 @@ impl Default for Architecture {
     }
 }
 
-#[deprecated(note = "Use `contexts::User` instead")]
-#[cfg(not(feature = "v1"))]
-/// Alias for [`contexts::User`]
-pub type Scoop = contexts::User;
-
 #[cfg(test)]
 mod tests {
     use itertools::Itertools;

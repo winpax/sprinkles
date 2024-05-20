@@ -58,10 +58,6 @@ impl ScoopContext<config::Scoop> for Global {
         &self.path
     }
 
-    fn git_path() -> Result<PathBuf, which::Error> {
-        which::which("git")
-    }
-
     fn apps_path(&self) -> PathBuf {
         self.sub_path("apps")
     }

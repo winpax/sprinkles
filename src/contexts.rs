@@ -17,7 +17,6 @@ mod user;
 use futures::Future;
 pub use global::Global;
 pub use user::User;
-use which::which;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -87,10 +86,6 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     #[must_use]
     /// Gets the context's path
     fn path(&self) -> &Path;
-
-    #[deprecated = "Use which::which directly instead"]
-    /// Get the git executable path
-    fn git_path() -> Result<PathBuf, which::Error>;
 
     #[must_use]
     /// Get a sub path within the context's path
@@ -252,10 +247,6 @@ impl ScoopContext<config::Scoop> for AnyContext {
             AnyContext::User(user) => user.config_mut(),
             AnyContext::Global(global) => global.config_mut(),
         }
-    }
-
-    fn git_path() -> Result<PathBuf, which::Error> {
-        which("git")
     }
 
     #[must_use]
