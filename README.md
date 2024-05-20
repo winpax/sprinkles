@@ -17,7 +17,7 @@ It provides a high-level API for interacting with Scoop, such as installing, upd
 If you want a more in depth example of how to use the library, check out the [sfsu](https://github.com/winpax/sfsu) project.
 
 ```rust
-use sprinkles::contexts::User;
+use sprinkles::contexts::{User, ScoopContext};
 
 let ctx = User::new();
 
