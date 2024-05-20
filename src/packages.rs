@@ -37,6 +37,7 @@ use crate::{
 };
 
 pub mod downloading;
+pub mod installer;
 pub mod models;
 pub mod reference;
 
@@ -553,7 +554,7 @@ impl Manifest {
     /// List the dependencies of a given manifest, in the order that they will be installed
     ///
     /// Note that this does not include the package itself as a dependency
-    pub fn depends(&self) -> Vec<reference::ManifestRef> {
+    pub fn depends(&self) -> Vec<reference::manifest::Reference> {
         self.depends
             .clone()
             .map(manifest::TOrArrayOfTs::to_vec)

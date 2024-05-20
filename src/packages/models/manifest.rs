@@ -11,7 +11,7 @@ use itertools::Itertools as _;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::{hash::Hash, version::Version, Architecture};
+use crate::{hash::Hash, scripts::PowershellScript, version::Version, Architecture};
 
 #[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -40,7 +40,7 @@ pub struct Manifest {
     /// Undocumented: Found at <https://github.com/se35710/scoop-java/search?l=JSON&q=cookie>
     pub cookie: Option<HashMap<String, Option<serde_json::Value>>>,
     /// The dependencies of the package
-    pub depends: Option<TOrArrayOfTs<crate::packages::reference::ManifestRef>>,
+    pub depends: Option<TOrArrayOfTs<crate::packages::reference::manifest::Reference>>,
     /// The description of the package
     pub description: Option<String>,
     /// Extract to dir or dirs
@@ -114,10 +114,10 @@ pub struct InstallConfig {
     pub installer: Option<Installer>,
     #[deprecated]
     pub msi: Option<StringArray>,
-    pub post_install: Option<StringArray>,
-    pub post_uninstall: Option<StringArray>,
-    pub pre_install: Option<StringArray>,
-    pub pre_uninstall: Option<StringArray>,
+    pub post_install: Option<PowershellScript>,
+    pub post_uninstall: Option<PowershellScript>,
+    pub pre_install: Option<PowershellScript>,
+    pub pre_uninstall: Option<PowershellScript>,
     pub shortcuts: Option<AliasArray<String>>,
     pub uninstaller: Option<Uninstaller>,
     pub url: Option<StringArray>,
@@ -152,6 +152,13 @@ pub struct SourceforgeClass {
     pub project: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum InstallerRunner {
+    File(String),
+    Script(PowershellScript),
+}
+
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Installer {
@@ -161,7 +168,7 @@ pub struct Installer {
     pub args: Option<StringArray>,
     pub file: Option<String>,
     pub keep: Option<bool>,
-    pub script: Option<StringArray>,
+    pub script: Option<PowershellScript>,
 }
 
 #[skip_serializing_none]
