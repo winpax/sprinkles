@@ -28,7 +28,7 @@ pub enum Reference {
 
 impl Reference {
     #[must_use]
-    /// Convert the [`ManifestRef`] into a [`Package`] reference
+    /// Convert the [`Reference`] into a [`package::Reference`] reference
     pub fn into_package_ref(self) -> package::Reference {
         package::Reference {
             manifest: self,
