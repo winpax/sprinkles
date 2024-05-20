@@ -21,7 +21,7 @@ use sprinkles::contexts::{User, ScoopContext};
 
 let ctx = User::new();
 
-let apps = ctx.installed_apps()?;
+let apps = ctx.installed_apps().unwrap();
 
 println!("You have {} apps installed", apps.len());
 ```
