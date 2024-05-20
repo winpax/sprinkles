@@ -27,7 +27,7 @@ pub struct Reference {
 
 impl Reference {
     #[must_use]
-    /// Convert the [`ManifestRef`] into a [`Package`] reference
+    /// Convert the [`manifest::Reference`] into a package [`Reference`] reference
     pub fn from_ref(manifest: manifest::Reference) -> Self {
         Self {
             manifest,

@@ -47,7 +47,7 @@ pub struct Scoop {
     ///
     /// Could be used for testing specific functionalities before released into all users
     ///
-    /// If you want to receive updates earlier to test new functionalities use develop (see: 'https://github.com/ScoopInstaller/Scoop/issues/2939')
+    /// If you want to receive updates earlier to test new functionalities use develop (see: <https://github.com/ScoopInstaller/Scoop/issues/2939>)
     pub scoop_branch: branch::ScoopBranch,
 
     /// By default, we will use the proxy settings from Internet Options, but with anonymous authentication.
@@ -112,7 +112,7 @@ pub struct Scoop {
 
     /// API key used for uploading/scanning files using virustotal
     ///
-    /// See: 'https://support.virustotal.com/hc/en-us/articles/115002088769-Please-give-me-an-API-key'
+    /// See: <https://support.virustotal.com/hc/en-us/articles/115002088769-Please-give-me-an-API-key>
     pub virustotal_api_key: Option<String>,
 
     #[serde(default, skip_serializing_if = "Skip::skip")]
@@ -127,7 +127,7 @@ pub struct Scoop {
     ///
     /// Should be in the format 'YYYY-MM-DD', 'YYYY/MM/DD' or any other forms that accepted by '[System.DateTime]::Parse()'
     ///
-    /// Ref: https://docs.microsoft.com/dotnet/api/system.datetime.parse?view=netframework-4.5
+    /// Ref: <https://docs.microsoft.com/dotnet/api/system.datetime.parse?view=netframework-4.5>
     pub hold_update_until: Option<String>,
 
     #[serde(default)]

@@ -7,12 +7,20 @@ license = "Apache-2.0"
 name = "sprinkles-rs"
 repository = "https://github.com/winpax/sprinkles"
 rust-version = "1.75.0"
-version = "0.13.4"
+version = "0.13.5"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "sprinkles"
+
+[package.metadata.docs.rs]
+all-features = true
+targets = [
+    "aarch64-pc-windows-msvc",
+    "i686-pc-windows-msvc",
+    "x86_64-pc-windows-msvc",
+]
 
 [features]
 beta = []
