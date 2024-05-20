@@ -26,12 +26,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2.7.3
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Generate docs
         run: cargo doc --all-features --no-deps
       - name: Generate pages adapter
-        run: echo "<meta http-equiv=\"refresh\" content=\"0; url=sprinkles\">" > target/doc/index.html
+        run: echo '<meta http-equiv="refresh" content="0; url=sprinkles">' > target/doc/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
