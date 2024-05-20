@@ -28,7 +28,7 @@ manifest-hashes = [
     "url",
     "urlencoding",
 ]
-v2 = []
+v1 = []
 
 [dependencies]
 base64 = { version = "0.22", optional = true }
