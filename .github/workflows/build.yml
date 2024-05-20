@@ -1,9 +1,6 @@
 name: Build & Test
 
 on:
-  release:
-    types: [published]
-
   pull_request:
     branches:
       - "trunk"
