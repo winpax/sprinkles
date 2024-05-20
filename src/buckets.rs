@@ -335,7 +335,7 @@ impl Bucket {
     }
 
     #[deprecated(note = "Use `manifests` instead. This function is much slower")]
-    #[cfg(not(feature = "v2"))]
+    #[cfg(not(feature = "v1"))]
     /// Get the number of manifests in the bucket using async I/O
     ///
     /// # Errors

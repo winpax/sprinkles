@@ -34,8 +34,6 @@ pub mod proxy;
 pub mod requests;
 pub mod scripts;
 pub mod shell;
-#[cfg(not(feature = "v2"))]
-pub mod stream;
 pub mod version;
 pub mod wrappers;
 
@@ -144,7 +142,7 @@ impl Default for Architecture {
 }
 
 #[deprecated(note = "Use `contexts::User` instead")]
-#[cfg(not(feature = "v2"))]
+#[cfg(not(feature = "v1"))]
 /// Alias for [`contexts::User`]
 pub type Scoop = contexts::User;
 

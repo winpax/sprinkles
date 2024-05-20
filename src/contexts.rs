@@ -178,7 +178,7 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     #[deprecated(
         note = "You should implement this yourself, as this function is inherently opinionated"
     )]
-    #[cfg(not(feature = "v2"))]
+    #[cfg(not(feature = "v1"))]
     #[allow(async_fn_in_trait)]
     /// Create a new log file
     async fn new_log(&self) -> Result<File, Error>;
@@ -186,7 +186,7 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     #[deprecated(
         note = "You should implement this yourself, as this function is inherently opinionated"
     )]
-    #[cfg(not(feature = "v2"))]
+    #[cfg(not(feature = "v1"))]
     /// Create a new log file
     ///
     /// This function is synchronous and does not allow for timeouts.
@@ -329,7 +329,7 @@ impl ScoopContext<config::Scoop> for AnyContext {
         }
     }
 
-    #[cfg(not(feature = "v2"))]
+    #[cfg(not(feature = "v1"))]
     #[allow(deprecated)]
     async fn new_log(&self) -> Result<File, Error> {
         match self {
@@ -339,7 +339,7 @@ impl ScoopContext<config::Scoop> for AnyContext {
     }
 
     #[allow(deprecated)]
-    #[cfg(not(feature = "v2"))]
+    #[cfg(not(feature = "v1"))]
     fn new_log_sync(&self) -> Result<File, Error> {
         match self {
             AnyContext::User(user) => user.new_log_sync(),

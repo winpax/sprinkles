@@ -7,7 +7,7 @@ use std::fmt::Display;
 #[derive(Debug, Clone)]
 #[must_use]
 #[deprecated(note = "Use `Header` instead")]
-#[cfg(not(feature = "v2"))]
+#[cfg(not(feature = "v1"))]
 /// A nicer way to display keys
 pub struct Key<T>(T);
 

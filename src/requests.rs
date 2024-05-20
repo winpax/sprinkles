@@ -12,7 +12,7 @@ use crate::config;
 
 #[must_use]
 #[deprecated(note = "Use `USER_AGENT` instead")]
-#[cfg(not(feature = "v2"))]
+#[cfg(not(feature = "v1"))]
 /// Get user agent for sfsu
 pub const fn user_agent<'a>() -> &'a str {
     USER_AGENT
