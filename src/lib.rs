@@ -14,8 +14,6 @@ use std::{fmt, str::FromStr};
 use quork::traits::list::ListVariants;
 use serde::{Deserialize, Serialize};
 
-pub use semver;
-
 pub mod buckets;
 #[cfg(feature = "manifest-hashes")]
 pub mod cache;
