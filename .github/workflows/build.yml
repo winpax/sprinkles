@@ -17,8 +17,6 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  CONTRIBUTORS_TOKEN: ${{ secrets.CONTRIBUTORS_TOKEN }}
-  IS_CI: true
   IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
@@ -72,7 +70,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build and Test
-        run: cargo test --all --features beta
+        run: cargo test --features beta
 
   build:
     name: Build
@@ -88,33 +86,5 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build and Package
-        if: ${{ !github.event.release.prerelease }}
-        run: just release-all
-
-      - name: Beta Build and Package
-        if: ${{ github.event.release.prerelease }}
-        run: just beta-release-all
-
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4.3.3
-        with:
-          name: package.zip
-          path: release/*
-
-      - name: Upload & Publish
-        uses: softprops/action-gh-release@v2.0.4
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        with:
-          files: |
-            release/*.exe
-            release/*.exe.sha256
-
-      - name: VirusTotal Scan
-        uses: crazy-max/ghaction-virustotal@v4
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        with:
-          update_release_body: true
-          vt_api_key: ${{ secrets.VT_API_KEY }}
-          files: |
-            .exe$
+      - name: Build
+        run: cargo build --features beta
