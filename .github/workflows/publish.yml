@@ -15,6 +15,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install and setup Scoop
+        uses: MinoruSekine/setup-scoop@v4
+        with:
+          buckets: extras java
+
       - name: Build
         run: cargo build --verbose
       - name: Run tests
