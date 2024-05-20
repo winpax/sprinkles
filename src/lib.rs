@@ -14,8 +14,6 @@ use std::{fmt, str::FromStr};
 use quork::traits::list::ListVariants;
 use serde::{Deserialize, Serialize};
 
-pub use semver;
-
 pub mod buckets;
 #[cfg(feature = "manifest-hashes")]
 pub mod cache;
@@ -34,8 +32,6 @@ pub mod proxy;
 pub mod requests;
 pub mod scripts;
 pub mod shell;
-#[cfg(not(feature = "v2"))]
-pub mod stream;
 pub mod version;
 pub mod wrappers;
 
@@ -142,11 +138,6 @@ impl Default for Architecture {
         Self::from_env()
     }
 }
-
-#[deprecated(note = "Use `contexts::User` instead")]
-#[cfg(not(feature = "v2"))]
-/// Alias for [`contexts::User`]
-pub type Scoop = contexts::User;
 
 #[cfg(test)]
 mod tests {

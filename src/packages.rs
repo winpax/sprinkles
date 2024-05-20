@@ -1007,7 +1007,6 @@ impl MergeDefaults for Option<AutoupdateArchitecture> {
 impl MergeDefaults for Option<&ManifestArchitecture> {
     type Default = InstallConfig;
 
-    #[allow(deprecated)]
     #[must_use]
     /// Merge the architecture specific autoupdate config with the arch agnostic one
     fn merge_default(&self, default: Self::Default, arch: Architecture) -> Self::Default {
@@ -1018,6 +1017,7 @@ impl MergeDefaults for Option<&ManifestArchitecture> {
             return default;
         };
 
+        #[allow(deprecated)]
         InstallConfig {
             bin: config.bin.or(default.bin),
             checkver: config.checkver.or(default.checkver),
@@ -1039,7 +1039,6 @@ impl MergeDefaults for Option<&ManifestArchitecture> {
 impl MergeDefaults for Option<ManifestArchitecture> {
     type Default = InstallConfig;
 
-    #[allow(deprecated)]
     #[must_use]
     /// Merge the architecture specific autoupdate config with the arch agnostic one
     fn merge_default(&self, default: Self::Default, arch: Architecture) -> Self::Default {
