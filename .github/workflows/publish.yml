@@ -21,6 +21,9 @@ jobs:
         with:
           buckets: extras java
 
+      - name: Cleanup Scoop install
+        run: rm install.ps1
+
       - name: Build
         run: cargo build --verbose
       - name: Run tests
