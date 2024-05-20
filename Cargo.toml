@@ -73,145 +73,15 @@ quick-xml = { version = "0.31", optional = true, features = ["serialize"] }
 quork = "0.7"
 rayon = "1.10"
 regex = "1.10"
-<<<<<<< HEAD
-serde = { version = "1.0", features = ["derive"] }
-
-[[bench]]
-harness = false
-name = "searching"
-
-[[bench]]
-harness = false
-name = "ref-matching"
-
-[[bench]]
-harness = false
-name = "serde"
-
-[[bench]]
-harness = false
-name = "autoupdate"
-
-[profile.release]
-codegen-units = 1
-lto = true
-
-[profile.profiling]
-inherits = "dev"
-opt-level = 3
-
-[features]
-beta = ["contexts", "sprinkles/beta"]
-contexts = []
-default = ["download", "info-difftrees", "v2"]
-download = ["sprinkles/manifest-hashes"]
-info-difftrees = []
-# Breaking changes are locked behind this feature flag
-v2 = ["sprinkles/v2"]
-
-[dependencies]
-anyhow = "1.0"
-bat = "0.24"
-cfg-if = "1.0"
-chrono.workspace = true
-clap = { version = "4.5", features = [
-    "derive",
-    "env",
-    "string",
-    "unicode",
-    "wrap_help",
-||||||| 2ace1931
-serde = { version = "1.0", features = ["derive"] }
-
-[[bench]]
-harness = false
-name = "searching"
-
-[[bench]]
-harness = false
-name = "ref-matching"
-
-[[bench]]
-harness = false
-name = "serde"
-
-[[bench]]
-harness = false
-name = "autoupdate"
-
-[profile.release]
-codegen-units = 1
-lto = true
-
-[profile.profiling]
-inherits = "dev"
-opt-level = 3
-
-[features]
-beta = ["contexts", "sprinkles/beta"]
-contexts = []
-default = ["download"]
-download = ["sprinkles/manifest-hashes"]
-# Breaking changes are locked behind this feature flag
-v2 = ["sprinkles/v2"]
-
-[dependencies]
-anyhow = "1.0"
-bat = "0.24"
-cfg-if = "1.0"
-chrono.workspace = true
-clap = { version = "4.5", features = [
-    "derive",
-    "env",
-    "string",
-    "unicode",
-    "wrap_help",
-=======
 reqwest = { version = "0.12", features = [
     "blocking",
     "brotli",
     "deflate",
     "gzip",
     "stream",
->>>>>>> trunk
 ] }
-<<<<<<< HEAD
-console.workspace = true
-crossterm = "0.27.0"
-dialoguer = "0.11.0"
-futures.workspace = true
-heck.workspace = true
-human-panic = "2.0"
-itertools.workspace = true
-log = { workspace = true }
-open = "5.1"
-parking_lot = "0.12"
-quork.workspace = true
-ratatui = { version = "0.26.2", features = ["macros"] }
-rayon.workspace = true
-regex.workspace = true
-scopeguard = "1.2.0"
-serde.workspace = true
-||||||| 2ace1931
-console.workspace = true
-crossterm = "0.27.0"
-dialoguer = "0.11.0"
-futures.workspace = true
-heck.workspace = true
-human-panic = "2.0"
-itertools.workspace = true
-log = { workspace = true }
-open = "5.1"
-parking_lot = "0.12"
-quork.workspace = true
-ratatui = { version = "0.26.2", features = ["macros"] }
-rayon.workspace = true
-regex.workspace = true
-serde.workspace = true
-=======
 semver = { version = "1.0", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
->>>>>>> trunk
 serde_json = { version = "1.0", features = ["preserve_order"] }
 serde_json_path = { version = "0.6", optional = true }
 serde_with = "3.8"
