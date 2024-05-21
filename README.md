@@ -1,12 +1,12 @@
 # Sprinkles Library
 
 [![Build & Test](https://github.com/winpax/sprinkles/actions/workflows/build.yml/badge.svg)](https://github.com/winpax/sprinkles/actions/workflows/build.yml)
-![Crates.io Version](https://img.shields.io/crates/v/sprinkles-rs)
-![docs.rs](https://img.shields.io/docsrs/sprinkles-rs)
-![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/winpax/sprinkles)
-![Crates.io Total Downloads](https://img.shields.io/crates/d/sprinkles-rs)
-![Crates.io License](https://img.shields.io/crates/l/sprinkles-rs)
-![Crates.io MSRV](https://img.shields.io/crates/msrv/sprinkles-rs)
+[![Crates.io Version](https://img.shields.io/crates/v/sprinkles-rs)](https://crates.io/crates/sprinkles-rs)
+[![docs.rs](https://img.shields.io/docsrs/sprinkles-rs)](https://docs.rs/sprinkles-rs)
+[![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/winpax/sprinkles)](https://libraries.io/cargo/sprinkles-rs)
+[![Crates.io Total Downloads](https://img.shields.io/crates/d/sprinkles-rs)](https://crates.io/crates/sprinkles-rs)
+[![Crates.io License](https://img.shields.io/crates/l/sprinkles-rs)](https://crates.io/crates/sprinkles-rs)
+[![Crates.io MSRV](https://img.shields.io/crates/msrv/sprinkles-rs)](https://crates.io/crates/sprinkles-rs)
 
 **Please note this library is currently in an early stage of development, and is not recommended for use in production.
 There are likely to be breaking changes in the future, and there is no guarantee that the API will remain stable until v1.0.**
