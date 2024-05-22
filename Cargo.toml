@@ -59,7 +59,7 @@ dunce = "1.0"
 futures = "0.3"
 getset = { version = "0.1", optional = true }
 git2 = "0.18"
-gix = { version = "0.62.0", features = [
+gix = { version = "0.63.0", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
