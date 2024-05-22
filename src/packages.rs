@@ -8,7 +8,8 @@ use std::{
 use chrono::{DateTime, Local};
 use gix::{object::tree::diff::Action, traverse::commit::simple::Sorting};
 use quork::traits::truthy::ContainsTruth as _;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+#[cfg(feature = "parallel")]
+use rayon::prelude::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use strum::Display;
@@ -182,18 +183,26 @@ impl MinInfo {
     ) -> Result<Vec<Self>> {
         let apps = ctx.installed_apps()?;
 
-        apps.par_iter()
-            .map(Self::from_path)
-            .filter(|package| {
-                if let Ok(pkg) = package {
-                    if let Some(bucket) = bucket {
-                        return &pkg.source == bucket;
-                    }
+        {
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    apps.par_iter()
+                } else {
+                    apps.iter()
                 }
-                // Keep errors so that the following line will return the error
-                true
-            })
-            .collect()
+            }
+        }
+        .map(Self::from_path)
+        .filter(|package| {
+            if let Ok(pkg) = package {
+                if let Some(bucket) = bucket {
+                    return &pkg.source == bucket;
+                }
+            }
+            // Keep errors so that the following line will return the error
+            true
+        })
+        .collect()
     }
 
     /// Parse minimal package into from a given path
@@ -483,10 +492,18 @@ impl InstallManifest {
     /// - Invalid install manifest
     /// - Reading directories fails
     pub fn list_all(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Self>> {
-        ctx.installed_apps()?
-            .par_iter()
-            .map(|path| Self::from_path(path.join("current/install.json")))
-            .collect::<Result<Vec<_>>>()
+        let installed_apps = ctx.installed_apps()?;
+        {
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    installed_apps.par_iter()
+                } else {
+                    installed_apps.iter()
+                }
+            }
+        }
+        .map(|path| Self::from_path(path.join("current/install.json")))
+        .collect::<Result<Vec<_>>>()
     }
 
     /// List all install manifests, ignoring errors
@@ -494,16 +511,24 @@ impl InstallManifest {
     /// # Errors
     /// - Reading directories fails
     pub fn list_all_unchecked(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Self>> {
-        Ok(ctx
-            .installed_apps()?
-            .par_iter()
-            .filter_map(
-                |path| match Self::from_path(path.join("current/install.json")) {
-                    Ok(v) => Some(v.with_name(path)),
-                    Err(_) => None,
-                },
-            )
-            .collect::<Vec<_>>())
+        let installed_apps = ctx.installed_apps()?;
+
+        Ok({
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    installed_apps.par_iter()
+                } else {
+                    installed_apps.iter()
+                }
+            }
+        }
+        .filter_map(
+            |path| match Self::from_path(path.join("current/install.json")) {
+                Ok(v) => Some(v.with_name(path)),
+                Err(_) => None,
+            },
+        )
+        .collect::<Vec<_>>())
     }
 }
 
@@ -614,20 +639,28 @@ impl Manifest {
     /// # Panics
     /// - If the file name is invalid
     pub fn list_installed(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Result<Self>>> {
-        Ok(ctx
-            .installed_apps()?
-            .par_iter()
-            .map(|path| {
-                Self::from_path(path.join("current/manifest.json")).and_then(|mut manifest| {
-                    manifest.name = path
-                        .file_name()
-                        .map(|f| f.to_string_lossy().to_string())
-                        .ok_or(Error::MissingFileName)?;
+        let installed_apps = ctx.installed_apps()?;
 
-                    Ok(manifest)
-                })
+        Ok({
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    installed_apps.par_iter()
+                } else {
+                    installed_apps.iter()
+                }
+            }
+        }
+        .map(|path| {
+            Self::from_path(path.join("current/manifest.json")).and_then(|mut manifest| {
+                manifest.name = path
+                    .file_name()
+                    .map(|f| f.to_string_lossy().to_string())
+                    .ok_or(Error::MissingFileName)?;
+
+                Ok(manifest)
             })
-            .collect::<Vec<_>>())
+        })
+        .collect::<Vec<_>>())
     }
 
     #[must_use]
@@ -1062,6 +1095,7 @@ mod tests {
     use std::error::Error;
 
     use crate::{buckets::Bucket, contexts::User, Architecture};
+
     use rayon::prelude::*;
 
     #[test]
