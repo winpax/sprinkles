@@ -7,7 +7,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use rayon::prelude::*;
 use regex::Regex;
 
 pub(crate) mod known {
@@ -265,6 +264,9 @@ impl Bucket {
     where
         &'a C: Send + Sync,
     {
+        #[cfg(feature = "parallel")]
+        use rayon::prelude::*;
+
         // Ignore loose files in the buckets dir
         if !self.path().is_dir() {
             return Ok(vec![]);
@@ -272,23 +274,30 @@ impl Bucket {
 
         let bucket_contents = self.list_package_names()?;
 
-        let matches = bucket_contents
-            .par_iter()
-            .filter_map(|manifest_name| {
-                // Ignore non-matching manifests
-                if search_mode.eager_name_matches(manifest_name, search_regex) {
-                    let manifest = self.get_manifest(manifest_name).ok()?;
+        let matches = {
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    bucket_contents.par_iter()
+                } else {
+                    bucket_contents.iter()
+                }
+            }
+        }
+        .filter_map(|manifest_name| {
+            // Ignore non-matching manifests
+            if search_mode.eager_name_matches(manifest_name, search_regex) {
+                let manifest = self.get_manifest(manifest_name).ok()?;
 
-                    if !installed_only || manifest.is_installed(ctx, Some(&self.name())) {
-                        Some(manifest)
-                    } else {
-                        None
-                    }
+                if !installed_only || manifest.is_installed(ctx, Some(&self.name())) {
+                    Some(manifest)
                 } else {
                     None
                 }
-            })
-            .collect::<Vec<_>>();
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
 
         Ok(matches)
     }
@@ -299,10 +308,22 @@ impl Bucket {
     /// Invalid install manifest
     /// Reading directories fails
     pub fn used(ctx: &impl ScoopContext<config::Scoop>) -> packages::Result<HashSet<String>> {
-        Ok(InstallManifest::list_all(ctx)?
-            .par_iter()
-            .filter_map(|entry| entry.bucket.clone())
-            .collect())
+        #[cfg(feature = "parallel")]
+        use rayon::prelude::*;
+
+        let manifests = InstallManifest::list_all(ctx)?;
+
+        Ok({
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    manifests.par_iter()
+                } else {
+                    manifests.iter()
+                }
+            }
+        }
+        .filter_map(|entry| entry.bucket.clone())
+        .collect())
     }
 
     // TODO: Check if calling this for every single bucket is slow

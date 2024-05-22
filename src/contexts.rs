@@ -140,25 +140,33 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
 
     /// List all scoop apps and return their paths
     fn installed_apps(&self) -> std::io::Result<Vec<PathBuf>> {
+        #[cfg(feature = "parallel")]
         use rayon::prelude::*;
 
         let apps_path = self.apps_path();
 
         let read = apps_path.read_dir()?;
 
-        Ok(read
-            .par_bridge()
-            .filter_map(|package| {
-                let path = package.expect("valid path").path();
-
-                // We cannot search the scoop app as it is built in and hence doesn't contain any manifest
-                if path.file_name() == Some(OsStr::new(Self::APP_NAME)) {
-                    None
+        Ok({
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    read.par_bridge()
                 } else {
-                    Some(path)
+                    read
                 }
-            })
-            .collect())
+            }
+        }
+        .filter_map(|package| {
+            let path = package.expect("valid path").path();
+
+            // We cannot search the scoop app as it is built in and hence doesn't contain any manifest
+            if path.file_name() == Some(OsStr::new(Self::APP_NAME)) {
+                None
+            } else {
+                Some(path)
+            }
+        })
+        .collect())
     }
 
     /// Checks if the app is installed by its name
