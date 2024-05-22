@@ -1,6 +1,6 @@
 //! Scoop diagnostics helpers
 
-use std::{ffi::OsString, os::windows::ffi::OsStringExt};
+use std::ffi::OsString;
 
 use itertools::Itertools;
 use serde::Serialize;
@@ -132,6 +132,7 @@ impl Diagnostics {
         })
     }
 
+    #[cfg(windows)]
     #[allow(unreachable_code)]
     /// Check if Windows Defender is ignoring the Scoop directory
     ///
@@ -161,6 +162,7 @@ impl Diagnostics {
         Ok(buckets.into_iter().any(|bucket| bucket.name() == "main"))
     }
 
+    #[cfg(windows)]
     /// Check if long paths are enabled
     ///
     /// # Errors
@@ -189,6 +191,7 @@ impl Diagnostics {
         }
     }
 
+    #[cfg(windows)]
     /// Check if the user has developer mode enabled
     ///
     /// # Errors
@@ -203,6 +206,7 @@ impl Diagnostics {
         Ok(key.get_value::<u32, _>("AllowDevelopmentWithoutDevLicense")? == 1)
     }
 
+    #[cfg(windows)]
     /// Check if the Scoop directory is on an NTFS filesystem
     ///
     /// # Errors
@@ -210,6 +214,8 @@ impl Diagnostics {
     /// - Unable to check the filesystem
     /// - Unable to get the root path
     pub fn is_ntfs(ctx: &impl ScoopContext<config::Scoop>) -> windows::core::Result<bool> {
+        use std::os::windows::ffi::OsStringExt;
+
         use windows::{
             core::HSTRING,
             Win32::{Foundation::MAX_PATH, Storage::FileSystem::GetVolumeInformationW},

@@ -15,7 +15,7 @@ version = "0.14.0"
 name = "sprinkles"
 
 [package.metadata.docs.rs]
-default-target = "i686-pc-windows-gnu"
+default-target = "i686-unknown-linux-gnu"
 features = ["beta", "vendored-libgit2", "vendored-native-tls", "zlib-ng-compat"]
 # targets = ["i686-pc-windows-msvc", "x86_64-pc-windows-msvc"]
 
@@ -119,6 +119,8 @@ windows = { version = "0.56", features = [
     "Win32_UI_Shell",
 ] }
 windows-version = "0.1"
+
+[target.'cfg(windows)'.dependencies]
 winreg = "0.52"
 
 [target.'cfg(not(docsrs))'.dependencies]
