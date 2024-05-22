@@ -15,10 +15,15 @@ version = "0.14.0"
 name = "sprinkles"
 
 [package.metadata.docs.rs]
-default-target = "i686-unknown-linux-gnu"
-features = ["beta", "vendored-libgit2", "vendored-native-tls", "zlib-ng-compat"]
-# targets = ["i686-pc-windows-msvc", "x86_64-pc-windows-msvc"]
-rustdoc-args = ["--cfg", "docsrs"]
+default-target = "x86_64-unknown-linux-gnu"
+features = [
+    "beta",
+    "vendored-libgit2",
+    "vendored-native-tls",
+    "vendored-openssl",
+    "zlib-ng-compat",
+]
+rustdoc-args = ["--cfg", "--cfg", "docsrs", "reqwest_unstable"]
 
 [features]
 beta = []
