@@ -37,7 +37,21 @@ manifest-hashes = [
     "urlencoding",
 ]
 parallel = ["rayon"]
+rustls-tls = [
+    "gix/blocking-http-transport-reqwest-rust-tls",
+    "reqwest/rustls-tls",
+]
+rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
 v1 = []
+vendored-libgit2 = ["git2/vendored-libgit2"]
+vendored-native-tls = [
+    "gix/blocking-http-transport-reqwest-native-tls",
+    "reqwest/native-tls-vendored",
+]
+vendored-openssl = ["git2/vendored-openssl"]
+zlib-ng = ["gix/zlib-ng"]
+zlib-ng-compat = ["gix/zlib-ng-compat"]
+zlib-stock = ["gix/zlib-stock"]
 
 [dependencies]
 base64 = { version = "0.22", optional = true }
