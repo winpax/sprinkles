@@ -161,18 +161,19 @@ impl<'a, C: ScoopContext<config::Scoop>> PackageHandle<'a, C> {
     /// - Linking the current folder failed
     /// - The current folder is not a symlink
     pub fn link_current(&self) -> Result<()> {
-        use std::os::windows::fs;
-
         if self.ctx.config().no_junction {
             return Ok(());
         }
 
         self.unlink_current()?;
 
-        let current_path = self.path.join("current");
-        let version_dir = self.version_dir();
+        #[cfg(windows)]
+        {
+            let current_path = self.path.join("current");
+            let version_dir = self.version_dir();
 
-        fs::symlink_dir(version_dir, current_path)?;
+            std::os::windows::fs::symlink_dir(version_dir, current_path)?;
+        }
 
         Ok(())
     }

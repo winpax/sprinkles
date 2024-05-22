@@ -31,7 +31,7 @@ where
 ///
 /// This should be handled manually by implementations, when running as admin
 pub fn default_scoop_global_path() -> PathBuf {
-    use std::{ffi::OsString, os::windows::ffi::OsStringExt};
+    use std::ffi::OsString;
 
     use windows::Win32::{
         Foundation::{HWND, MAX_PATH},
@@ -46,7 +46,18 @@ pub fn default_scoop_global_path() -> PathBuf {
     };
 
     let path = if success {
-        let string = OsString::from_wide(&buf);
+        let string = {
+            cfg_if::cfg_if! {
+                if #[cfg(windows)] {
+                    use std::os::windows::ffi::OsStringExt;
+
+                    OsString::from_wide(&buf)
+                } else {
+                    OsString::new()
+                }
+            }
+        };
+
         let utf8_string = string.to_string_lossy();
         let trimmed = utf8_string.trim_end_matches('\0');
 
