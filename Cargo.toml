@@ -121,7 +121,7 @@ windows = { version = "0.56", features = [
 windows-version = "0.1"
 winreg = "0.52"
 
-[target.'cfg(docsrs)'.dependencies]
+[target.'cfg(not(docsrs))'.dependencies]
 git2 = "0.18"
 reqwest = { version = "0.12", features = [
     "blocking",
@@ -130,6 +130,10 @@ reqwest = { version = "0.12", features = [
     "gzip",
     "stream",
 ] }
+
+[target.'cfg(docsrs)'.dependencies]
+git2 = { version = "0.18", default-features = false }
+reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"
