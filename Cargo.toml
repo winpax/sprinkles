@@ -36,12 +36,12 @@ manifest-hashes = [
     "url",
     "urlencoding",
 ]
-parallel = ["rayon"]
+parallel = ["blake3/rayon", "indicatif/rayon", "rayon"]
 v1 = []
 
 [dependencies]
 base64 = { version = "0.22", optional = true }
-blake3 = { version = "1.5", features = ["rayon"] }
+blake3 = "1.5"
 bytes = "1.6"
 cfg-if = "1.0"
 chrono = { version = ">=0.4.38", features = [
@@ -65,11 +65,7 @@ gix = { version = "0.63.0", features = [
     "worktree-mutation",
 ] }
 gix-object = "0.42.1"
-indicatif = { version = "0.17", features = [
-    "improved_unicode",
-    "rayon",
-    "tokio",
-] }
+indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.13"
 log = "0.4"
 md-5 = "0.10"
