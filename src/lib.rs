@@ -57,8 +57,8 @@ use contexts::Error;
 
 /// Ensure supported environment
 mod const_assertions {
-    #[cfg(not(docsrs))]
-    const _: () = assert!(cfg!(windows), "Only windows is supported");
+    #[cfg(all(not(docsrs), not(windows)))]
+    compile_error!("Only windows is supported");
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, ListVariants)]
