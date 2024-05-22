@@ -64,7 +64,7 @@ gix = { version = "0.62.0", features = [
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.42.1"
+gix-object = "0.42.2"
 indicatif = { version = "0.17", features = [
     "improved_unicode",
     "rayon",
