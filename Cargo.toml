@@ -15,9 +15,15 @@ version = "0.14.0"
 name = "sprinkles"
 
 [package.metadata.docs.rs]
-all-features = true
-default-target = "x86_64-pc-windows-msvc"
-targets = ["i686-pc-windows-msvc", "x86_64-pc-windows-msvc"]
+default-target = "x86_64-unknown-linux-gnu"
+features = [
+    "beta",
+    "vendored-libgit2",
+    "vendored-native-tls",
+    "vendored-openssl",
+    "zlib-ng-compat",
+]
+rustdoc-args = ["--cfg", "--cfg", "docsrs", "reqwest_unstable"]
 
 [features]
 beta = []
@@ -37,7 +43,21 @@ manifest-hashes = [
     "urlencoding",
 ]
 parallel = ["blake3/rayon", "indicatif/rayon", "rayon"]
+rustls-tls = [
+    "gix/blocking-http-transport-reqwest-rust-tls",
+    "reqwest/rustls-tls",
+]
+rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
 v1 = []
+vendored-libgit2 = ["git2/vendored-libgit2"]
+vendored-native-tls = [
+    "gix/blocking-http-transport-reqwest-native-tls",
+    "reqwest/native-tls-vendored",
+]
+vendored-openssl = ["git2/vendored-openssl"]
+zlib-ng = ["gix/zlib-ng"]
+zlib-ng-compat = ["git2/zlib-ng-compat", "gix/zlib-ng-compat"]
+zlib-stock = ["gix/zlib-stock"]
 
 [dependencies]
 base64 = { version = "0.22", optional = true }
@@ -58,7 +78,6 @@ directories = "5.0"
 dunce = "1.0"
 futures = "0.3"
 getset = { version = "0.1", optional = true }
-git2 = "0.18"
 gix = { version = "0.63", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
@@ -75,13 +94,6 @@ quick-xml = { version = "0.31", optional = true, features = ["serialize"] }
 quork = "0.7"
 rayon = { version = "1.10", optional = true }
 regex = "1.10"
-reqwest = { version = "0.12", features = [
-    "blocking",
-    "brotli",
-    "deflate",
-    "gzip",
-    "stream",
-] }
 semver = { version = "1.0", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
@@ -109,7 +121,23 @@ windows = { version = "0.56", features = [
     "Win32_UI_Shell",
 ] }
 windows-version = "0.1"
+
+[target.'cfg(windows)'.dependencies]
 winreg = "0.52"
+
+[target.'cfg(not(docsrs))'.dependencies]
+git2 = "0.18"
+reqwest = { version = "0.12", features = [
+    "blocking",
+    "brotli",
+    "deflate",
+    "gzip",
+    "stream",
+] }
+
+[target.'cfg(docsrs)'.dependencies]
+git2 = { version = "0.18", default-features = false }
+reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"

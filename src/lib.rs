@@ -19,7 +19,6 @@ pub mod buckets;
 pub mod cache;
 pub mod config;
 pub mod contexts;
-pub mod diagnostics;
 pub mod git;
 #[doc(hidden)]
 pub mod hacks;
@@ -58,7 +57,8 @@ use contexts::Error;
 
 /// Ensure supported environment
 mod const_assertions {
-    const _: () = assert!(cfg!(windows), "Only windows is supported");
+    #[cfg(all(not(docsrs), not(windows)))]
+    compile_error!("Only windows is supported");
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, ListVariants)]
