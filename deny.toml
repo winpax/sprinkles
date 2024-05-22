@@ -117,7 +117,7 @@ exceptions = [
 # licensing information
 [[licenses.clarify]]
 crate = "ring"
-expression = "MIT AND ISC AND OpenSSL"
+expression = "ISC"
 license-files = [
     { path = "LICENSE", hash = 0xbd0eed23 },
 ] # The package spec the clarification applies to
