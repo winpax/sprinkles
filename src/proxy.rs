@@ -1,10 +1,6 @@
 //! Proxy helpers
 
-use std::{
-    net::{AddrParseError, IpAddr},
-    num::ParseIntError,
-    str::FromStr,
-};
+use std::{net::AddrParseError, num::ParseIntError, str::FromStr};
 
 use crate::let_chain;
 
@@ -126,7 +122,7 @@ impl FromStr for Proxy {
                 (host, port)
             };
             #[cfg(not(windows))]
-            let (address, port): (IpAddr, u16) = { unimplemented!() };
+            let (address, port): (std::net::IpAddr, u16) = { unimplemented!() };
 
             format!("{address}:{port}")
         } else {
