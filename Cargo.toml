@@ -18,6 +18,7 @@ name = "sprinkles"
 default-target = "i686-unknown-linux-gnu"
 features = ["beta", "vendored-libgit2", "vendored-native-tls", "zlib-ng-compat"]
 # targets = ["i686-pc-windows-msvc", "x86_64-pc-windows-msvc"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 beta = []
