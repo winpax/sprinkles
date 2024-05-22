@@ -44,7 +44,7 @@ base64 = { version = "0.22", optional = true }
 blake3 = "1.5"
 bytes = "1.6"
 cfg-if = "1.0"
-chrono = { version = ">=0.4.38", features = [
+chrono = { version = "0.4", features = [
     "clock",
     "serde",
     "std",
@@ -59,18 +59,18 @@ dunce = "1.0"
 futures = "0.3"
 getset = { version = "0.1", optional = true }
 git2 = "0.18"
-gix = { version = "0.63.0", features = [
+gix = { version = "0.63", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.42.1"
+gix-object = "0.42"
 indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.13"
 log = "0.4"
 md-5 = "0.10"
-parking_lot = "0.12.2"
-phf = { version = "0.11.2", default-features = false }
+parking_lot = "0.12"
+phf = { version = "0.11", default-features = false }
 quick-xml = { version = "0.31", optional = true, features = ["serialize"] }
 quork = "0.7"
 rayon = { version = "1.10", optional = true }
