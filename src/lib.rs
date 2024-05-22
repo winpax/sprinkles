@@ -19,7 +19,6 @@ pub mod buckets;
 pub mod cache;
 pub mod config;
 pub mod contexts;
-pub mod diagnostics;
 pub mod git;
 #[doc(hidden)]
 pub mod hacks;
