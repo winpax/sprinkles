@@ -15,9 +15,9 @@ version = "0.14.0"
 name = "sprinkles"
 
 [package.metadata.docs.rs]
-all-features = true
-default-target = "x86_64-pc-windows-msvc"
-targets = ["i686-pc-windows-msvc", "x86_64-pc-windows-msvc"]
+default-target = "i686-pc-windows-gnu"
+features = ["beta", "vendored-libgit2", "vendored-native-tls", "zlib-ng-compat"]
+# targets = ["i686-pc-windows-msvc", "x86_64-pc-windows-msvc"]
 
 [features]
 beta = []
@@ -50,7 +50,7 @@ vendored-native-tls = [
 ]
 vendored-openssl = ["git2/vendored-openssl"]
 zlib-ng = ["gix/zlib-ng"]
-zlib-ng-compat = ["gix/zlib-ng-compat"]
+zlib-ng-compat = ["git2/zlib-ng-compat", "gix/zlib-ng-compat"]
 zlib-stock = ["gix/zlib-stock"]
 
 [dependencies]
@@ -72,7 +72,6 @@ directories = "5.0"
 dunce = "1.0"
 futures = "0.3"
 getset = { version = "0.1", optional = true }
-git2 = "0.18"
 gix = { version = "0.63", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
@@ -93,13 +92,6 @@ quick-xml = { version = "0.31", optional = true, features = ["serialize"] }
 quork = "0.7"
 rayon = { version = "1.10", optional = true }
 regex = "1.10"
-reqwest = { version = "0.12", features = [
-    "blocking",
-    "brotli",
-    "deflate",
-    "gzip",
-    "stream",
-] }
 semver = { version = "1.0", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
@@ -128,6 +120,16 @@ windows = { version = "0.56", features = [
 ] }
 windows-version = "0.1"
 winreg = "0.52"
+
+[target.'cfg(docsrs)'.dependencies]
+git2 = "0.18"
+reqwest = { version = "0.12", features = [
+    "blocking",
+    "brotli",
+    "deflate",
+    "gzip",
+    "stream",
+] }
 
 [dev-dependencies]
 anyhow = "1.0"
