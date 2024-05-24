@@ -1,8 +1,10 @@
 [package]
 authors = ["Juliette Cordor <professional@maybejules.com>"]
+categories = ["api-bindings", "command-line-utilities", "config"]
 description = "A Rust based abstraction layer for Scoop"
 edition = "2021"
 homepage = "https://github.com/winpax/sprinkles"
+keywords = ["api", "scoop", "windows", "package", "manager"]
 license = "Apache-2.0"
 name = "sprinkles-rs"
 repository = "https://github.com/winpax/sprinkles"
