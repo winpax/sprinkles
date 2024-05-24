@@ -14,11 +14,12 @@ use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use crate::{
+    hacks::let_chain,
     hash::{url_ext::UrlExt, Hash, HashType},
-    let_chain,
-    packages::{models::manifest::TOrArrayOfTs, Manifest},
+    packages::{downloading::DownloadUrl, models::manifest::TOrArrayOfTs, Manifest},
     progress,
     requests::ClientLike,
+    version::Version,
     Architecture,
 };
 
@@ -38,6 +39,71 @@ pub enum Error {
     InvalidFileName,
     #[error("Missing parts in output file name")]
     MissingParts,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+/// A cache file handle
+pub struct CacheFile<'a> {
+    name: &'a str,
+    version: &'a Version,
+    url: &'a DownloadUrl,
+}
+
+impl<'a> CacheFile<'a> {
+    #[must_use]
+    /// Create a new cache file handle
+    pub fn new(name: &'a str, version: &'a Version, url: &'a DownloadUrl) -> Self {
+        Self { name, version, url }
+    }
+
+    #[must_use]
+    /// Get the cache file name using the legacy format
+    pub fn filename_legacy(&self) -> String {
+        let mut file_name = self.name.to_string();
+        file_name += "#";
+        file_name += self.version.as_str();
+        file_name += "#";
+        file_name += &PathBuf::from(self.url).display().to_string();
+
+        file_name
+    }
+
+    #[must_use]
+    /// Get the cache file name
+    pub fn filename(&self) -> String {
+        let sha256_hash = {
+            use sha2::{Digest, Sha256};
+
+            let mut hasher = Sha256::new();
+
+            let url = self.url.full_url();
+
+            hasher.update(url.as_bytes());
+
+            &format!("{:x}", hasher.finalize())[0..7]
+        };
+
+        let extension = {
+            let path = PathBuf::from(self.url);
+
+            path.extension().map(ToOwned::to_owned)
+        };
+
+        let mut file_name = String::new();
+
+        file_name += self.name;
+        file_name += "#";
+        file_name += self.version.as_str();
+        file_name += "#";
+        file_name += sha256_hash;
+
+        if let Some(extension) = extension {
+            file_name += ".";
+            file_name += &(extension.to_string_lossy());
+        }
+
+        file_name
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -157,9 +223,7 @@ impl Handle {
         download_urls
             .zip(hashes)
             .map(|(url, hash)| {
-                let file_name = PathBuf::from(&url);
-
-                let file_name = format!("{}#{}#{}", name, version, file_name.display());
+                let file_name = CacheFile::new(name, version, &url).filename();
 
                 Self::new(
                     cache_path.as_ref(),
@@ -339,5 +403,52 @@ impl Downloader {
         }
 
         Ok(hasher.finalize()[..].to_vec())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{cache::CacheFile, version::Version};
+
+    #[test]
+    fn test_cache_file_sfsu_1_13_4() {
+        use crate::packages::downloading::DownloadUrl;
+
+        let url = DownloadUrl::from_string(
+            "https://github.com/jewlexx/sfsu/releases/download/v1.13.4/sfsu-x86_64.exe#/sfsu.exe",
+        );
+
+        let version = Version::new("1.13.4");
+        let file = CacheFile::new("sfsu", &version, &url);
+
+        assert_eq!(file.filename(), "sfsu#1.13.4#659892c.exe");
+    }
+
+    #[test]
+    fn test_cache_file_sfsu_1_13_3() {
+        use crate::packages::downloading::DownloadUrl;
+
+        let url = DownloadUrl::from_string(
+            "https://github.com/jewlexx/sfsu/releases/download/v1.13.3/sfsu-x86_64.exe#/sfsu.exe",
+        );
+
+        let version = Version::new("1.13.3");
+        let file = CacheFile::new("sfsu", &version, &url);
+
+        assert_eq!(file.filename(), "sfsu#1.13.3#26ae19b.exe");
+    }
+
+    #[test]
+    fn test_cache_file_legacy() {
+        use crate::packages::downloading::DownloadUrl;
+
+        let url = DownloadUrl::from_string(
+            "https://github.com/jewlexx/sfsu/releases/download/v1.13.3/sfsu-x86_64.exe#/sfsu.exe",
+        );
+
+        let version = Version::new("1.13.3");
+        let file = CacheFile::new("sfsu", &version, &url);
+
+        assert_eq!(file.filename_legacy(), "sfsu#1.13.3#https_github.com_jewlexx_sfsu_releases_download_v1.13.3_sfsu-x86_64.exe_sfsu.exe");
     }
 }
