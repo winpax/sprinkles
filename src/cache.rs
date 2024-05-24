@@ -16,9 +16,10 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 use crate::{
     hacks::let_chain,
     hash::{url_ext::UrlExt, Hash, HashType},
-    packages::{models::manifest::TOrArrayOfTs, Manifest},
+    packages::{downloading::DownloadUrl, models::manifest::TOrArrayOfTs, Manifest},
     progress,
     requests::ClientLike,
+    version::Version,
     Architecture,
 };
 
@@ -105,6 +106,16 @@ pub struct Handle {
     actual_hash: Hash,
 }
 
+fn cache_filename_legacy(name: &str, version: &Version, url: &DownloadUrl) -> String {
+    let mut file_name = name.to_string();
+    file_name += "#";
+    file_name += version.as_str();
+    file_name += "#";
+    file_name += &PathBuf::from(url).display().to_string();
+
+    file_name
+}
+
 impl Handle {
     /// Construct a new cache handle
     ///
@@ -157,9 +168,7 @@ impl Handle {
         download_urls
             .zip(hashes)
             .map(|(url, hash)| {
-                let file_name = PathBuf::from(&url);
-
-                let file_name = format!("{}#{}#{}", name, version, file_name.display());
+                let file_name = cache_filename_legacy(name, version, &url);
 
                 Self::new(
                     cache_path.as_ref(),
