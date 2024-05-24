@@ -21,9 +21,8 @@ features = [
     "vendored-libgit2",
     "vendored-native-tls",
     "vendored-openssl",
-    "zlib-ng-compat",
 ]
-rustdoc-args = ["--cfg", "--cfg", "docsrs", "reqwest_unstable"]
+rustc-args = ["--cfg", "docsrs", "--cfg", "reqwest_unstable"]
 
 [features]
 beta = []
