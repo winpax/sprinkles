@@ -29,4 +29,10 @@ let apps = ctx.installed_apps().unwrap();
 println!("You have {} apps installed", apps.len());
 ```
 
+## Supported Platforms
+
+I will maintain support for the MSRV mentioned in Cargo.toml, although it may change across a major version.
+
+Windows is the only supported platform at the moment, and this will likely not change, given that Scoop is only available on Windows.
+
 **Made with 💗 by Juliette Cordor**
