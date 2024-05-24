@@ -47,108 +47,109 @@ pub use models::{install::Manifest as InstallManifest, manifest::Manifest};
 use downloading::DownloadUrl;
 use models::manifest::{InstallConfig, StringArray};
 
-#[macro_export]
-/// Get a field from a manifest based on the architecture
-macro_rules! arch_config {
-    ($field:ident.$arch:expr) => {
-        match $arch {
-            $crate::Architecture::Arm64 => $field.arm64.as_ref(),
-            $crate::Architecture::X64 => $field.x64.as_ref(),
-            $crate::Architecture::X86 => $field.x86.as_ref(),
-        }
-    };
+#[macro_use]
+mod macros {
+    /// Get a field from a manifest based on the architecture
+    macro_rules! arch_config {
+        ($field:ident.$arch:expr) => {
+            match $arch {
+                $crate::Architecture::Arm64 => $field.arm64.as_ref(),
+                $crate::Architecture::X64 => $field.x64.as_ref(),
+                $crate::Architecture::X86 => $field.x86.as_ref(),
+            }
+        };
 
-    ($field:ident) => {
-        arch_config!($field.$crate::Architecture::ARCH)
-    };
+        ($field:ident) => {
+            arch_config!($field.$crate::Architecture::ARCH)
+        };
 
-    ($field:ident.$arch:expr => clone) => {
-        arch_config!($field.$arch).cloned()
-    };
+        ($field:ident.$arch:expr => clone) => {
+            arch_config!($field.$arch).cloned()
+        };
 
-    ($field:ident => clone) => {
-        arch_config!($field).cloned()
-    };
+        ($field:ident => clone) => {
+            arch_config!($field).cloned()
+        };
 
-    // ($field:ident.$arch:expr => $default:expr) => {
-    //     arch_config!($field.$arch).unwrap_or($default)
-    // };
+        // ($field:ident.$arch:expr => $default:expr) => {
+        //     arch_config!($field.$arch).unwrap_or($default)
+        // };
 
-    // ($field:ident => $default:expr) => {
-    //     arch_config!($field.$crate::Architecture::ARCH).unwrap_or($default)
-    // };
+        // ($field:ident => $default:expr) => {
+        //     arch_config!($field.$crate::Architecture::ARCH).unwrap_or($default)
+        // };
+    }
+
+    /// Get a field from a manifest based on the architecture
+    macro_rules! arch_field {
+        // ($self:ident.$field:ident) => {
+        //     arch_field!($self.$field).clone()
+        // };
+
+        // ($arch:expr => ref $self:ident.$field:ident) => {{
+        //     if let Some(cfg) = match $arch {
+        //         $crate::Architecture::Arm64 => &$self.arm64,
+        //         $crate::Architecture::X64 => &$self.x64,
+        //         $crate::Architecture::X86 => &$self.x86,
+        //     } {
+        //         &cfg.$field
+        //     } else {
+        //         &None
+        //     }
+        // }};
+
+        // (ref $self:ident.$field:ident) => {
+        //     arch_field!($crate::Architecture::ARCH => ref $self.$field)
+        // };
+
+        // ($arch:expr => ref mut $self:ident.$field:ident) => {{
+        //     match $arch {
+        //         $crate::Architecture::Arm64 => $self.arm64.as_mut(),
+        //         $crate::Architecture::X64 => $self.x64.as_mut(),
+        //         $crate::Architecture::X86 => $self.x86.as_mut(),
+        //     }.and_then(|cfg| cfg.$field.as_mut())
+        // }};
+
+        // (ref mut $self:ident.$field:ident) => {
+        //     arch_field!($crate::Architecture::ARCH => ref mut $self.$field)
+        // };
+
+        ($self:ident.$field:ident as cloned) => {
+            arch_field!($crate::Architecture::ARCH => $self.$field as ref).cloned()
+        };
+
+        ($arch:expr => $self:ident.$field:ident as cloned) => {
+            arch_field!($arch => $self.$field as ref).cloned()
+        };
+
+        ($self:ident.$field:ident as ref) => {
+            arch_field!($crate::Architecture::ARCH => $self.$field as ref)
+        };
+
+        ($arch:expr => $self:ident.$field:ident as ref) => {{
+            match $arch {
+                $crate::Architecture::Arm64 => $self.arm64.as_ref(),
+                $crate::Architecture::X64 => $self.x64.as_ref(),
+                $crate::Architecture::X86 => $self.x86.as_ref(),
+            }.and_then(|cfg| cfg.$field.as_ref())
+        }};
+
+        ($self:ident.$field:ident as mut) => {
+            arch_field!($crate::Architecture::ARCH => $self.$field as mut)
+        };
+
+        ($arch:expr => $self:ident.$field:ident as mut) => {{
+            match $arch {
+                $crate::Architecture::Arm64 => $self.arm64.as_mut(),
+                $crate::Architecture::X64 => $self.x64.as_mut(),
+                $crate::Architecture::X86 => $self.x86.as_mut(),
+            }.and_then(|cfg| cfg.$field.as_mut())
+        }};
+    }
 }
 
-#[macro_export]
-/// Get a field from a manifest based on the architecture
-macro_rules! arch_field {
-    // ($self:ident.$field:ident) => {
-    //     arch_field!($self.$field).clone()
-    // };
-
-    // ($arch:expr => ref $self:ident.$field:ident) => {{
-    //     if let Some(cfg) = match $arch {
-    //         $crate::Architecture::Arm64 => &$self.arm64,
-    //         $crate::Architecture::X64 => &$self.x64,
-    //         $crate::Architecture::X86 => &$self.x86,
-    //     } {
-    //         &cfg.$field
-    //     } else {
-    //         &None
-    //     }
-    // }};
-
-    // (ref $self:ident.$field:ident) => {
-    //     arch_field!($crate::Architecture::ARCH => ref $self.$field)
-    // };
-
-    // ($arch:expr => ref mut $self:ident.$field:ident) => {{
-    //     match $arch {
-    //         $crate::Architecture::Arm64 => $self.arm64.as_mut(),
-    //         $crate::Architecture::X64 => $self.x64.as_mut(),
-    //         $crate::Architecture::X86 => $self.x86.as_mut(),
-    //     }.and_then(|cfg| cfg.$field.as_mut())
-    // }};
-
-    // (ref mut $self:ident.$field:ident) => {
-    //     arch_field!($crate::Architecture::ARCH => ref mut $self.$field)
-    // };
-
-    ($self:ident.$field:ident as cloned) => {
-        arch_field!($crate::Architecture::ARCH => $self.$field as ref).cloned()
-    };
-
-    ($arch:expr => $self:ident.$field:ident as cloned) => {
-        arch_field!($arch => $self.$field as ref).cloned()
-    };
-
-    ($self:ident.$field:ident as ref) => {
-        arch_field!($crate::Architecture::ARCH => $self.$field as ref)
-    };
-
-    ($arch:expr => $self:ident.$field:ident as ref) => {{
-        match $arch {
-            $crate::Architecture::Arm64 => $self.arm64.as_ref(),
-            $crate::Architecture::X64 => $self.x64.as_ref(),
-            $crate::Architecture::X86 => $self.x86.as_ref(),
-        }.and_then(|cfg| cfg.$field.as_ref())
-    }};
-
-    ($self:ident.$field:ident as mut) => {
-        arch_field!($crate::Architecture::ARCH => $self.$field as mut)
-    };
-
-    ($arch:expr => $self:ident.$field:ident as mut) => {{
-        match $arch {
-            $crate::Architecture::Arm64 => $self.arm64.as_mut(),
-            $crate::Architecture::X64 => $self.x64.as_mut(),
-            $crate::Architecture::X86 => $self.x86.as_mut(),
-        }.and_then(|cfg| cfg.$field.as_mut())
-    }};
-}
-
-pub use arch_config;
-pub use arch_field;
+pub(crate) use arch_config;
+pub(crate) use arch_field;
 
 use self::models::manifest::{
     self, AliasArray, AutoupdateArchitecture, AutoupdateConfig, HashExtraction,
