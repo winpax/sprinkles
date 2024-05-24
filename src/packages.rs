@@ -2,6 +2,7 @@
 
 use std::{path::Path, time::SystemTimeError};
 
+use chrono::{DateTime, FixedOffset};
 use gix::{object::tree::diff::Action, traverse::commit::simple::Sorting};
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
@@ -16,10 +17,10 @@ use crate::{
     git::{
         self,
         errors::{self, GitoxideError},
+        parity::Signature,
         Repo,
     },
     hacks::let_chain,
-    wrappers::author::Author,
     Architecture,
 };
 
@@ -748,8 +749,7 @@ impl Manifest {
     pub fn last_updated_info(
         &self,
         ctx: &impl ScoopContext<config::Scoop>,
-        hide_emails: bool,
-    ) -> Result<(Option<String>, Option<String>)> {
+    ) -> Result<(Option<DateTime<FixedOffset>>, Option<Signature>)> {
         let bucket = Bucket::from_name(ctx, &self.bucket)?;
 
         let repo = Repo::from_bucket(&bucket)?;
@@ -825,13 +825,9 @@ impl Manifest {
         .to_datetime()
         .ok_or(Error::InvalidTime)?;
 
-        let author_wrapped = Author::from(updated_commit.author().map_err(git::Error::from)?)
-            .with_show_emails(!hide_emails);
+        let author_wrapped = Signature::from(updated_commit.author().map_err(git::Error::from)?);
 
-        Ok((
-            Some(date_time.to_string()),
-            Some(author_wrapped.to_string()),
-        ))
+        Ok((Some(date_time), Some(author_wrapped)))
     }
 
     /// Get [`InstallManifest`] for [`Manifest`]
