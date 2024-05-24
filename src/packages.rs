@@ -1,17 +1,12 @@
 //! Scoop package helpers
 
-use std::{
-    path::Path,
-    time::{SystemTimeError, UNIX_EPOCH},
-};
+use std::{path::Path, time::SystemTimeError};
 
-use chrono::{DateTime, Local};
 use gix::{object::tree::diff::Action, traverse::commit::simple::Sorting};
-use quork::traits::truthy::ContainsTruth as _;
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use strum::Display;
 
 use crate::{
@@ -24,7 +19,7 @@ use crate::{
         Repo,
     },
     hacks::let_chain,
-    wrappers::{author::Author, time::NicerTime},
+    wrappers::author::Author,
     Architecture,
 };
 
