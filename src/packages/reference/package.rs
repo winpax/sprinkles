@@ -8,8 +8,8 @@ use crate::{
     buckets::Bucket,
     config,
     contexts::ScoopContext,
+    hacks::let_chain,
     handles::{self, packages::PackageHandle},
-    let_chain,
     packages::{CreateManifest, Manifest},
     requests::Client,
 };

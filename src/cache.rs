@@ -14,8 +14,8 @@ use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use crate::{
+    hacks::let_chain,
     hash::{url_ext::UrlExt, Hash, HashType},
-    let_chain,
     packages::{models::manifest::TOrArrayOfTs, Manifest},
     progress,
     requests::ClientLike,

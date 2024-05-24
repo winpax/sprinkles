@@ -21,7 +21,7 @@ pub mod config;
 pub mod contexts;
 pub mod git;
 #[doc(hidden)]
-pub mod hacks;
+mod hacks;
 pub mod handles;
 #[cfg(feature = "manifest-hashes")]
 pub mod hash;

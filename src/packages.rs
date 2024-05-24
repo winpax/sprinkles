@@ -23,7 +23,7 @@ use crate::{
         errors::{self, GitoxideError},
         Repo,
     },
-    let_chain,
+    hacks::let_chain,
     wrappers::{author::Author, time::NicerTime},
     Architecture,
 };

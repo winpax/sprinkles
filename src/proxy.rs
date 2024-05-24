@@ -2,7 +2,7 @@
 
 use std::{net::AddrParseError, num::ParseIntError, str::FromStr};
 
-use crate::let_chain;
+use crate::hacks::let_chain;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
