@@ -22,7 +22,8 @@ impl DownloadUrl {
 
     #[must_use]
     /// Create a new download URL from a string
-    pub fn from_string(url: String) -> Self {
+    pub fn from_string(url: impl Into<String>) -> Self {
+        let url = url.into();
         if let Some((url, file_name)) = url.split_once("#/") {
             Self {
                 url: url.to_string(),
@@ -34,6 +35,12 @@ impl DownloadUrl {
                 file_name: None,
             }
         }
+    }
+
+    #[must_use]
+    /// Get the download url as a string
+    pub fn as_str(&self) -> &str {
+        self.url.as_str()
     }
 
     #[must_use]
@@ -70,6 +77,18 @@ impl DownloadUrl {
         } else {
             file_name
         }
+    }
+
+    #[must_use]
+    /// Get the full download url, including the file name segment
+    pub fn full_url(&self) -> String {
+        let mut url = self.as_str().to_string();
+        if let Some(file_name) = &self.file_name {
+            url.push_str("#/");
+            url.push_str(file_name);
+        }
+
+        url
     }
 }
 
