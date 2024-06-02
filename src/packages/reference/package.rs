@@ -164,6 +164,33 @@ impl Reference {
         manifest
     }
 
+    /// Find the first installed manifest for the package
+    ///
+    /// # Errors
+    /// - If the package is not installed
+    /// - Package was missing a name
+    /// - Listing the installed apps failed
+    pub fn first_installed(
+        &self,
+        ctx: &impl ScoopContext<config::Scoop>,
+    ) -> Result<Manifest, Error> {
+        let installed_apps = ctx.installed_apps()?;
+
+        let app_path = installed_apps.into_iter().find(|path| {
+            self.name().is_some_and(|name| {
+                path.file_name()
+                    .map(|f| f.to_string_lossy().to_string())
+                    .is_some_and(|file_name| file_name == name)
+            })
+        });
+
+        if let Some(app_path) = app_path {
+            Ok(Manifest::from_path(app_path)?)
+        } else {
+            Err(Error::MissingInstalledApp)
+        }
+    }
+
     #[must_use]
     /// Find the first matching manifest in local buckets
     ///

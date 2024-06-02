@@ -30,6 +30,8 @@ pub enum Error {
     Serde(#[from] serde_json::Error),
     #[error("Buckets error: {0}")]
     Buckets(#[from] buckets::Error),
+    #[error("Could not find installed app matching the package reference")]
+    MissingInstalledApp,
 }
 
 pub mod manifest;
