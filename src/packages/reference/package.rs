@@ -200,7 +200,9 @@ impl Reference {
     ) -> Result<Manifest, Error> {
         let app_path = self.first_installed_path(ctx)?;
 
-        Ok(Manifest::from_path(app_path)?)
+        Ok(Manifest::from_path(
+            app_path.join("current").join("manifest.json"),
+        )?)
     }
 
     #[must_use]
