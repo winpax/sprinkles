@@ -138,7 +138,7 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     /// Get the path to the log directory
     fn logging_dir(&self) -> std::io::Result<PathBuf>;
 
-    /// List all scoop apps and return their paths
+    /// List all scoop apps and return their paths, except for the context's app
     fn installed_apps(&self) -> std::io::Result<Vec<PathBuf>> {
         #[cfg(feature = "parallel")]
         use rayon::prelude::*;
