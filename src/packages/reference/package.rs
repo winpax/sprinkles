@@ -170,10 +170,10 @@ impl Reference {
     /// - If the package is not installed
     /// - Package was missing a name
     /// - Listing the installed apps failed
-    pub fn first_installed(
+    pub fn first_installed_path(
         &self,
         ctx: &impl ScoopContext<config::Scoop>,
-    ) -> Result<Manifest, Error> {
+    ) -> Result<PathBuf, Error> {
         let installed_apps = ctx.installed_apps()?;
 
         let app_path = installed_apps.into_iter().find(|path| {
@@ -184,11 +184,23 @@ impl Reference {
             })
         });
 
-        if let Some(app_path) = app_path {
-            Ok(Manifest::from_path(app_path)?)
-        } else {
-            Err(Error::MissingInstalledApp)
-        }
+        app_path.ok_or(Error::MissingInstalledApp)
+    }
+
+    /// Find the first installed manifest for the package
+    ///
+    /// # Errors
+    /// - If the package is not installed
+    /// - Failed to parse the manifest
+    /// - Package was missing a name
+    /// - Listing the installed apps failed
+    pub fn first_installed(
+        &self,
+        ctx: &impl ScoopContext<config::Scoop>,
+    ) -> Result<Manifest, Error> {
+        let app_path = self.first_installed_path(ctx)?;
+
+        Ok(Manifest::from_path(app_path)?)
     }
 
     #[must_use]
