@@ -1,17 +1,13 @@
 //! Scoop package helpers
 
-use std::{
-    path::Path,
-    time::{SystemTimeError, UNIX_EPOCH},
-};
+use std::{path::Path, time::SystemTimeError};
 
-use chrono::{DateTime, Local};
+use chrono::{DateTime, FixedOffset};
 use gix::{object::tree::diff::Action, traverse::commit::simple::Sorting};
-use quork::traits::truthy::ContainsTruth as _;
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use strum::Display;
 
 use crate::{
@@ -21,10 +17,10 @@ use crate::{
     git::{
         self,
         errors::{self, GitoxideError},
+        parity::Signature,
         Repo,
     },
     hacks::let_chain,
-    wrappers::{author::Author, time::NicerTime},
     Architecture,
 };
 
@@ -155,124 +151,6 @@ use self::models::manifest::{
     self, AliasArray, AutoupdateArchitecture, AutoupdateConfig, HashExtraction,
     HashExtractionOrArrayOfHashExtractions, ManifestArchitecture,
 };
-
-#[derive(Debug, Serialize)]
-/// Minimal package info
-pub struct MinInfo {
-    /// The name of the package
-    pub name: String,
-    /// The version of the package
-    pub version: String,
-    /// The package's source (eg. bucket name)
-    pub source: String,
-    /// The last time the package was updated
-    pub updated: NicerTime<Local>,
-    /// The package's notes
-    pub notes: String,
-}
-
-impl MinInfo {
-    /// Parse minmal package info for every installed app
-    ///
-    /// # Errors
-    /// - Invalid file names
-    /// - File metadata errors
-    /// - Invalid time
-    pub fn list_installed(
-        ctx: &impl ScoopContext<config::Scoop>,
-        bucket: Option<&String>,
-    ) -> Result<Vec<Self>> {
-        let apps = ctx.installed_apps()?;
-
-        {
-            cfg_if::cfg_if! {
-                if #[cfg(feature = "parallel")] {
-                    apps.par_iter()
-                } else {
-                    apps.iter()
-                }
-            }
-        }
-        .map(Self::from_path)
-        .filter(|package| {
-            if let Ok(pkg) = package {
-                if let Some(bucket) = bucket {
-                    return &pkg.source == bucket;
-                }
-            }
-            // Keep errors so that the following line will return the error
-            true
-        })
-        .collect()
-    }
-
-    /// Parse minimal package into from a given path
-    ///
-    /// # Errors
-    /// - Invalid file names
-    /// - File metadata errors
-    /// - Invalid time
-    ///
-    /// # Panics
-    /// - Date time invalid or out of range
-    pub fn from_path(path: impl AsRef<Path>) -> Result<Self> {
-        let path = path.as_ref();
-
-        let package_name = path
-            .file_name()
-            .map(|f| f.to_string_lossy())
-            .ok_or(Error::MissingFileName)?;
-
-        let updated_time = {
-            let updated = {
-                let updated_sys = path.metadata()?.modified()?;
-
-                updated_sys.duration_since(UNIX_EPOCH)?.as_secs()
-            };
-
-            #[allow(clippy::cast_possible_wrap)]
-            DateTime::from_timestamp(updated as i64, 0)
-                .expect("invalid or out-of-range datetime")
-                .with_timezone(&Local)
-        };
-
-        let app_current = path.join("current");
-
-        let (manifest_broken, manifest) =
-            if let Ok(manifest) = Manifest::from_path(app_current.join("manifest.json")) {
-                (false, manifest)
-            } else {
-                (true, Manifest::default())
-            };
-
-        let (install_manifest_broken, install_manifest) = if let Ok(install_manifest) =
-            InstallManifest::from_path(app_current.join("install.json"))
-        {
-            (false, install_manifest)
-        } else {
-            (true, InstallManifest::default())
-        };
-
-        let broken = manifest_broken || install_manifest_broken;
-
-        let mut notes = vec![];
-
-        if broken {
-            notes.push("Install failed".to_string());
-        }
-        if install_manifest.hold.contains_truth() {
-            notes.push("Held package".to_string());
-        }
-
-        Ok(Self {
-            name: package_name.to_string(),
-            version: manifest.version.to_string(),
-            source: install_manifest.get_source(),
-            updated: updated_time.into(),
-            notes: notes.join(", "),
-        })
-    }
-}
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -871,8 +749,7 @@ impl Manifest {
     pub fn last_updated_info(
         &self,
         ctx: &impl ScoopContext<config::Scoop>,
-        hide_emails: bool,
-    ) -> Result<(Option<String>, Option<String>)> {
+    ) -> Result<(Option<DateTime<FixedOffset>>, Option<Signature>)> {
         let bucket = Bucket::from_name(ctx, &self.bucket)?;
 
         let repo = Repo::from_bucket(&bucket)?;
@@ -948,13 +825,9 @@ impl Manifest {
         .to_datetime()
         .ok_or(Error::InvalidTime)?;
 
-        let author_wrapped = Author::from(updated_commit.author().map_err(git::Error::from)?)
-            .with_show_emails(!hide_emails);
+        let author_wrapped = Signature::from(updated_commit.author().map_err(git::Error::from)?);
 
-        Ok((
-            Some(date_time.to_string()),
-            Some(author_wrapped.to_string()),
-        ))
+        Ok((Some(date_time), Some(author_wrapped)))
     }
 
     /// Get [`InstallManifest`] for [`Manifest`]
