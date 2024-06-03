@@ -120,7 +120,7 @@ impl<'a, C: ScoopContext<config::Scoop>> PackageHandle<'a, C> {
     #[must_use]
     /// Get the package's persist directory
     pub fn persist_dir(&self) -> PathBuf {
-        self.ctx.persist_path().join(self.name())
+        self.ctx.persist_path().join(unsafe { self.name() })
     }
 
     #[must_use]
@@ -191,8 +191,15 @@ impl<'a, C: ScoopContext<config::Scoop>> PackageHandle<'a, C> {
 
     #[must_use]
     /// Get the package's name
-    pub fn name(&self) -> &str {
-        &self.remote_manifest.name
+    ///
+    /// # Safety
+    /// This field is manually set in the remote manifest, and by default is uninitialized. This may cause undefined behavior.
+    ///
+    /// Use [`Manifest::name_opt`] or,
+    /// to ensure that this function returns properly, use the [`CreateManifest`] trait to set the name,
+    /// or create the manifest, rather than other methods that might fail to set the name.
+    pub unsafe fn name(&self) -> &str {
+        unsafe { self.remote_manifest.name() }
     }
 
     #[must_use]
