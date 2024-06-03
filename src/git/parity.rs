@@ -32,7 +32,6 @@ impl From<gix::actor::Signature> for Signature {
 }
 
 impl Signature {
-    #[must_use]
     /// Return a wrapper around the signature that can be formatted
     pub fn display(&self) -> SignatureDisplay<'_> {
         SignatureDisplay {
@@ -43,6 +42,7 @@ impl Signature {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
+#[must_use = "This is a display wrapper. It does nothing unless used in formatting"]
 /// Display implementation for [`Signature`]
 pub struct SignatureDisplay<'a> {
     sig: &'a Signature,
@@ -50,7 +50,6 @@ pub struct SignatureDisplay<'a> {
 }
 
 impl<'a> SignatureDisplay<'a> {
-    #[must_use]
     /// Show the email address of the signature
     pub fn show_emails(mut self) -> Self {
         self.show_emails = true;
