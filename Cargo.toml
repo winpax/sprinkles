@@ -106,7 +106,7 @@ strum = { version = "0.26", features = ["derive"] }
 sxd-document = { version = "0.3", optional = true }
 sxd-xpath = { version = "0.4", optional = true }
 thiserror = "1.0"
-tokio = { version = "1.37", features = ["fs", "macros", "process", "time"] }
+tokio = { version = "1.37", features = ["process"] }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 url = { version = "2.5", features = ["serde"], optional = true }
 urlencoding = { version = "2.1", optional = true }
