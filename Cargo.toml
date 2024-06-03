@@ -72,7 +72,6 @@ chrono = { version = "0.4", features = [
     "std",
 ], default-features = false }
 clap = { version = "4.5", optional = true }
-console = "0.15"
 const_format = "0.2"
 derive_more = "0.99"
 digest = { version = "0.10", features = ["std"], optional = true }
@@ -135,6 +134,7 @@ reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"
+tokio = { version = "1.37", features = ["macros", "process"] }
 
 [build-dependencies]
 heck = "0.5"
