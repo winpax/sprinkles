@@ -445,7 +445,7 @@ where
 
 impl CreateManifest for Manifest {
     fn with_name(mut self, path: impl AsRef<Path>) -> Self {
-        self.name = path
+        let name = path
             .as_ref()
             .with_extension("")
             .file_name()
@@ -453,16 +453,25 @@ impl CreateManifest for Manifest {
             .expect("File to have file name")
             .to_string();
 
+        if name == "manifest" || name == "install" {
+            let mut path_buf = path.as_ref().to_path_buf();
+            path_buf.pop();
+        }
+
+        self.set_name(name);
+
         self
     }
 
     fn with_bucket(mut self, path: impl AsRef<Path>) -> Self {
-        self.bucket = path
+        if let Some(bucket) = path
             .as_ref()
             .parent()
             .and_then(|p| p.parent())
             .and_then(|bucket| bucket.file_name().map(|f| f.to_string_lossy().to_string()))
-            .unwrap_or_default();
+        {
+            self.set_bucket(bucket);
+        }
 
         self
     }
@@ -470,13 +479,14 @@ impl CreateManifest for Manifest {
 
 impl CreateManifest for InstallManifest {
     fn with_name(mut self, path: impl AsRef<Path>) -> Self {
-        self.name = path
+        if let Some(name) = path
             .as_ref()
             .with_extension("")
             .file_name()
             .map(|f| f.to_string_lossy())
-            .expect("File to have name")
-            .to_string();
+        {
+            self.set_name(name);
+        }
 
         self
     }
@@ -571,7 +581,7 @@ impl Manifest {
     #[must_use]
     /// Apply a bucket to a manifest
     pub fn with_bucket(mut self, bucket: &Bucket) -> Self {
-        self.bucket = bucket.name().to_string();
+        self.set_bucket(bucket.name());
 
         self
     }
@@ -653,10 +663,11 @@ impl Manifest {
         }
         .map(|path| {
             Self::from_path(path.join("current/manifest.json")).and_then(|mut manifest| {
-                manifest.name = path
-                    .file_name()
-                    .map(|f| f.to_string_lossy().to_string())
-                    .ok_or(Error::MissingFileName)?;
+                manifest.set_name(
+                    path.file_name()
+                        .map(|f| f.to_string_lossy().to_string())
+                        .ok_or(Error::MissingFileName)?,
+                );
 
                 Ok(manifest)
             })
@@ -671,7 +682,7 @@ impl Manifest {
         ctx: &impl ScoopContext<config::Scoop>,
         bucket: Option<&str>,
     ) -> bool {
-        is_installed(ctx, &self.name, bucket)
+        is_installed(ctx, unsafe { self.name() }, bucket)
     }
 
     fn update_field<T>(
@@ -805,11 +816,13 @@ impl Manifest {
 
         // todo!()
 
-        let workspace_manifest_path = ctx.workspace_path().join(format!("{}.json", self.name));
+        let workspace_manifest_path = ctx
+            .workspace_path()
+            .join(format!("{}.json", unsafe { self.name() }));
         serde_json::to_writer_pretty(std::fs::File::create(workspace_manifest_path)?, &self)
             .map_err(|e| {
                 error!("Failed to write workspace manifest: {e}");
-                Error::ParsingManifest(self.name.to_string(), e)
+                Error::ParsingManifest(unsafe { self.name() }.to_string(), e)
             })?;
 
         Ok(())
@@ -819,7 +832,10 @@ impl Manifest {
     /// Check if the commit's message matches the name of the manifest
     pub fn commit_message_matches(&self, commit: &gix::Commit<'_>) -> bool {
         if let Ok(message) = commit.message() {
-            message.summary().to_string().starts_with(&self.name)
+            message
+                .summary()
+                .to_string()
+                .starts_with(unsafe { self.name() })
         } else {
             false
         }
@@ -848,7 +864,11 @@ impl Manifest {
             .map_err(GitoxideError::from)?
             .track_filename()
             .for_each_to_obtain_tree(&parent_tree, |change| {
-                if change.location.to_string().starts_with(&self.name) {
+                if change
+                    .location
+                    .to_string()
+                    .starts_with(unsafe { self.name() })
+                {
                     changed = true;
                     return Ok::<_, GitoxideError>(Action::Cancel);
                 }
@@ -873,7 +893,7 @@ impl Manifest {
         ctx: &impl ScoopContext<config::Scoop>,
         hide_emails: bool,
     ) -> Result<(Option<String>, Option<String>)> {
-        let bucket = Bucket::from_name(ctx, &self.bucket)?;
+        let bucket = Bucket::from_name(ctx, unsafe { self.bucket() })?;
 
         let repo = Repo::from_bucket(&bucket)?;
         let gitoxide = repo.gitoxide();
@@ -913,7 +933,11 @@ impl Manifest {
                             debug!("{change:?}");
                             debug!("Filename: {}", change.location.to_string());
 
-                            if change.location.to_string().starts_with(&self.name) {
+                            if change
+                                .location
+                                .to_string()
+                                .starts_with(unsafe { self.name() })
+                            {
                                 matches = true;
                                 Ok::<_, Error>(Action::Cancel)
                             } else {
@@ -967,7 +991,7 @@ impl Manifest {
     ) -> Result<InstallManifest> {
         let apps_path = ctx.apps_path();
         let install_path = apps_path
-            .join(&self.name)
+            .join(unsafe { self.name() })
             .join("current")
             .join("install.json");
 
@@ -1109,19 +1133,19 @@ mod tests {
             .into_par_iter()
             .flat_map(|bucket| bucket.list_packages())
             .flatten()
-            .filter(|manifest| !UNSUPPORTED_PACKAGES.contains(&manifest.name.as_str()))
+            .filter(|manifest| !UNSUPPORTED_PACKAGES.contains(&unsafe { manifest.name() }))
             .filter(|manifest| manifest.autoupdate_config(Architecture::ARCH).is_some())
             .collect::<Vec<_>>();
 
         manifests.par_iter().for_each(|manifest| {
-            assert!(!manifest.name.is_empty());
-            assert!(!manifest.bucket.is_empty());
+            assert!(!unsafe { manifest.name() }.is_empty());
+            assert!(!unsafe { manifest.bucket() }.is_empty());
 
             if let Some(autoupdate_config) = &manifest.autoupdate_config(Architecture::ARCH) {
                 assert!(
                     autoupdate_config.url.is_some(),
                     "URL is missing in package: {}",
-                    manifest.name
+                    unsafe { manifest.name() }
                 );
             }
         });

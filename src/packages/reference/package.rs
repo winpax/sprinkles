@@ -142,7 +142,7 @@ impl Reference {
                 _ => unreachable!(),
             };
 
-            manifest.name = self.name().ok_or(Error::MissingAppName)?;
+            manifest.set_name(self.name().ok_or(Error::MissingAppName)?);
 
             Ok(manifest)
         } else if let Some(bucket_name) = self.bucket() {

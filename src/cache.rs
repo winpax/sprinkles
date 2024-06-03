@@ -204,7 +204,7 @@ impl Handle {
         manifest: &Manifest,
         arch: Architecture,
     ) -> Result<Vec<Self>, Error> {
-        let name = &manifest.name;
+        let name = unsafe { manifest.name() };
         let version = &manifest.version;
 
         let download_urls = manifest
