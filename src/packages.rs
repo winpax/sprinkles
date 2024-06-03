@@ -891,15 +891,10 @@ pub fn is_installed(
         .join(manifest_name)
         .join("current/install.json");
 
-    match InstallManifest::from_path(install_path) {
-        Ok(manifest) => {
-            if let Some(bucket) = bucket {
-                manifest.get_source() == bucket.as_ref()
-            } else {
-                false
-            }
-        }
-        Err(_) => false,
+    if let Some(bucket) = bucket {
+        matches!(InstallManifest::from_path(install_path), Ok(manifest) if manifest.get_source() == bucket.as_ref())
+    } else {
+        install_path.exists()
     }
 }
 
