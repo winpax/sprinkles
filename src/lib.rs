@@ -32,7 +32,6 @@ pub mod requests;
 pub mod scripts;
 pub mod shell;
 pub mod version;
-pub mod wrappers;
 
 mod env;
 

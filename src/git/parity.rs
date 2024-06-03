@@ -2,22 +2,29 @@
 
 use chrono::{DateTime, FixedOffset};
 
+#[derive(Clone, PartialEq, Eq)]
 /// A wrapper around a git signature that supports git2 and gitoxide
-pub enum Signature<'a> {
+pub enum Signature {
     /// A git2 signature
-    Git2(git2::Signature<'a>),
+    Git2(git2::Signature<'static>),
     /// A gitoxide signature
-    Gitoxide(gix::actor::SignatureRef<'a>),
+    Gitoxide(gix::actor::Signature),
 }
 
-impl<'a> From<git2::Signature<'a>> for Signature<'a> {
+impl<'a> From<git2::Signature<'a>> for Signature {
     fn from(signature: git2::Signature<'a>) -> Self {
-        Self::Git2(signature)
+        Self::Git2(signature.to_owned())
     }
 }
 
-impl<'a> From<gix::actor::SignatureRef<'a>> for Signature<'a> {
-    fn from(signature: gix::actor::SignatureRef<'a>) -> Self {
+impl From<gix::actor::SignatureRef<'_>> for Signature {
+    fn from(signature: gix::actor::SignatureRef<'_>) -> Self {
+        Self::Gitoxide(signature.to_owned())
+    }
+}
+
+impl From<gix::actor::Signature> for Signature {
+    fn from(signature: gix::actor::Signature) -> Self {
         Self::Gitoxide(signature)
     }
 }
@@ -81,7 +88,7 @@ impl Commit<'_> {
     }
 
     /// Get the author of the commit
-    pub fn author(&self) -> Option<Signature<'_>> {
+    pub fn author(&self) -> Option<Signature> {
         match self {
             Commit::Git2(commit) => Some(commit.author().into()),
             Commit::Gitoxide(commit) => commit.author().ok().map(Into::into),
