@@ -445,20 +445,23 @@ where
 
 impl CreateManifest for Manifest {
     fn with_name(mut self, path: impl AsRef<Path>) -> Self {
-        let name = path
-            .as_ref()
-            .with_extension("")
-            .file_name()
-            .map(|f| f.to_string_lossy())
-            .expect("File to have file name")
-            .to_string();
+        let ext_stripped = path.as_ref().with_extension("");
 
-        if name == "manifest" || name == "install" {
-            let mut path_buf = path.as_ref().to_path_buf();
-            path_buf.pop();
+        let name = ext_stripped.file_name().map(|f| f.to_string_lossy());
+
+        if let Some(name) = name {
+            if name == "manifest" || name == "install" {
+                let mut path_buf = path.as_ref().to_path_buf();
+
+                if path_buf.pop() && path_buf.pop() {
+                    if let Some(name) = path_buf.file_name() {
+                        self.set_name(name.to_string_lossy());
+                    }
+                }
+            }
+
+            self.set_name(name);
         }
-
-        self.set_name(name);
 
         self
     }
