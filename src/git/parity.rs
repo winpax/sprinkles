@@ -1,5 +1,7 @@
 //! Helpers to maintain parity between git2 and gitoxide during the transition
 
+use std::fmt::Display;
+
 use chrono::{DateTime, FixedOffset};
 
 #[derive(Clone, PartialEq, Eq)]
@@ -26,6 +28,56 @@ impl From<gix::actor::SignatureRef<'_>> for Signature {
 impl From<gix::actor::Signature> for Signature {
     fn from(signature: gix::actor::Signature) -> Self {
         Self::Gitoxide(signature)
+    }
+}
+
+impl Signature {
+    #[must_use]
+    /// Return a wrapper around the signature that can be formatted
+    pub fn display(&self) -> SignatureDisplay<'_> {
+        SignatureDisplay {
+            sig: self,
+            show_emails: false,
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+/// Display implementation for [`Signature`]
+pub struct SignatureDisplay<'a> {
+    sig: &'a Signature,
+    show_emails: bool,
+}
+
+impl<'a> SignatureDisplay<'a> {
+    #[must_use]
+    /// Show the email address of the signature
+    pub fn show_emails(mut self) -> Self {
+        self.show_emails = true;
+        self
+    }
+}
+
+impl<'a> Display for SignatureDisplay<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name = match self.sig {
+            Signature::Git2(sig) => sig.name().map(std::string::ToString::to_string),
+            Signature::Gitoxide(sig) => Some(sig.name.to_string()),
+        }
+        .expect("name is always set");
+
+        let email = match self.sig {
+            Signature::Git2(sig) => sig.email().map(std::string::ToString::to_string),
+            Signature::Gitoxide(sig) => Some(sig.email.to_string()),
+        };
+
+        if self.show_emails {
+            if let Some(email) = email {
+                return write!(f, "{name} <{email}>");
+            }
+        }
+
+        write!(f, "{name}")
     }
 }
 
