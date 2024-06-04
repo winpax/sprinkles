@@ -9,6 +9,10 @@
 )]
 #![allow(clippy::module_name_repetitions)]
 
+// Ensure supported environment
+#[cfg(all(not(docsrs), not(windows)))]
+compile_error!("Only windows is supported");
+
 use std::{fmt, str::FromStr};
 
 use quork::traits::list::ListVariants;
@@ -20,8 +24,6 @@ pub mod cache;
 pub mod config;
 pub mod contexts;
 pub mod git;
-#[doc(hidden)]
-mod hacks;
 pub mod handles;
 #[cfg(feature = "manifest-hashes")]
 pub mod hash;
@@ -34,31 +36,12 @@ pub mod shell;
 pub mod version;
 
 mod env;
-
-#[doc(hidden)]
-pub mod __versions {
-    //! Version information
-
-    /// Sprinkles library version
-    pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-
-    #[must_use]
-    /// Get the git2 library version
-    pub fn git2_version() -> git2::Version {
-        git2::Version::get()
-    }
-}
+mod hacks;
 
 #[macro_use]
 extern crate log;
 
 use contexts::Error;
-
-/// Ensure supported environment
-mod const_assertions {
-    #[cfg(all(not(docsrs), not(windows)))]
-    compile_error!("Only windows is supported");
-}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, ListVariants)]
 /// Supported architectures

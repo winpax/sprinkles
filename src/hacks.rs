@@ -1,7 +1,7 @@
 #![allow(clippy::single_component_path_imports)]
 
 #[macro_use]
-mod hack_macros {
+mod hackros {
     #[allow(unused_macros)]
     macro_rules! inline_const {
         ($type:tt $expr:expr) => {{
