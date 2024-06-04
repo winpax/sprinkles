@@ -18,6 +18,8 @@ use std::{fmt, str::FromStr};
 use quork::traits::list::ListVariants;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "aria2")]
+pub mod aria;
 pub mod buckets;
 #[cfg(feature = "manifest-hashes")]
 pub mod cache;

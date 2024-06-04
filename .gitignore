@@ -10,3 +10,6 @@ logs/
 *-export.json
 
 .env
+
+# Clangd files
+.clangd
