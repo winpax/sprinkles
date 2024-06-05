@@ -9,9 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Enable `tokio/fs` feature under `manifest-hashes` feature
+
+## [0.15.1]
+
+### Fixed
+
 - Cargo packaging
 - Builds without default features
-- Enable `tokio/fs` feature under `manifest-hashes` feature
 
 ### Added
 
@@ -19,4 +24,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For older version's changelogs, see the [releases](https://github.com/winpax/sprinkles/releases) page.
 
-[Unreleased]: https://github.com/winpax/sfsu/compare/v1.13.4...HEAD
+[Unreleased]: https://github.com/winpax/sfsu/compare/v0.15.1...HEAD
+[0.15.1]: https://github.com/winpax/sprinkles/releases/tag/v0.15.1
