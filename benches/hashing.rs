@@ -1,3 +1,5 @@
+#![cfg(feature = "manifest-hashes")]
+
 const SCRIPT: &str = r#"$basename = $url.split('/')[-1]
 $basenameNoExt = $basename.split('.')[0]
 $version = $basenameNoExt.split('_')[-1]

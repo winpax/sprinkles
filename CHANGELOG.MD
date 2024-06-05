@@ -2,5 +2,6 @@
 
 - Fixed cargo packaging
 - Add hasing algorithm benchmarks
+- Fix builds without default features
 
 For older version's changelogs, see the [releases](https://github.com/winpax/sprinkles/releases) page.

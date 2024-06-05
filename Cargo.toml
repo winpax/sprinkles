@@ -148,6 +148,7 @@ reqwest = { version = "0.12", default-features = false }
 [dev-dependencies]
 anyhow = "1.0"
 criterion = { version = "0.5.1", features = ["html_reports", "tokio"] }
+rayon = "1.10"
 tokio = { version = "1.37", features = ["macros", "process"] }
 
 [build-dependencies]
