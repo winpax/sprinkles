@@ -54,6 +54,10 @@ fn sha256_hash_reader(mut input: impl BufRead) -> String {
 
     loop {
         let data_len = if let Ok(data) = input.fill_buf() {
+            if data.is_empty() {
+                break;
+            }
+
             hasher.update(data);
 
             data.len()
@@ -73,6 +77,10 @@ fn blake3_hash_reader(mut input: impl BufRead) -> String {
 
     loop {
         let data_len = if let Ok(data) = input.fill_buf() {
+            if data.is_empty() {
+                break;
+            }
+
             hasher.update(data);
 
             data.len()
