@@ -57,13 +57,28 @@ impl<'a> CacheFile<'a> {
     }
 
     #[must_use]
+    #[cfg_attr(feature = "v1", deprecated)]
     /// Get the cache file name using the legacy format
     pub fn filename_legacy(&self) -> String {
         let mut file_name = self.name.to_string();
         file_name += "#";
         file_name += self.version.as_str();
         file_name += "#";
-        file_name += &PathBuf::from(self.url).display().to_string();
+
+        let url_path = {
+            let mut url_path = PathBuf::from(self.url);
+
+            if let Some(file_name) = self.url.file_name.as_ref() {
+                let file_name = PathBuf::from(file_name);
+                if let Some(extension) = file_name.extension().map(ToOwned::to_owned) {
+                    url_path.set_extension(extension);
+                }
+            }
+
+            url_path
+        };
+
+        file_name += &url_path.display().to_string();
 
         file_name
     }
@@ -83,11 +98,13 @@ impl<'a> CacheFile<'a> {
             &format!("{:x}", hasher.finalize())[0..7]
         };
 
-        let extension = {
-            let path = PathBuf::from(self.url);
-
-            path.extension().map(ToOwned::to_owned)
-        };
+        let extension = if let Some(dest_path) = self.url.file_name.as_ref() {
+            PathBuf::from(dest_path)
+        } else {
+            PathBuf::from(self.url)
+        }
+        .extension()
+        .map(ToOwned::to_owned);
 
         let mut file_name = String::new();
 
@@ -450,5 +467,33 @@ mod tests {
         let file = CacheFile::new("sfsu", &version, &url);
 
         assert_eq!(file.filename_legacy(), "sfsu#1.13.3#https_github.com_jewlexx_sfsu_releases_download_v1.13.3_sfsu-x86_64.exe_sfsu.exe");
+    }
+
+    #[test]
+    fn test_cache_file_renamed() {
+        use crate::packages::downloading::DownloadUrl;
+
+        let url = DownloadUrl::from_string(
+            "https://archive.mozilla.org/pub/thunderbird/releases/115.11.1/win64/en-US/Thunderbird%20Setup%20115.11.1.exe#/dl.7z",
+        );
+
+        let version = Version::new("115.11.1");
+        let file = CacheFile::new("thunderbird", &version, &url);
+
+        assert_eq!(file.filename(), "thunderbird#115.11.1#c9628b6.7z");
+    }
+
+    #[test]
+    fn test_cache_file_renamed_legacy() {
+        use crate::packages::downloading::DownloadUrl;
+
+        let url = DownloadUrl::from_string(
+            "https://archive.mozilla.org/pub/thunderbird/releases/115.11.1/win64/en-US/Thunderbird%20Setup%20115.11.1.exe#/dl.7z",
+        );
+
+        let version = Version::new("115.11.1");
+        let file = CacheFile::new("thunderbird", &version, &url);
+
+        assert_eq!(file.filename_legacy(), "thunderbird#115.11.1#https_archive.mozilla.org_pub_thunderbird_releases_115.11.1_win64_en-US_Thunderbird_20Setup_20115.11.1.exe_dl.7z");
     }
 }
