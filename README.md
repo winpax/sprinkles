@@ -40,7 +40,7 @@ To generate the file, run the following command (feel free to change the size to
 Install [genfile](https://github.com/winpax/genfile) and run the following command:
 
 ```powershell
-genfile --size 512M -o benches/large-file.bin --random
+genfile --size 512mb -o benches/large-file.bin --random
 ```
 
 ### Linux
