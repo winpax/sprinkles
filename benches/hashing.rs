@@ -19,8 +19,6 @@ $url = "https://github.com/ScoopInstaller/Main/releases/download/v$version/scoop
 $hash = "e2a1c7dd49d547fdfe05fc45f0c9e276cb992bd94af151f0cf7d3e2ecfdc4233"
 "#;
 
-use std::fs::File;
-
 use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion};
 
 #[inline(always)]
