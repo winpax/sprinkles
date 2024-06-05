@@ -11,7 +11,7 @@ use itertools::Itertools as _;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::{hash::Hash, scripts::PowershellScript, version::Version, Architecture};
+use crate::{scripts::PowershellScript, version::Version, Architecture};
 
 #[allow(clippy::unsafe_derive_deserialize)]
 #[skip_serializing_none]
@@ -159,8 +159,9 @@ pub struct InstallConfig {
     pub checkver: Option<Checkver>,
     /// The directories to extract to
     pub extract_dir: Option<StringArray>,
+    #[cfg(feature = "manifest-hashes")]
     /// The hash(es) of the package
-    pub hash: Option<TOrArrayOfTs<Hash>>,
+    pub hash: Option<TOrArrayOfTs<crate::hash::Hash>>,
     /// The installer configuration
     pub installer: Option<Installer>,
     #[deprecated]

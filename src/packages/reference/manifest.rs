@@ -3,7 +3,6 @@
 use std::{fmt, path::PathBuf, str::FromStr};
 
 use itertools::Itertools;
-use url::Url;
 
 use super::{package, Error};
 
@@ -23,7 +22,7 @@ pub enum Reference {
     File(PathBuf),
     #[cfg(feature = "manifest-hashes")]
     /// Manifest reference from url
-    Url(Url),
+    Url(url::Url),
 }
 
 impl Reference {
