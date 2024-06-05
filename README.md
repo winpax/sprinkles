@@ -29,6 +29,26 @@ let apps = ctx.installed_apps().unwrap();
 println!("You have {} apps installed", apps.len());
 ```
 
+## Running Benchmarks
+
+The benchmarks rely on the `large-file.bin` file, which should be a large amount (>100MB) of random data.
+
+To generate the file, run the following command (feel free to change the size to your liking):
+
+### Windows
+
+Install [genfile](https://github.com/winpax/genfile) and run the following command:
+
+```powershell
+genfile --size 512mb -o benches/large-file.bin --random
+```
+
+### Linux
+
+```bash
+dd if=/dev/urandom of=benches/large-file.bin bs=1M count=512
+```
+
 ## Supported Platforms
 
 I will maintain support for the MSRV mentioned in Cargo.toml, although it may change across a major version.

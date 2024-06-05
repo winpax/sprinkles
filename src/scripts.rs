@@ -21,10 +21,7 @@ use std::{
 
 use tokio::process::Command;
 
-use crate::{
-    config, contexts::ScoopContext, hash::substitutions::Substitute,
-    packages::models::manifest::TOrArrayOfTs,
-};
+use crate::{config, contexts::ScoopContext, packages::models::manifest::TOrArrayOfTs};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -120,7 +117,8 @@ impl From<TOrArrayOfTs<String>> for PowershellScript {
     }
 }
 
-impl Substitute for PowershellScript {
+#[cfg(feature = "manifest-hashes")]
+impl crate::hash::substitutions::Substitute for PowershellScript {
     fn into_substituted(
         mut self,
         params: &crate::hash::substitutions::SubstitutionMap,

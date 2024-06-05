@@ -951,6 +951,7 @@ impl MergeDefaults for Option<&ManifestArchitecture> {
             bin: config.bin.or(default.bin),
             checkver: config.checkver.or(default.checkver),
             extract_dir: config.extract_dir.or(default.extract_dir),
+            #[cfg(feature = "manifest-hashes")]
             hash: config.hash.or(default.hash),
             installer: config.installer.or(default.installer),
             msi: config.msi.or(default.msi),

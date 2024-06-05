@@ -4,6 +4,15 @@ categories = ["api-bindings", "command-line-utilities", "config"]
 description = "A Rust based abstraction layer for Scoop"
 edition = "2021"
 homepage = "https://github.com/winpax/sprinkles"
+include = [
+    "src/**/*",
+    "build.rs",
+    "Cargo.toml",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "README.md",
+    "benches/**/*",
+]
 keywords = ["api", "scoop", "windows", "package", "manager"]
 license = "MIT OR Apache-2.0"
 name = "sprinkles-rs"
@@ -60,6 +69,10 @@ vendored-openssl = ["git2/vendored-openssl"]
 zlib-ng = ["gix/zlib-ng"]
 zlib-ng-compat = ["git2/zlib-ng-compat", "gix/zlib-ng-compat"]
 zlib-stock = ["gix/zlib-stock"]
+
+[[bench]]
+harness = false
+name = "hashing"
 
 [dependencies]
 base64 = { version = "0.22", optional = true }
@@ -134,6 +147,8 @@ reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"
+criterion = { version = "0.5.1", features = ["html_reports", "tokio"] }
+rayon = "1.10"
 tokio = { version = "1.37", features = ["macros", "process"] }
 
 [build-dependencies]
