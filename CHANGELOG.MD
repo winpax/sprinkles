@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Cargo packaging
 - Builds without default features
+- Enable `tokio/fs` feature under `manifest-hashes` feature
 
 ### Added
 
