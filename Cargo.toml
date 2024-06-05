@@ -4,6 +4,15 @@ categories = ["api-bindings", "command-line-utilities", "config"]
 description = "A Rust based abstraction layer for Scoop"
 edition = "2021"
 homepage = "https://github.com/winpax/sprinkles"
+include = [
+    "src/**/*",
+    "build.rs",
+    "Cargo.toml",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "README.md",
+    "benches/**/*",
+]
 keywords = ["api", "scoop", "windows", "package", "manager"]
 license = "MIT OR Apache-2.0"
 name = "sprinkles-rs"

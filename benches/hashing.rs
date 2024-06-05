@@ -103,7 +103,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| blake3_hash(black_box(SCRIPT)))
     });
 
-    const SMALL_FILE_PATH: &str = "benches/sfsu-x86_64-1.14.0-beta.1.exe";
+    const SMALL_FILE_PATH: &str = "bench files/sfsu-x86_64-1.14.0-beta.1.exe";
 
     c.bench_function("sha256 hash small file", |b| {
         b.iter_batched(
@@ -121,7 +121,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         )
     });
 
-    const LARGE_FILE_PATH: &str = "benches/sfsu-x86_64-1.14.0-beta.1.exe";
+    const LARGE_FILE_PATH: &str = "bench files/sfsu-x86_64-1.14.0-beta.1.exe";
 
     c.bench_function("sha256 hash large file", |b| {
         b.iter_batched(
