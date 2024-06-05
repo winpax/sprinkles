@@ -3,7 +3,7 @@ authors = ["Juliette Cordor <professional@maybejules.com>"]
 categories = ["api-bindings", "command-line-utilities", "config"]
 description = "A Rust based abstraction layer for Scoop"
 edition = "2021"
-exclude = ["benches/large-file.bin", "benches/sfsu-x86_64-1.14.0-beta.1.exe"]
+exclude = ["benches/sfsu-x86_64-1.14.0-beta.1.exe"]
 homepage = "https://github.com/winpax/sprinkles"
 include = [
     "src/**/*",
