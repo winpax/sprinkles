@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Enable `tokio/fs` feature under `manifest-hashes` feature
+- Fix cache path extension not being renamed by url segment
 
 ## [0.15.1]
 
