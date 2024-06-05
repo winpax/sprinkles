@@ -51,6 +51,7 @@ manifest-hashes = [
     "tokio-util",
     "url",
     "urlencoding",
+    "tokio/fs",
 ]
 parallel = ["blake3/rayon", "indicatif/rayon", "rayon"]
 parking_lot = ["tokio/parking_lot"]
