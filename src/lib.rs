@@ -37,6 +37,7 @@ pub mod version;
 
 mod env;
 mod hacks;
+mod system;
 
 #[macro_use]
 extern crate log;

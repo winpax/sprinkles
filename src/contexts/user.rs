@@ -123,6 +123,9 @@ impl super::ScoopContext<config::Scoop> for User {
 
     /// Get the path to the log directory
     ///
+    /// By default, this will be the user's "%LocalAppData%/sfsu/logs" directory,
+    /// or, in the case of a debug build, "<current working directory>/logs".
+    ///
     /// # Errors
     /// - Creating the directory fails
     fn logging_dir(&self) -> std::io::Result<PathBuf> {
@@ -130,7 +133,7 @@ impl super::ScoopContext<config::Scoop> for User {
         let logs_path = self.apps_path().join("sfsu").join("current").join("logs");
 
         #[cfg(debug_assertions)]
-        let logs_path = std::env::current_dir()?.join("logs");
+        let logs_path: PathBuf = todo!();
 
         if !logs_path.exists() {
             std::fs::create_dir_all(&logs_path)?;
