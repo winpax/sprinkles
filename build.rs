@@ -57,6 +57,5 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     std::fs::write(out_path.clone() + "/buckets.rs", get_known_buckets()?)?;
 
-
     Ok(())
 }
