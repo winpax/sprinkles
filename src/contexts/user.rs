@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::{config, contexts::Error, git};
+use crate::{config, contexts::Error, git, system::paths::WindowsPath};
 
 #[derive(Debug, Clone)]
 /// User's Scoop install adapter
@@ -77,51 +77,21 @@ impl super::ScoopContext<config::Scoop> for User {
     }
 
     #[must_use]
-    /// Gets the user's scoop apps path
-    fn apps_path(&self) -> PathBuf {
-        self.sub_path("apps")
-    }
-
-    #[must_use]
-    /// Gets the user's scoop buckets path
-    fn buckets_path(&self) -> PathBuf {
-        self.sub_path("buckets")
-    }
-
-    #[must_use]
     /// Gets the user's scoop cache path
     fn cache_path(&self) -> PathBuf {
         if let Some(cache_path) = crate::env::paths::scoop_cache() {
             cache_path
-        } else if let Some(cache_path) = config::Scoop::load()
-            .ok()
-            .and_then(|config| config.cache_path)
-        {
-            cache_path
+        } else if let Some(cache_path) = self.config().cache_path.as_ref() {
+            cache_path.clone()
         } else {
             self.sub_path("cache")
         }
     }
 
-    #[must_use]
-    /// Gets the user's scoop persist path
-    fn persist_path(&self) -> PathBuf {
-        self.sub_path("persist")
-    }
-
-    #[must_use]
-    /// Gets the user's scoop shims path
-    fn shims_path(&self) -> PathBuf {
-        self.sub_path("shims")
-    }
-
-    #[must_use]
-    /// Gets the user's scoop workspace path
-    fn workspace_path(&self) -> PathBuf {
-        self.sub_path("workspace")
-    }
-
     /// Get the path to the log directory
+    ///
+    /// By default, this will be the user's "%LocalAppData%/sfsu/logs" directory,
+    /// or, in the case of a debug build, "<current working directory>/logs".
     ///
     /// # Errors
     /// - Creating the directory fails
@@ -130,7 +100,12 @@ impl super::ScoopContext<config::Scoop> for User {
         let logs_path = self.apps_path().join("sfsu").join("current").join("logs");
 
         #[cfg(debug_assertions)]
-        let logs_path = std::env::current_dir()?.join("logs");
+        let logs_path: PathBuf = WindowsPath::LocalAppData
+            .into_path()
+            .or_else(|| std::env::var("LocalAppData").ok().map(Into::into))
+            .expect("either windows defined local app data or env var `LocalAppData`")
+            .join("sfsu")
+            .join("logs");
 
         if !logs_path.exists() {
             std::fs::create_dir_all(&logs_path)?;
@@ -145,13 +120,6 @@ impl super::ScoopContext<config::Scoop> for User {
     /// - The Scoop app could not be opened as a repository
     fn open_repo(&self) -> Option<git::Result<git::Repo>> {
         Some(git::Repo::scoop_app(self))
-    }
-
-    /// Get the path to the context's app
-    ///
-    /// In the case of the user context, this is the path to the scoop app
-    fn context_app_path(&self) -> PathBuf {
-        self.apps_path().join("scoop").join("current")
     }
 
     /// Check if Scoop is outdated

@@ -107,27 +107,39 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
 
     #[must_use]
     /// Get the contexts's apps path
-    fn apps_path(&self) -> PathBuf;
+    fn apps_path(&self) -> PathBuf {
+        self.sub_path("apps")
+    }
 
     #[must_use]
     /// Get the contexts's buckets path
-    fn buckets_path(&self) -> PathBuf;
+    fn buckets_path(&self) -> PathBuf {
+        self.sub_path("buckets")
+    }
 
     #[must_use]
     /// Get the contexts's cache path
-    fn cache_path(&self) -> PathBuf;
+    fn cache_path(&self) -> PathBuf {
+        self.sub_path("cache")
+    }
 
     #[must_use]
     /// Get the contexts's persist path
-    fn persist_path(&self) -> PathBuf;
+    fn persist_path(&self) -> PathBuf {
+        self.sub_path("persist")
+    }
 
     #[must_use]
     /// Get the contexts's shims path
-    fn shims_path(&self) -> PathBuf;
+    fn shims_path(&self) -> PathBuf {
+        self.sub_path("shims")
+    }
 
     #[must_use]
     /// Get the contexts's workspace path
-    fn workspace_path(&self) -> PathBuf;
+    fn workspace_path(&self) -> PathBuf {
+        self.sub_path("workspace")
+    }
 
     #[must_use]
     /// Get the contexts's scripts path
@@ -185,7 +197,9 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     /// This should return the path to the app's directory, not the repository.
     ///
     /// For example, if the context is the user context, this should return the path to the scoop app
-    fn context_app_path(&self) -> PathBuf;
+    fn context_app_path(&self) -> PathBuf {
+        self.apps_path().join(Self::APP_NAME).join("current")
+    }
 
     /// List all known buckets
     ///
