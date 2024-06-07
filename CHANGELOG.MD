@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- Default logging directory for `User` context implementation is now `%LocalAppData%/sfsu/logs` instead of `<sfsu app path>/logs`
+
 ## [0.15.2]
 
 ### Fixed

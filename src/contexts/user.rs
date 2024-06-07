@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::{config, contexts::Error, git};
+use crate::{config, contexts::Error, git, system::paths::WindowsPath};
 
 #[derive(Debug, Clone)]
 /// User's Scoop install adapter
@@ -133,7 +133,12 @@ impl super::ScoopContext<config::Scoop> for User {
         let logs_path = self.apps_path().join("sfsu").join("current").join("logs");
 
         #[cfg(debug_assertions)]
-        let logs_path: PathBuf = todo!();
+        let logs_path: PathBuf = WindowsPath::LocalAppData
+            .into_path()
+            .or_else(|| std::env::var("LocalAppData").ok().map(Into::into))
+            .expect("either windows defined local app data or env var `LocalAppData`")
+            .join("sfsu")
+            .join("logs");
 
         if !logs_path.exists() {
             std::fs::create_dir_all(&logs_path)?;
