@@ -1,22 +1,43 @@
 [package]
 authors = ["Juliette Cordor <professional@maybejules.com>"]
+categories = ["api-bindings", "command-line-utilities", "config"]
 description = "A Rust based abstraction layer for Scoop"
 edition = "2021"
 homepage = "https://github.com/winpax/sprinkles"
-license = "Apache-2.0"
+include = [
+    "src/**/*",
+    "build.rs",
+    "Cargo.toml",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "README.md",
+    "benches/**/*",
+]
+keywords = ["api", "scoop", "windows", "package", "manager"]
+license = "MIT OR Apache-2.0"
 name = "sprinkles-rs"
 repository = "https://github.com/winpax/sprinkles"
 rust-version = "1.75.0"
-version = "0.13.4"
+version = "0.16.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "sprinkles"
 
+[package.metadata.docs.rs]
+default-target = "x86_64-unknown-linux-gnu"
+features = [
+    "beta",
+    "vendored-libgit2",
+    "vendored-native-tls",
+    "vendored-openssl",
+]
+rustc-args = ["--cfg", "docsrs", "--cfg", "reqwest_unstable"]
+
 [features]
 beta = []
-default = ["manifest-hashes"]
+default = ["manifest-hashes", "parallel"]
 manifest-hashes = [
     "base64",
     "digest",
@@ -30,21 +51,41 @@ manifest-hashes = [
     "tokio-util",
     "url",
     "urlencoding",
+    "tokio/fs",
 ]
+parallel = ["blake3/rayon", "indicatif/rayon", "rayon"]
+parking_lot = ["tokio/parking_lot"]
+rustls-tls = [
+    "gix/blocking-http-transport-reqwest-rust-tls",
+    "reqwest/rustls-tls",
+]
+rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
 v1 = []
+vendored-libgit2 = ["git2/vendored-libgit2"]
+vendored-native-tls = [
+    "gix/blocking-http-transport-reqwest-native-tls",
+    "reqwest/native-tls-vendored",
+]
+vendored-openssl = ["git2/vendored-openssl"]
+zlib-ng = ["gix/zlib-ng"]
+zlib-ng-compat = ["git2/zlib-ng-compat", "gix/zlib-ng-compat"]
+zlib-stock = ["gix/zlib-stock"]
+
+[[bench]]
+harness = false
+name = "hashing"
 
 [dependencies]
 base64 = { version = "0.22", optional = true }
-blake3 = { version = "1.5", features = ["rayon"] }
+blake3 = "1.5"
 bytes = "1.6"
 cfg-if = "1.0"
-chrono = { version = ">=0.4.38", features = [
+chrono = { version = "0.4", features = [
     "clock",
     "serde",
     "std",
 ], default-features = false }
 clap = { version = "4.5", optional = true }
-console = "0.15"
 const_format = "0.2"
 derive_more = "0.99"
 digest = { version = "0.10", features = ["std"], optional = true }
@@ -52,34 +93,21 @@ directories = "5.0"
 dunce = "1.0"
 futures = "0.3"
 getset = { version = "0.1", optional = true }
-git2 = "0.18"
-gix = { version = "0.62.0", features = [
+gix = { version = "0.63", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.42.1"
-indicatif = { version = "0.17", features = [
-    "improved_unicode",
-    "rayon",
-    "tokio",
-] }
+gix-object = "0.42"
+indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.13"
 log = "0.4"
 md-5 = "0.10"
-parking_lot = "0.12.2"
-phf = { version = "0.11.2", default-features = false }
+phf = { version = "0.11", default-features = false }
 quick-xml = { version = "0.31", optional = true, features = ["serialize"] }
 quork = "0.7"
-rayon = "1.10"
+rayon = { version = "1.10", optional = true }
 regex = "1.10"
-reqwest = { version = "0.12", features = [
-    "blocking",
-    "brotli",
-    "deflate",
-    "gzip",
-    "stream",
-] }
 semver = { version = "1.0", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
@@ -91,13 +119,7 @@ strum = { version = "0.26", features = ["derive"] }
 sxd-document = { version = "0.3", optional = true }
 sxd-xpath = { version = "0.4", optional = true }
 thiserror = "1.0"
-tokio = { version = "1.37", features = [
-    "fs",
-    "macros",
-    "parking_lot",
-    "process",
-    "time",
-] }
+tokio = { version = "1.37", features = ["process"] }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 url = { version = "2.5", features = ["serde"], optional = true }
 urlencoding = { version = "2.1", optional = true }
@@ -106,11 +128,29 @@ windows = { version = "0.56", features = [
     "Win32_Storage_FileSystem",
     "Win32_UI_Shell",
 ] }
-windows-version = "0.1"
+
+[target.'cfg(windows)'.dependencies]
 winreg = "0.52"
+
+[target.'cfg(not(docsrs))'.dependencies]
+git2 = "0.18"
+reqwest = { version = "0.12", features = [
+    "blocking",
+    "brotli",
+    "deflate",
+    "gzip",
+    "stream",
+] }
+
+[target.'cfg(docsrs)'.dependencies]
+git2 = { version = "0.18", default-features = false }
+reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"
+criterion = { version = "0.5.1", features = ["html_reports", "tokio"] }
+rayon = "1.10"
+tokio = { version = "1.37", features = ["macros", "process"] }
 
 [build-dependencies]
 heck = "0.5"

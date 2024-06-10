@@ -16,7 +16,6 @@ mod user;
 use futures::Future;
 pub use global::Global;
 pub use user::User;
-use which::which;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -66,7 +65,16 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     /// and to display the context name in the output.
     ///
     /// This string should match what the app's name is in Scoop, if applicable.
-    const CONTEXT_NAME: &'static str;
+    const APP_NAME: &'static str;
+
+    /// The name of the context
+    ///
+    /// This should be the actual name of the context, not the name of the app.
+    /// For example, the name of the global context should be "global",
+    /// and the name of the user context should be "user".
+    ///
+    /// This will default to the value of [`ScoopContext::APP_NAME`], but can be overridden.
+    const CONTEXT_NAME: &'static str = Self::APP_NAME;
 
     /// Get a reference to the context's configuration
     fn config(&self) -> &C;
@@ -77,10 +85,6 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     #[must_use]
     /// Gets the context's path
     fn path(&self) -> &Path;
-
-    #[deprecated = "Use which::which directly instead"]
-    /// Get the git executable path
-    fn git_path() -> Result<PathBuf, which::Error>;
 
     #[must_use]
     /// Get a sub path within the context's path
@@ -103,27 +107,39 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
 
     #[must_use]
     /// Get the contexts's apps path
-    fn apps_path(&self) -> PathBuf;
+    fn apps_path(&self) -> PathBuf {
+        self.sub_path("apps")
+    }
 
     #[must_use]
     /// Get the contexts's buckets path
-    fn buckets_path(&self) -> PathBuf;
+    fn buckets_path(&self) -> PathBuf {
+        self.sub_path("buckets")
+    }
 
     #[must_use]
     /// Get the contexts's cache path
-    fn cache_path(&self) -> PathBuf;
+    fn cache_path(&self) -> PathBuf {
+        self.sub_path("cache")
+    }
 
     #[must_use]
     /// Get the contexts's persist path
-    fn persist_path(&self) -> PathBuf;
+    fn persist_path(&self) -> PathBuf {
+        self.sub_path("persist")
+    }
 
     #[must_use]
     /// Get the contexts's shims path
-    fn shims_path(&self) -> PathBuf;
+    fn shims_path(&self) -> PathBuf {
+        self.sub_path("shims")
+    }
 
     #[must_use]
     /// Get the contexts's workspace path
-    fn workspace_path(&self) -> PathBuf;
+    fn workspace_path(&self) -> PathBuf {
+        self.sub_path("workspace")
+    }
 
     #[must_use]
     /// Get the contexts's scripts path
@@ -134,27 +150,35 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     /// Get the path to the log directory
     fn logging_dir(&self) -> std::io::Result<PathBuf>;
 
-    /// List all scoop apps and return their paths
+    /// List all scoop apps and return their paths, except for the context's app
     fn installed_apps(&self) -> std::io::Result<Vec<PathBuf>> {
+        #[cfg(feature = "parallel")]
         use rayon::prelude::*;
 
         let apps_path = self.apps_path();
 
         let read = apps_path.read_dir()?;
 
-        Ok(read
-            .par_bridge()
-            .filter_map(|package| {
-                let path = package.expect("valid path").path();
-
-                // We cannot search the scoop app as it is built in and hence doesn't contain any manifest
-                if path.file_name() == Some(OsStr::new(Self::CONTEXT_NAME)) {
-                    None
+        Ok({
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    read.par_bridge()
                 } else {
-                    Some(path)
+                    read
                 }
-            })
-            .collect())
+            }
+        }
+        .filter_map(|package| {
+            let path = package.expect("valid path").path();
+
+            // We cannot search the scoop app as it is built in and hence doesn't contain any manifest
+            if path.file_name() == Some(OsStr::new(Self::APP_NAME)) {
+                None
+            } else {
+                Some(path)
+            }
+        })
+        .collect())
     }
 
     /// Checks if the app is installed by its name
@@ -173,7 +197,9 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     /// This should return the path to the app's directory, not the repository.
     ///
     /// For example, if the context is the user context, this should return the path to the scoop app
-    fn context_app_path(&self) -> PathBuf;
+    fn context_app_path(&self) -> PathBuf {
+        self.apps_path().join(Self::APP_NAME).join("current")
+    }
 
     /// List all known buckets
     ///
@@ -209,7 +235,8 @@ pub enum AnyContext {
 }
 
 impl ScoopContext<config::Scoop> for AnyContext {
-    const CONTEXT_NAME: &'static str = User::CONTEXT_NAME;
+    const APP_NAME: &'static str = User::APP_NAME;
+    const CONTEXT_NAME: &'static str = "Unknown context";
 
     fn config(&self) -> &config::Scoop {
         match self {
@@ -223,10 +250,6 @@ impl ScoopContext<config::Scoop> for AnyContext {
             AnyContext::User(user) => user.config_mut(),
             AnyContext::Global(global) => global.config_mut(),
         }
-    }
-
-    fn git_path() -> Result<PathBuf, which::Error> {
-        which("git")
     }
 
     #[must_use]

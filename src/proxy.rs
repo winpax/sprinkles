@@ -1,12 +1,8 @@
 //! Proxy helpers
 
-use std::{
-    net::{AddrParseError, SocketAddr},
-    num::ParseIntError,
-    str::FromStr,
-};
+use std::{net::AddrParseError, num::ParseIntError, str::FromStr};
 
-use crate::let_chain;
+use crate::hacks::let_chain;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -99,8 +95,12 @@ impl FromStr for Proxy {
             (None, None)
         };
 
+        #[cfg_attr(not(windows), allow(unreachable_code, unused_variables))]
         let host = if host == "default" {
+            #[cfg(windows)]
             let (address, port) = {
+                use std::net::SocketAddr;
+
                 let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
                 let key =
                     hklm.open_subkey("SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters")?;
@@ -121,6 +121,8 @@ impl FromStr for Proxy {
 
                 (host, port)
             };
+            #[cfg(not(windows))]
+            let (address, port): (std::net::IpAddr, u16) = { unimplemented!() };
 
             format!("{address}:{port}")
         } else {

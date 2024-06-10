@@ -11,18 +11,19 @@ use itertools::Itertools as _;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::{hash::Hash, version::Version, Architecture};
+use crate::{scripts::PowershellScript, version::Version, Architecture};
 
+#[allow(clippy::unsafe_derive_deserialize)]
 #[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 /// The manifest for a package
 pub struct Manifest {
     /// This must be manually set
     #[serde(skip)]
-    pub bucket: String,
+    bucket: Option<String>,
     /// This must be manually set
     #[serde(skip)]
-    pub name: String,
+    name: Option<String>,
     /// A comment.
     #[serde(rename = "##")]
     pub empty: Option<StringArray>,
@@ -40,7 +41,7 @@ pub struct Manifest {
     /// Undocumented: Found at <https://github.com/se35710/scoop-java/search?l=JSON&q=cookie>
     pub cookie: Option<HashMap<String, Option<serde_json::Value>>>,
     /// The dependencies of the package
-    pub depends: Option<TOrArrayOfTs<crate::packages::reference::ManifestRef>>,
+    pub depends: Option<TOrArrayOfTs<crate::packages::reference::manifest::Reference>>,
     /// The description of the package
     pub description: Option<String>,
     /// Extract to dir or dirs
@@ -70,6 +71,56 @@ pub struct Manifest {
     #[serde(flatten)]
     /// The install configuration
     pub install_config: InstallConfig,
+}
+
+impl Manifest {
+    #[must_use]
+    /// Get the name of the manifest
+    ///
+    /// # Safety
+    /// This field is manually set, and by default is uninitialized. This may cause undefined behavior.
+    ///
+    /// Use [`Manifest::name_opt`] or,
+    /// to ensure that this function returns properly, use the [`CreateManifest`] trait to set the name,
+    /// or create the manifest, rather than other methods that might fail to set the name.
+    pub unsafe fn name(&self) -> &str {
+        unsafe { self.name.as_ref().unwrap_unchecked() }
+    }
+
+    #[must_use]
+    /// Get the name of the manifest, or [`None`] if it is not set
+    pub fn name_opt(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
+
+    /// Set the name of the manifest
+    pub fn set_name(&mut self, name: impl Into<String>) {
+        self.name = Some(name.into());
+    }
+
+    #[must_use]
+    /// Get the bucket the manifest is from
+    ///
+    /// # Safety
+    /// This field is manually set, and by default is uninitialized. This may cause undefined behavior.
+    ///
+    /// Use [`Manifest::bucket_opt`] or,
+    /// to ensure that this function returns properly, use the [`CreateManifest`] trait to set the bucket,
+    /// or create the manifest, rather than other methods that might fail to set the bucket.
+    pub unsafe fn bucket(&self) -> &str {
+        unsafe { self.bucket.as_ref().unwrap_unchecked() }
+    }
+
+    #[must_use]
+    /// Get the bucket the manifest is from, or [`None`] if it is not set
+    pub fn bucket_opt(&self) -> Option<&str> {
+        self.bucket.as_deref()
+    }
+
+    /// Set the bucket the manifest is from
+    pub fn set_bucket(&mut self, bucket: impl Into<String>) {
+        self.bucket = Some(bucket.into());
+    }
 }
 
 #[skip_serializing_none]
@@ -108,16 +159,17 @@ pub struct InstallConfig {
     pub checkver: Option<Checkver>,
     /// The directories to extract to
     pub extract_dir: Option<StringArray>,
+    #[cfg(feature = "manifest-hashes")]
     /// The hash(es) of the package
-    pub hash: Option<TOrArrayOfTs<Hash>>,
+    pub hash: Option<TOrArrayOfTs<crate::hash::Hash>>,
     /// The installer configuration
     pub installer: Option<Installer>,
     #[deprecated]
     pub msi: Option<StringArray>,
-    pub post_install: Option<StringArray>,
-    pub post_uninstall: Option<StringArray>,
-    pub pre_install: Option<StringArray>,
-    pub pre_uninstall: Option<StringArray>,
+    pub post_install: Option<PowershellScript>,
+    pub post_uninstall: Option<PowershellScript>,
+    pub pre_install: Option<PowershellScript>,
+    pub pre_uninstall: Option<PowershellScript>,
     pub shortcuts: Option<AliasArray<String>>,
     pub uninstaller: Option<Uninstaller>,
     pub url: Option<StringArray>,
@@ -152,6 +204,13 @@ pub struct SourceforgeClass {
     pub project: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum InstallerRunner {
+    File(String),
+    Script(PowershellScript),
+}
+
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Installer {
@@ -161,7 +220,7 @@ pub struct Installer {
     pub args: Option<StringArray>,
     pub file: Option<String>,
     pub keep: Option<bool>,
-    pub script: Option<StringArray>,
+    pub script: Option<PowershellScript>,
 }
 
 #[skip_serializing_none]

@@ -1,16 +1,13 @@
 //! Scoop package helpers
 
-use std::{
-    path::Path,
-    time::{SystemTimeError, UNIX_EPOCH},
-};
+use std::{path::Path, time::SystemTimeError};
 
-use chrono::{DateTime, Local};
+use chrono::{DateTime, FixedOffset};
 use gix::{object::tree::diff::Action, traverse::commit::simple::Sorting};
-use quork::traits::truthy::ContainsTruth as _;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+#[cfg(feature = "parallel")]
+use rayon::prelude::*;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use strum::Display;
 
 use crate::{
@@ -20,10 +17,10 @@ use crate::{
     git::{
         self,
         errors::{self, GitoxideError},
+        parity::Signature,
         Repo,
     },
-    let_chain,
-    wrappers::{author::Author, time::NicerTime},
+    hacks::let_chain,
     Architecture,
 };
 
@@ -37,6 +34,7 @@ use crate::{
 };
 
 pub mod downloading;
+pub mod installer;
 pub mod models;
 pub mod reference;
 
@@ -45,223 +43,114 @@ pub use models::{install::Manifest as InstallManifest, manifest::Manifest};
 use downloading::DownloadUrl;
 use models::manifest::{InstallConfig, StringArray};
 
-#[macro_export]
-/// Get a field from a manifest based on the architecture
-macro_rules! arch_config {
-    ($field:ident.$arch:expr) => {
-        match $arch {
-            $crate::Architecture::Arm64 => $field.arm64.as_ref(),
-            $crate::Architecture::X64 => $field.x64.as_ref(),
-            $crate::Architecture::X86 => $field.x86.as_ref(),
-        }
-    };
+#[macro_use]
+mod macros {
+    /// Get a field from a manifest based on the architecture
+    macro_rules! arch_config {
+        ($field:ident.$arch:expr) => {
+            match $arch {
+                $crate::Architecture::Arm64 => $field.arm64.as_ref(),
+                $crate::Architecture::X64 => $field.x64.as_ref(),
+                $crate::Architecture::X86 => $field.x86.as_ref(),
+            }
+        };
 
-    ($field:ident) => {
-        arch_config!($field.$crate::Architecture::ARCH)
-    };
+        ($field:ident) => {
+            arch_config!($field.$crate::Architecture::ARCH)
+        };
 
-    ($field:ident.$arch:expr => clone) => {
-        arch_config!($field.$arch).cloned()
-    };
+        ($field:ident.$arch:expr => clone) => {
+            arch_config!($field.$arch).cloned()
+        };
 
-    ($field:ident => clone) => {
-        arch_config!($field).cloned()
-    };
+        ($field:ident => clone) => {
+            arch_config!($field).cloned()
+        };
 
-    // ($field:ident.$arch:expr => $default:expr) => {
-    //     arch_config!($field.$arch).unwrap_or($default)
-    // };
+        // ($field:ident.$arch:expr => $default:expr) => {
+        //     arch_config!($field.$arch).unwrap_or($default)
+        // };
 
-    // ($field:ident => $default:expr) => {
-    //     arch_config!($field.$crate::Architecture::ARCH).unwrap_or($default)
-    // };
+        // ($field:ident => $default:expr) => {
+        //     arch_config!($field.$crate::Architecture::ARCH).unwrap_or($default)
+        // };
+    }
+
+    /// Get a field from a manifest based on the architecture
+    macro_rules! arch_field {
+        // ($self:ident.$field:ident) => {
+        //     arch_field!($self.$field).clone()
+        // };
+
+        // ($arch:expr => ref $self:ident.$field:ident) => {{
+        //     if let Some(cfg) = match $arch {
+        //         $crate::Architecture::Arm64 => &$self.arm64,
+        //         $crate::Architecture::X64 => &$self.x64,
+        //         $crate::Architecture::X86 => &$self.x86,
+        //     } {
+        //         &cfg.$field
+        //     } else {
+        //         &None
+        //     }
+        // }};
+
+        // (ref $self:ident.$field:ident) => {
+        //     arch_field!($crate::Architecture::ARCH => ref $self.$field)
+        // };
+
+        // ($arch:expr => ref mut $self:ident.$field:ident) => {{
+        //     match $arch {
+        //         $crate::Architecture::Arm64 => $self.arm64.as_mut(),
+        //         $crate::Architecture::X64 => $self.x64.as_mut(),
+        //         $crate::Architecture::X86 => $self.x86.as_mut(),
+        //     }.and_then(|cfg| cfg.$field.as_mut())
+        // }};
+
+        // (ref mut $self:ident.$field:ident) => {
+        //     arch_field!($crate::Architecture::ARCH => ref mut $self.$field)
+        // };
+
+        ($self:ident.$field:ident as cloned) => {
+            arch_field!($crate::Architecture::ARCH => $self.$field as ref).cloned()
+        };
+
+        ($arch:expr => $self:ident.$field:ident as cloned) => {
+            arch_field!($arch => $self.$field as ref).cloned()
+        };
+
+        ($self:ident.$field:ident as ref) => {
+            arch_field!($crate::Architecture::ARCH => $self.$field as ref)
+        };
+
+        ($arch:expr => $self:ident.$field:ident as ref) => {{
+            match $arch {
+                $crate::Architecture::Arm64 => $self.arm64.as_ref(),
+                $crate::Architecture::X64 => $self.x64.as_ref(),
+                $crate::Architecture::X86 => $self.x86.as_ref(),
+            }.and_then(|cfg| cfg.$field.as_ref())
+        }};
+
+        ($self:ident.$field:ident as mut) => {
+            arch_field!($crate::Architecture::ARCH => $self.$field as mut)
+        };
+
+        ($arch:expr => $self:ident.$field:ident as mut) => {{
+            match $arch {
+                $crate::Architecture::Arm64 => $self.arm64.as_mut(),
+                $crate::Architecture::X64 => $self.x64.as_mut(),
+                $crate::Architecture::X86 => $self.x86.as_mut(),
+            }.and_then(|cfg| cfg.$field.as_mut())
+        }};
+    }
 }
 
-#[macro_export]
-/// Get a field from a manifest based on the architecture
-macro_rules! arch_field {
-    // ($self:ident.$field:ident) => {
-    //     arch_field!($self.$field).clone()
-    // };
-
-    // ($arch:expr => ref $self:ident.$field:ident) => {{
-    //     if let Some(cfg) = match $arch {
-    //         $crate::Architecture::Arm64 => &$self.arm64,
-    //         $crate::Architecture::X64 => &$self.x64,
-    //         $crate::Architecture::X86 => &$self.x86,
-    //     } {
-    //         &cfg.$field
-    //     } else {
-    //         &None
-    //     }
-    // }};
-
-    // (ref $self:ident.$field:ident) => {
-    //     arch_field!($crate::Architecture::ARCH => ref $self.$field)
-    // };
-
-    // ($arch:expr => ref mut $self:ident.$field:ident) => {{
-    //     match $arch {
-    //         $crate::Architecture::Arm64 => $self.arm64.as_mut(),
-    //         $crate::Architecture::X64 => $self.x64.as_mut(),
-    //         $crate::Architecture::X86 => $self.x86.as_mut(),
-    //     }.and_then(|cfg| cfg.$field.as_mut())
-    // }};
-
-    // (ref mut $self:ident.$field:ident) => {
-    //     arch_field!($crate::Architecture::ARCH => ref mut $self.$field)
-    // };
-
-    ($self:ident.$field:ident as cloned) => {
-        arch_field!($crate::Architecture::ARCH => $self.$field as ref).cloned()
-    };
-
-    ($arch:expr => $self:ident.$field:ident as cloned) => {
-        arch_field!($arch => $self.$field as ref).cloned()
-    };
-
-    ($self:ident.$field:ident as ref) => {
-        arch_field!($crate::Architecture::ARCH => $self.$field as ref)
-    };
-
-    ($arch:expr => $self:ident.$field:ident as ref) => {{
-        match $arch {
-            $crate::Architecture::Arm64 => $self.arm64.as_ref(),
-            $crate::Architecture::X64 => $self.x64.as_ref(),
-            $crate::Architecture::X86 => $self.x86.as_ref(),
-        }.and_then(|cfg| cfg.$field.as_ref())
-    }};
-
-    ($self:ident.$field:ident as mut) => {
-        arch_field!($crate::Architecture::ARCH => $self.$field as mut)
-    };
-
-    ($arch:expr => $self:ident.$field:ident as mut) => {{
-        match $arch {
-            $crate::Architecture::Arm64 => $self.arm64.as_mut(),
-            $crate::Architecture::X64 => $self.x64.as_mut(),
-            $crate::Architecture::X86 => $self.x86.as_mut(),
-        }.and_then(|cfg| cfg.$field.as_mut())
-    }};
-}
-
-pub use arch_config;
-pub use arch_field;
+pub(crate) use arch_config;
+pub(crate) use arch_field;
 
 use self::models::manifest::{
     self, AliasArray, AutoupdateArchitecture, AutoupdateConfig, HashExtraction,
     HashExtractionOrArrayOfHashExtractions, ManifestArchitecture,
 };
-
-#[derive(Debug, Serialize)]
-/// Minimal package info
-pub struct MinInfo {
-    /// The name of the package
-    pub name: String,
-    /// The version of the package
-    pub version: String,
-    /// The package's source (eg. bucket name)
-    pub source: String,
-    /// The last time the package was updated
-    pub updated: NicerTime<Local>,
-    /// The package's notes
-    pub notes: String,
-}
-
-impl MinInfo {
-    /// Parse minmal package info for every installed app
-    ///
-    /// # Errors
-    /// - Invalid file names
-    /// - File metadata errors
-    /// - Invalid time
-    pub fn list_installed(
-        ctx: &impl ScoopContext<config::Scoop>,
-        bucket: Option<&String>,
-    ) -> Result<Vec<Self>> {
-        let apps = ctx.installed_apps()?;
-
-        apps.par_iter()
-            .map(Self::from_path)
-            .filter(|package| {
-                if let Ok(pkg) = package {
-                    if let Some(bucket) = bucket {
-                        return &pkg.source == bucket;
-                    }
-                }
-                // Keep errors so that the following line will return the error
-                true
-            })
-            .collect()
-    }
-
-    /// Parse minimal package into from a given path
-    ///
-    /// # Errors
-    /// - Invalid file names
-    /// - File metadata errors
-    /// - Invalid time
-    ///
-    /// # Panics
-    /// - Date time invalid or out of range
-    pub fn from_path(path: impl AsRef<Path>) -> Result<Self> {
-        let path = path.as_ref();
-
-        let package_name = path
-            .file_name()
-            .map(|f| f.to_string_lossy())
-            .ok_or(Error::MissingFileName)?;
-
-        let updated_time = {
-            let updated = {
-                let updated_sys = path.metadata()?.modified()?;
-
-                updated_sys.duration_since(UNIX_EPOCH)?.as_secs()
-            };
-
-            #[allow(clippy::cast_possible_wrap)]
-            DateTime::from_timestamp(updated as i64, 0)
-                .expect("invalid or out-of-range datetime")
-                .with_timezone(&Local)
-        };
-
-        let app_current = path.join("current");
-
-        let (manifest_broken, manifest) =
-            if let Ok(manifest) = Manifest::from_path(app_current.join("manifest.json")) {
-                (false, manifest)
-            } else {
-                (true, Manifest::default())
-            };
-
-        let (install_manifest_broken, install_manifest) = if let Ok(install_manifest) =
-            InstallManifest::from_path(app_current.join("install.json"))
-        {
-            (false, install_manifest)
-        } else {
-            (true, InstallManifest::default())
-        };
-
-        let broken = manifest_broken || install_manifest_broken;
-
-        let mut notes = vec![];
-
-        if broken {
-            notes.push("Install failed".to_string());
-        }
-        if install_manifest.hold.contains_truth() {
-            notes.push("Held package".to_string());
-        }
-
-        Ok(Self {
-            name: package_name.to_string(),
-            version: manifest.version.to_string(),
-            source: install_manifest.get_source(),
-            updated: updated_time.into(),
-            notes: notes.join(", "),
-        })
-    }
-}
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -434,24 +323,36 @@ where
 
 impl CreateManifest for Manifest {
     fn with_name(mut self, path: impl AsRef<Path>) -> Self {
-        self.name = path
-            .as_ref()
-            .with_extension("")
-            .file_name()
-            .map(|f| f.to_string_lossy())
-            .expect("File to have file name")
-            .to_string();
+        let ext_stripped = path.as_ref().with_extension("");
+
+        let name = ext_stripped.file_name().map(|f| f.to_string_lossy());
+
+        if let Some(name) = name {
+            if name == "manifest" || name == "install" {
+                let mut path_buf = path.as_ref().to_path_buf();
+
+                if path_buf.pop() && path_buf.pop() {
+                    if let Some(name) = path_buf.file_name() {
+                        self.set_name(name.to_string_lossy());
+                    }
+                }
+            }
+
+            self.set_name(name);
+        }
 
         self
     }
 
     fn with_bucket(mut self, path: impl AsRef<Path>) -> Self {
-        self.bucket = path
+        if let Some(bucket) = path
             .as_ref()
             .parent()
             .and_then(|p| p.parent())
             .and_then(|bucket| bucket.file_name().map(|f| f.to_string_lossy().to_string()))
-            .unwrap_or_default();
+        {
+            self.set_bucket(bucket);
+        }
 
         self
     }
@@ -459,13 +360,14 @@ impl CreateManifest for Manifest {
 
 impl CreateManifest for InstallManifest {
     fn with_name(mut self, path: impl AsRef<Path>) -> Self {
-        self.name = path
+        if let Some(name) = path
             .as_ref()
             .with_extension("")
             .file_name()
             .map(|f| f.to_string_lossy())
-            .expect("File to have name")
-            .to_string();
+        {
+            self.set_name(name);
+        }
 
         self
     }
@@ -482,10 +384,18 @@ impl InstallManifest {
     /// - Invalid install manifest
     /// - Reading directories fails
     pub fn list_all(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Self>> {
-        ctx.installed_apps()?
-            .par_iter()
-            .map(|path| Self::from_path(path.join("current/install.json")))
-            .collect::<Result<Vec<_>>>()
+        let installed_apps = ctx.installed_apps()?;
+        {
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    installed_apps.par_iter()
+                } else {
+                    installed_apps.iter()
+                }
+            }
+        }
+        .map(|path| Self::from_path(path.join("current/install.json")))
+        .collect::<Result<Vec<_>>>()
     }
 
     /// List all install manifests, ignoring errors
@@ -493,16 +403,24 @@ impl InstallManifest {
     /// # Errors
     /// - Reading directories fails
     pub fn list_all_unchecked(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Self>> {
-        Ok(ctx
-            .installed_apps()?
-            .par_iter()
-            .filter_map(
-                |path| match Self::from_path(path.join("current/install.json")) {
-                    Ok(v) => Some(v.with_name(path)),
-                    Err(_) => None,
-                },
-            )
-            .collect::<Vec<_>>())
+        let installed_apps = ctx.installed_apps()?;
+
+        Ok({
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    installed_apps.par_iter()
+                } else {
+                    installed_apps.iter()
+                }
+            }
+        }
+        .filter_map(
+            |path| match Self::from_path(path.join("current/install.json")) {
+                Ok(v) => Some(v.with_name(path)),
+                Err(_) => None,
+            },
+        )
+        .collect::<Vec<_>>())
     }
 }
 
@@ -544,7 +462,7 @@ impl Manifest {
     #[must_use]
     /// Apply a bucket to a manifest
     pub fn with_bucket(mut self, bucket: &Bucket) -> Self {
-        self.bucket = bucket.name().to_string();
+        self.set_bucket(bucket.name());
 
         self
     }
@@ -553,7 +471,7 @@ impl Manifest {
     /// List the dependencies of a given manifest, in the order that they will be installed
     ///
     /// Note that this does not include the package itself as a dependency
-    pub fn depends(&self) -> Vec<reference::ManifestRef> {
+    pub fn depends(&self) -> Vec<reference::manifest::Reference> {
         self.depends
             .clone()
             .map(manifest::TOrArrayOfTs::to_vec)
@@ -613,20 +531,29 @@ impl Manifest {
     /// # Panics
     /// - If the file name is invalid
     pub fn list_installed(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Result<Self>>> {
-        Ok(ctx
-            .installed_apps()?
-            .par_iter()
-            .map(|path| {
-                Self::from_path(path.join("current/manifest.json")).and_then(|mut manifest| {
-                    manifest.name = path
-                        .file_name()
-                        .map(|f| f.to_string_lossy().to_string())
-                        .ok_or(Error::MissingFileName)?;
+        let installed_apps = ctx.installed_apps()?;
 
-                    Ok(manifest)
-                })
+        Ok({
+            cfg_if::cfg_if! {
+                if #[cfg(feature = "parallel")] {
+                    installed_apps.par_iter()
+                } else {
+                    installed_apps.iter()
+                }
+            }
+        }
+        .map(|path| {
+            Self::from_path(path.join("current/manifest.json")).and_then(|mut manifest| {
+                manifest.set_name(
+                    path.file_name()
+                        .map(|f| f.to_string_lossy().to_string())
+                        .ok_or(Error::MissingFileName)?,
+                );
+
+                Ok(manifest)
             })
-            .collect::<Vec<_>>())
+        })
+        .collect::<Vec<_>>())
     }
 
     #[must_use]
@@ -636,7 +563,7 @@ impl Manifest {
         ctx: &impl ScoopContext<config::Scoop>,
         bucket: Option<&str>,
     ) -> bool {
-        is_installed(ctx, &self.name, bucket)
+        is_installed(ctx, unsafe { self.name() }, bucket)
     }
 
     fn update_field<T>(
@@ -770,11 +697,13 @@ impl Manifest {
 
         // todo!()
 
-        let workspace_manifest_path = ctx.workspace_path().join(format!("{}.json", self.name));
+        let workspace_manifest_path = ctx
+            .workspace_path()
+            .join(format!("{}.json", unsafe { self.name() }));
         serde_json::to_writer_pretty(std::fs::File::create(workspace_manifest_path)?, &self)
             .map_err(|e| {
                 error!("Failed to write workspace manifest: {e}");
-                Error::ParsingManifest(self.name.to_string(), e)
+                Error::ParsingManifest(unsafe { self.name() }.to_string(), e)
             })?;
 
         Ok(())
@@ -784,7 +713,10 @@ impl Manifest {
     /// Check if the commit's message matches the name of the manifest
     pub fn commit_message_matches(&self, commit: &gix::Commit<'_>) -> bool {
         if let Ok(message) = commit.message() {
-            message.summary().to_string().starts_with(&self.name)
+            message
+                .summary()
+                .to_string()
+                .starts_with(unsafe { self.name() })
         } else {
             false
         }
@@ -813,7 +745,11 @@ impl Manifest {
             .map_err(GitoxideError::from)?
             .track_filename()
             .for_each_to_obtain_tree(&parent_tree, |change| {
-                if change.location.to_string().starts_with(&self.name) {
+                if change
+                    .location
+                    .to_string()
+                    .starts_with(unsafe { self.name() })
+                {
                     changed = true;
                     return Ok::<_, GitoxideError>(Action::Cancel);
                 }
@@ -836,9 +772,8 @@ impl Manifest {
     pub fn last_updated_info(
         &self,
         ctx: &impl ScoopContext<config::Scoop>,
-        hide_emails: bool,
-    ) -> Result<(Option<String>, Option<String>)> {
-        let bucket = Bucket::from_name(ctx, &self.bucket)?;
+    ) -> Result<(Option<DateTime<FixedOffset>>, Option<Signature>)> {
+        let bucket = Bucket::from_name(ctx, unsafe { self.bucket() })?;
 
         let repo = Repo::from_bucket(&bucket)?;
         let gitoxide = repo.gitoxide();
@@ -878,7 +813,11 @@ impl Manifest {
                             debug!("{change:?}");
                             debug!("Filename: {}", change.location.to_string());
 
-                            if change.location.to_string().starts_with(&self.name) {
+                            if change
+                                .location
+                                .to_string()
+                                .starts_with(unsafe { self.name() })
+                            {
                                 matches = true;
                                 Ok::<_, Error>(Action::Cancel)
                             } else {
@@ -913,13 +852,9 @@ impl Manifest {
         .to_datetime()
         .ok_or(Error::InvalidTime)?;
 
-        let author_wrapped = Author::from(updated_commit.author().map_err(git::Error::from)?)
-            .with_show_emails(!hide_emails);
+        let author_wrapped = Signature::from(updated_commit.author().map_err(git::Error::from)?);
 
-        Ok((
-            Some(date_time.to_string()),
-            Some(author_wrapped.to_string()),
-        ))
+        Ok((Some(date_time), Some(author_wrapped)))
     }
 
     /// Get [`InstallManifest`] for [`Manifest`]
@@ -932,7 +867,7 @@ impl Manifest {
     ) -> Result<InstallManifest> {
         let apps_path = ctx.apps_path();
         let install_path = apps_path
-            .join(&self.name)
+            .join(unsafe { self.name() })
             .join("current")
             .join("install.json");
 
@@ -956,15 +891,10 @@ pub fn is_installed(
         .join(manifest_name)
         .join("current/install.json");
 
-    match InstallManifest::from_path(install_path) {
-        Ok(manifest) => {
-            if let Some(bucket) = bucket {
-                manifest.get_source() == bucket.as_ref()
-            } else {
-                false
-            }
-        }
-        Err(_) => false,
+    if let Some(bucket) = bucket {
+        matches!(InstallManifest::from_path(install_path), Ok(manifest) if manifest.get_source() == bucket.as_ref())
+    } else {
+        install_path.exists()
     }
 }
 
@@ -1006,7 +936,6 @@ impl MergeDefaults for Option<AutoupdateArchitecture> {
 impl MergeDefaults for Option<&ManifestArchitecture> {
     type Default = InstallConfig;
 
-    #[allow(deprecated)]
     #[must_use]
     /// Merge the architecture specific autoupdate config with the arch agnostic one
     fn merge_default(&self, default: Self::Default, arch: Architecture) -> Self::Default {
@@ -1017,10 +946,12 @@ impl MergeDefaults for Option<&ManifestArchitecture> {
             return default;
         };
 
+        #[allow(deprecated)]
         InstallConfig {
             bin: config.bin.or(default.bin),
             checkver: config.checkver.or(default.checkver),
             extract_dir: config.extract_dir.or(default.extract_dir),
+            #[cfg(feature = "manifest-hashes")]
             hash: config.hash.or(default.hash),
             installer: config.installer.or(default.installer),
             msi: config.msi.or(default.msi),
@@ -1038,7 +969,6 @@ impl MergeDefaults for Option<&ManifestArchitecture> {
 impl MergeDefaults for Option<ManifestArchitecture> {
     type Default = InstallConfig;
 
-    #[allow(deprecated)]
     #[must_use]
     /// Merge the architecture specific autoupdate config with the arch agnostic one
     fn merge_default(&self, default: Self::Default, arch: Architecture) -> Self::Default {
@@ -1062,6 +992,7 @@ mod tests {
     use std::error::Error;
 
     use crate::{buckets::Bucket, contexts::User, Architecture};
+
     use rayon::prelude::*;
 
     #[test]
@@ -1074,19 +1005,19 @@ mod tests {
             .into_par_iter()
             .flat_map(|bucket| bucket.list_packages())
             .flatten()
-            .filter(|manifest| !UNSUPPORTED_PACKAGES.contains(&manifest.name.as_str()))
+            .filter(|manifest| !UNSUPPORTED_PACKAGES.contains(&unsafe { manifest.name() }))
             .filter(|manifest| manifest.autoupdate_config(Architecture::ARCH).is_some())
             .collect::<Vec<_>>();
 
         manifests.par_iter().for_each(|manifest| {
-            assert!(!manifest.name.is_empty());
-            assert!(!manifest.bucket.is_empty());
+            assert!(!unsafe { manifest.name() }.is_empty());
+            assert!(!unsafe { manifest.bucket() }.is_empty());
 
             if let Some(autoupdate_config) = &manifest.autoupdate_config(Architecture::ARCH) {
                 assert!(
                     autoupdate_config.url.is_some(),
                     "URL is missing in package: {}",
-                    manifest.name
+                    unsafe { manifest.name() }
                 );
             }
         });

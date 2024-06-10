@@ -9,22 +9,22 @@
 )]
 #![allow(clippy::module_name_repetitions)]
 
+// Ensure supported environment
+#[cfg(all(not(docsrs), not(windows)))]
+compile_error!("Only windows is supported");
+
 use std::{fmt, str::FromStr};
 
 use quork::traits::list::ListVariants;
 use serde::{Deserialize, Serialize};
-
-pub use semver;
 
 pub mod buckets;
 #[cfg(feature = "manifest-hashes")]
 pub mod cache;
 pub mod config;
 pub mod contexts;
-pub mod diagnostics;
 pub mod git;
-#[doc(hidden)]
-pub mod hacks;
+pub mod handles;
 #[cfg(feature = "manifest-hashes")]
 pub mod hash;
 pub mod packages;
@@ -33,36 +33,16 @@ pub mod proxy;
 pub mod requests;
 pub mod scripts;
 pub mod shell;
-#[cfg(not(feature = "v2"))]
-pub mod stream;
 pub mod version;
-pub mod wrappers;
 
 mod env;
-
-#[doc(hidden)]
-pub mod __versions {
-    //! Version information
-
-    /// Sprinkles library version
-    pub const VERSION: &str = env!("CARGO_PKG_VERSION");
-
-    #[must_use]
-    /// Get the git2 library version
-    pub fn git2_version() -> git2::Version {
-        git2::Version::get()
-    }
-}
+mod hacks;
+mod system;
 
 #[macro_use]
 extern crate log;
 
 use contexts::Error;
-
-/// Ensure supported environment
-mod const_assertions {
-    const _: () = assert!(cfg!(windows), "Only windows is supported");
-}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, ListVariants)]
 /// Supported architectures
@@ -141,11 +121,6 @@ impl Default for Architecture {
         Self::from_env()
     }
 }
-
-#[deprecated(note = "Use `contexts::User` instead")]
-#[cfg(not(feature = "v2"))]
-/// Alias for [`contexts::User`]
-pub type Scoop = contexts::User;
 
 #[cfg(test)]
 mod tests {

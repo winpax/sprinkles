@@ -1,4 +1,5 @@
 /target
+/Cargo.lock
 /release
 
 # A little hack I use to see the output of a proc macro, even when it fails to compile

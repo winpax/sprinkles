@@ -9,12 +9,13 @@ use crate::{
     Architecture,
 };
 
+#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 /// The install manifest
 pub struct Manifest {
     /// This must be manually set
     #[serde(skip)]
-    pub name: String,
+    name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The bucket the package was installed from
     pub bucket: Option<String>,
@@ -30,6 +31,30 @@ pub struct Manifest {
 }
 
 impl Manifest {
+    #[must_use]
+    /// Get the name of the manifest
+    ///
+    /// # Safety
+    /// This field is manually set, and by default is uninitialized. This may cause undefined behavior.
+    ///
+    /// Use [`Manifest::name_opt`] or,
+    /// to ensure that this function returns properly, use the [`CreateManifest`] trait to set the name,
+    /// or create the manifest, rather than other methods that might fail to set the name.
+    pub unsafe fn name(&self) -> &str {
+        unsafe { self.name.as_ref().unwrap_unchecked() }
+    }
+
+    #[must_use]
+    /// Get the name of the manifest, or [`None`] if it is not set
+    pub fn name_opt(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
+
+    /// Set the name of the manifest
+    pub fn set_name(&mut self, name: impl Into<String>) {
+        self.name = Some(name.into());
+    }
+
     #[must_use]
     /// Get the source of the manifest
     pub fn get_source(&self) -> String {
@@ -48,13 +73,14 @@ impl Manifest {
         &self,
         ctx: &impl ScoopContext<config::Scoop>,
     ) -> Result<super::manifest::Manifest> {
+        let name = unsafe { self.name() };
         let manifest_path = ctx
             .apps_path()
-            .join(&self.name)
+            .join(name)
             .join("current")
             .join("manifest.json");
 
-        Ok(super::manifest::Manifest::from_path(manifest_path)?.with_name(&self.name))
+        Ok(super::manifest::Manifest::from_path(manifest_path)?.with_name(name))
     }
 }
 
@@ -68,7 +94,7 @@ mod tests {
         const MANIFEST: &str = r#"{"bucket":"main","architecture":"64bit"}"#;
 
         let zig_manifest = Manifest {
-            name: String::default(),
+            name: None,
             bucket: Some("main".to_string()),
             hold: None,
             url: None,
@@ -90,7 +116,7 @@ mod tests {
         const MANIFEST: &str = r#"{"bucket":"main","hold":true,"architecture":"64bit"}"#;
 
         let zig_manifest = Manifest {
-            name: String::default(),
+            name: None,
             bucket: Some("main".to_string()),
             hold: Some(true),
             url: None,

@@ -1,24 +1,82 @@
 //! Helpers to maintain parity between git2 and gitoxide during the transition
 
+use std::fmt::Display;
+
 use chrono::{DateTime, FixedOffset};
 
+#[derive(Clone, PartialEq, Eq)]
 /// A wrapper around a git signature that supports git2 and gitoxide
-pub enum Signature<'a> {
+pub enum Signature {
     /// A git2 signature
-    Git2(git2::Signature<'a>),
+    Git2(git2::Signature<'static>),
     /// A gitoxide signature
-    Gitoxide(gix::actor::SignatureRef<'a>),
+    Gitoxide(gix::actor::Signature),
 }
 
-impl<'a> From<git2::Signature<'a>> for Signature<'a> {
+impl<'a> From<git2::Signature<'a>> for Signature {
     fn from(signature: git2::Signature<'a>) -> Self {
-        Self::Git2(signature)
+        Self::Git2(signature.to_owned())
     }
 }
 
-impl<'a> From<gix::actor::SignatureRef<'a>> for Signature<'a> {
-    fn from(signature: gix::actor::SignatureRef<'a>) -> Self {
+impl From<gix::actor::SignatureRef<'_>> for Signature {
+    fn from(signature: gix::actor::SignatureRef<'_>) -> Self {
+        Self::Gitoxide(signature.to_owned())
+    }
+}
+
+impl From<gix::actor::Signature> for Signature {
+    fn from(signature: gix::actor::Signature) -> Self {
         Self::Gitoxide(signature)
+    }
+}
+
+impl Signature {
+    /// Return a wrapper around the signature that can be formatted
+    pub fn display(&self) -> SignatureDisplay<'_> {
+        SignatureDisplay {
+            sig: self,
+            show_emails: false,
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+#[must_use = "This is a display wrapper. It does nothing unless used in formatting"]
+/// Display implementation for [`Signature`]
+pub struct SignatureDisplay<'a> {
+    sig: &'a Signature,
+    show_emails: bool,
+}
+
+impl<'a> SignatureDisplay<'a> {
+    /// Show the email address of the signature
+    pub fn show_emails(mut self) -> Self {
+        self.show_emails = true;
+        self
+    }
+}
+
+impl<'a> Display for SignatureDisplay<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name = match self.sig {
+            Signature::Git2(sig) => sig.name().map(std::string::ToString::to_string),
+            Signature::Gitoxide(sig) => Some(sig.name.to_string()),
+        }
+        .expect("name is always set");
+
+        let email = match self.sig {
+            Signature::Git2(sig) => sig.email().map(std::string::ToString::to_string),
+            Signature::Gitoxide(sig) => Some(sig.email.to_string()),
+        };
+
+        if self.show_emails {
+            if let Some(email) = email {
+                return write!(f, "{name} <{email}>");
+            }
+        }
+
+        write!(f, "{name}")
     }
 }
 
@@ -81,7 +139,7 @@ impl Commit<'_> {
     }
 
     /// Get the author of the commit
-    pub fn author(&self) -> Option<Signature<'_>> {
+    pub fn author(&self) -> Option<Signature> {
         match self {
             Commit::Git2(commit) => Some(commit.author().into()),
             Commit::Gitoxide(commit) => commit.author().ok().map(Into::into),
