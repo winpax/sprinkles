@@ -623,7 +623,14 @@ impl Manifest {
 
         use crate::hash::Hash;
 
-        self.version = version.into();
+        let version = version.into();
+
+        if self.version == version {
+            // We don't need to do anything
+            return Ok(());
+        }
+
+        self.version = version;
 
         let autoupdate = self.autoupdate.as_ref().ok_or(Error::MissingAutoUpdate)?;
 
