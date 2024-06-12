@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changes
 
 - Refactor substitutions trait. It now only requires `fn substitute` rather than `fn into_substituted`
+- Do not do any manifest updates if the version is the same as the current version
 
 ## [0.15.2]
 
