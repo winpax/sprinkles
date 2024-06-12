@@ -10,8 +10,7 @@ use crate::{
 };
 
 fn replace_in_place(string: &mut String, from: &str, to: &str) {
-    let current_string = string.clone();
-    for (start, part) in current_string.match_indices(from) {
+    for (start, part) in string.clone().match_indices(from) {
         string.replace_range(start..start + part.len(), to);
     }
 }
@@ -90,7 +89,7 @@ pub trait Substitute {
 
 impl Substitute for String {
     fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
-        SubstituteBuilder::String(self).substitute(params, regex_escape)
+        SubstituteBuilder::String(self).substitute(params, regex_escape);
     }
 }
 
@@ -130,21 +129,21 @@ impl<T: Substitute> Substitute for AliasArray<T> {
 
 impl Substitute for Installer {
     fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
-        self.file
-            .as_mut()
-            .map(|s| s.substitute(params, regex_escape));
+        if let Some(s) = self.file.as_mut() {
+            s.substitute(params, regex_escape);
+        }
 
-        self.comment
-            .as_mut()
-            .map(|s| s.substitute(params, regex_escape));
+        if let Some(s) = self.comment.as_mut() {
+            s.substitute(params, regex_escape);
+        }
 
-        self.args
-            .as_mut()
-            .map(|s| s.substitute(params, regex_escape));
+        if let Some(s) = self.args.as_mut() {
+            s.substitute(params, regex_escape);
+        }
 
-        self.script
-            .as_mut()
-            .map(|s| s.substitute(params, regex_escape));
+        if let Some(s) = self.script.as_mut() {
+            s.substitute(params, regex_escape);
+        }
     }
 }
 

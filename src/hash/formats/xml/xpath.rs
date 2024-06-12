@@ -17,12 +17,11 @@ impl From<XPath> for String {
 }
 
 impl Substitute for XPath {
-    fn into_substituted(
-        mut self,
+    fn substitute(
+        &mut self,
         params: &crate::hash::substitutions::SubstitutionMap,
         regex_escape: bool,
-    ) -> Self {
+    ) {
         self.xpath.substitute(params, regex_escape);
-        self
     }
 }

@@ -1,29 +1,52 @@
+//! Array helpers (currently unused)
+
 use super::models::manifest::TOrArrayOfTs;
 
 impl<T> TOrArrayOfTs<T> {
+    /// Get an iterator over the array
     pub fn iter(&self) -> TOrArrayOfTsIter<'_, T> {
-        TOrArrayOfTsIter {
-            inner: self,
-            idx: 0,
-        }
+        self.into_iter()
     }
 
-    pub fn into_iter(self) -> TOrArrayOfTsIterator<T> {
-        TOrArrayOfTsIterator {
-            inner: self,
-            idx: 0,
-        }
-    }
-
+    /// Get the length of the array
     pub fn len(&self) -> usize {
         match self {
             TOrArrayOfTs::Single(_) => 1,
             TOrArrayOfTs::Array(a) => a.len(),
         }
     }
+
+    /// Check if the array is empty
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
-pub struct TOrArrayOfTsIter<'a, T: 'a> {
+impl<T> IntoIterator for TOrArrayOfTs<T> {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        match self {
+            TOrArrayOfTs::Single(s) => vec![s].into_iter(),
+            TOrArrayOfTs::Array(a) => a.into_iter(),
+        }
+    }
+}
+
+impl<'a, T> IntoIterator for &'a TOrArrayOfTs<T> {
+    type IntoIter = TOrArrayOfTsIter<'a, T>;
+    type Item = &'a T;
+
+    fn into_iter(self) -> Self::IntoIter {
+        TOrArrayOfTsIter {
+            inner: self,
+            idx: 0,
+        }
+    }
+}
+
+pub struct TOrArrayOfTsIter<'a, T> {
     inner: &'a TOrArrayOfTs<T>,
     idx: usize,
 }
