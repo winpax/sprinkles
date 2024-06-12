@@ -1,6 +1,8 @@
 use sxd_document::parser;
 use sxd_xpath::{evaluate_xpath, Value};
 
+mod xpath;
+
 use crate::hash::substitutions::{Substitute, SubstitutionMap};
 
 #[derive(Debug, thiserror::Error)]

@@ -151,3 +151,23 @@ impl Substitute for Installer {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    fn replace_in_place(string: &mut String, from: &str, to: &str) {
+        let current_string = string.clone();
+        for (start, part) in current_string.match_indices(from) {
+            string.replace_range(start..start + part.len(), to);
+        }
+    }
+
+    #[test]
+    fn test_replace_in_place() {
+        let mut string = String::from("Hello, world!");
+        let should_be = string.replace("world", "rust");
+
+        replace_in_place(&mut string, "world", "rust");
+
+        assert_eq!(string, should_be);
+    }
+}
