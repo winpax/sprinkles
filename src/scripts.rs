@@ -119,13 +119,12 @@ impl From<TOrArrayOfTs<String>> for PowershellScript {
 
 #[cfg(feature = "manifest-hashes")]
 impl crate::hash::substitutions::Substitute for PowershellScript {
-    fn into_substituted(
-        mut self,
+    fn substitute(
+        &mut self,
         params: &crate::hash::substitutions::SubstitutionMap,
         regex_escape: bool,
-    ) -> Self {
+    ) {
         self.script.substitute(params, regex_escape);
-        self
     }
 }
 
