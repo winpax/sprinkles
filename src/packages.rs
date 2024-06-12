@@ -33,6 +33,7 @@ use crate::{
     packages::manifest::TOrArrayOfTs,
 };
 
+pub(crate) mod array;
 pub mod downloading;
 pub mod installer;
 pub mod models;
