@@ -37,7 +37,7 @@ rustc-args = ["--cfg", "docsrs", "--cfg", "reqwest_unstable"]
 
 [features]
 beta = []
-default = ["manifest-hashes", "parallel"]
+default = ["manifest-hashes", "rayon"]
 manifest-hashes = [
     "base64",
     "digest",
@@ -53,8 +53,8 @@ manifest-hashes = [
     "urlencoding",
     "tokio/fs",
 ]
-parallel = ["blake3/rayon", "indicatif/rayon", "rayon"]
 parking_lot = ["tokio/parking_lot"]
+rayon = ["dep:rayon", "blake3/rayon", "indicatif/rayon"]
 rustls-tls = [
     "gix/blocking-http-transport-reqwest-rust-tls",
     "reqwest/rustls-tls",

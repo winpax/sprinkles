@@ -264,7 +264,7 @@ impl Bucket {
     where
         &'a C: Send + Sync,
     {
-        #[cfg(feature = "parallel")]
+        #[cfg(feature = "rayon")]
         use rayon::prelude::*;
 
         // Ignore loose files in the buckets dir
@@ -276,7 +276,7 @@ impl Bucket {
 
         let matches = {
             cfg_if::cfg_if! {
-                if #[cfg(feature = "parallel")] {
+                if #[cfg(feature = "rayon")] {
                     bucket_contents.par_iter()
                 } else {
                     bucket_contents.iter()
@@ -308,14 +308,14 @@ impl Bucket {
     /// Invalid install manifest
     /// Reading directories fails
     pub fn used(ctx: &impl ScoopContext<config::Scoop>) -> packages::Result<HashSet<String>> {
-        #[cfg(feature = "parallel")]
+        #[cfg(feature = "rayon")]
         use rayon::prelude::*;
 
         let manifests = InstallManifest::list_all(ctx)?;
 
         Ok({
             cfg_if::cfg_if! {
-                if #[cfg(feature = "parallel")] {
+                if #[cfg(feature = "rayon")] {
                     manifests.par_iter()
                 } else {
                     manifests.iter()
