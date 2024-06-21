@@ -3,7 +3,6 @@
 use std::{path::PathBuf, rc::Rc};
 
 use crate::{
-    config,
     contexts::ScoopContext,
     packages::{
         reference::{self, package},
@@ -41,7 +40,7 @@ pub struct PackageHandle<'a, C> {
     path: PathBuf,
 }
 
-impl<'a, C: ScoopContext<config::Scoop>> PackageHandle<'a, C> {
+impl<'a, C: ScoopContext> PackageHandle<'a, C> {
     /// Create a new package handle
     ///
     /// # Errors
@@ -84,7 +83,7 @@ impl<'a, C: ScoopContext<config::Scoop>> PackageHandle<'a, C> {
     pub fn current(&self) -> PathBuf {
         let current = self.path.join("current");
 
-        if !current.exists() || self.ctx.config().no_junction {
+        if !current.exists() || !self.ctx.symlinks_enabled() {
             self.version_dir()
         } else {
             current
@@ -161,7 +160,7 @@ impl<'a, C: ScoopContext<config::Scoop>> PackageHandle<'a, C> {
     /// - Linking the current folder failed
     /// - The current folder is not a symlink
     pub fn link_current(&self) -> Result<()> {
-        if self.ctx.config().no_junction {
+        if !self.ctx.symlinks_enabled() {
             return Ok(());
         }
 

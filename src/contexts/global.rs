@@ -39,7 +39,9 @@ impl Global {
     }
 }
 
-impl ScoopContext<config::Scoop> for Global {
+impl ScoopContext for Global {
+    type Config = config::Scoop;
+
     const APP_NAME: &'static str = User::APP_NAME;
     const CONTEXT_NAME: &'static str = "global";
 
@@ -49,6 +51,14 @@ impl ScoopContext<config::Scoop> for Global {
 
     fn config_mut(&mut self) -> &mut config::Scoop {
         self.user_context.config_mut()
+    }
+
+    fn symlinks_enabled(&self) -> bool {
+        !self.config().no_junction
+    }
+
+    fn proxy(&self) -> Option<&crate::proxy::Proxy> {
+        self.config().proxy.as_ref()
     }
 
     fn path(&self) -> &Path {

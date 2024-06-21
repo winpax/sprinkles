@@ -1,6 +1,6 @@
 //! Installer helpers
 
-use crate::{config, contexts::ScoopContext, packages::manifest::Installer, scripts};
+use crate::{contexts::ScoopContext, packages::manifest::Installer, scripts};
 
 use super::models::manifest::{InstallerRunner, TOrArrayOfTs};
 
@@ -31,7 +31,7 @@ impl Installer {
     ///
     /// # Errors
     /// - If the installer could not be run
-    pub async fn run(&self, ctx: &impl ScoopContext<config::Scoop>) -> Result<()> {
+    pub async fn run(&self, ctx: &impl ScoopContext) -> Result<()> {
         let runner = self.get_runner();
         let args = self.args.clone().map(TOrArrayOfTs::to_vec);
 

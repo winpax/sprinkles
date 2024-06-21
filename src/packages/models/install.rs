@@ -3,7 +3,6 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    config,
     contexts::ScoopContext,
     packages::{CreateManifest, Result},
     Architecture,
@@ -69,10 +68,7 @@ impl Manifest {
     ///
     /// # Errors
     /// - Missing or invalid manifest
-    pub fn get_manifest(
-        &self,
-        ctx: &impl ScoopContext<config::Scoop>,
-    ) -> Result<super::manifest::Manifest> {
+    pub fn get_manifest(&self, ctx: &impl ScoopContext) -> Result<super::manifest::Manifest> {
         let name = unsafe { self.name() };
         let manifest_path = ctx
             .apps_path()

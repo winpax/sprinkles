@@ -21,7 +21,7 @@ use std::{
 
 use tokio::process::Command;
 
-use crate::{config, contexts::ScoopContext, packages::models::manifest::TOrArrayOfTs};
+use crate::{contexts::ScoopContext, packages::models::manifest::TOrArrayOfTs};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -70,7 +70,7 @@ impl PowershellScript {
     ///
     /// # Errors
     /// - The script could not be written to the directory
-    pub fn save(&self, ctx: &impl ScoopContext<config::Scoop>) -> Result<ScriptRunner> {
+    pub fn save(&self, ctx: &impl ScoopContext) -> Result<ScriptRunner> {
         self.save_to(ctx.scripts_path())
     }
 

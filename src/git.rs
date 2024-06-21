@@ -12,7 +12,7 @@ use gix::{
     bstr::BStr, remote::ref_map, traverse::commit::simple::Sorting, Commit, ObjectId, Repository,
 };
 
-use crate::{buckets::Bucket, config, contexts::ScoopContext};
+use crate::{buckets::Bucket, contexts::ScoopContext};
 
 use pull::ProgressCallback;
 
@@ -112,7 +112,7 @@ impl Repo {
     ///
     /// # Errors
     /// - The Scoop app could not be opened as a repository
-    pub fn scoop_app<C>(context: &impl ScoopContext<C>) -> Result<Self> {
+    pub fn scoop_app(context: &impl ScoopContext) -> Result<Self> {
         let scoop_path = context.apps_path().join("scoop").join("current");
         let git2 = git2::Repository::open(&scoop_path)?;
         let gitoxide = gix::open(&scoop_path)?;
@@ -277,7 +277,7 @@ impl Repo {
     /// - Git error
     pub fn pull(
         &self,
-        ctx: &impl ScoopContext<config::Scoop>,
+        ctx: &impl ScoopContext,
         stats_cb: Option<ProgressCallback<'_>>,
     ) -> Result<()> {
         let current_branch = self.current_branch()?;
@@ -298,7 +298,7 @@ impl Repo {
     /// - Git error
     pub fn pull_with_changelog(
         &self,
-        ctx: &impl ScoopContext<config::Scoop>,
+        ctx: &impl ScoopContext,
         stats_cb: Option<ProgressCallback<'_>>,
     ) -> Result<Vec<String>> {
         let repo = self.gitoxide();

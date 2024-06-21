@@ -2,7 +2,7 @@
 
 use git2::{Progress, ProxyOptions, RemoteCallbacks};
 
-use crate::{config, contexts::ScoopContext};
+use crate::{contexts::ScoopContext};
 
 #[derive(Default)]
 /// An opinionated [`git2::FetchOptions`] wrapper
@@ -19,10 +19,10 @@ pub struct FetchOptions<'a> {
 impl<'a> FetchOptions<'a> {
     #[must_use]
     /// Create new [`FetchOptions`] with default values
-    pub fn new(ctx: &impl ScoopContext<config::Scoop>) -> Self {
+    pub fn new(ctx: &impl ScoopContext) -> Self {
         let mut this = Self::default();
 
-        if let Some(proxy) = ctx.config().proxy.clone() {
+        if let Some(proxy) = ctx.proxy().cloned() {
             this.proxy(proxy);
         }
 

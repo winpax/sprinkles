@@ -48,7 +48,9 @@ impl Default for User {
     }
 }
 
-impl super::ScoopContext<config::Scoop> for User {
+impl super::ScoopContext for User {
+    type Config = config::Scoop;
+
     const APP_NAME: &'static str = "scoop";
     const CONTEXT_NAME: &'static str = "user";
 
@@ -62,6 +64,14 @@ impl super::ScoopContext<config::Scoop> for User {
 
     fn config_mut(&mut self) -> &mut config::Scoop {
         &mut self.config
+    }
+
+    fn symlinks_enabled(&self) -> bool {
+        !self.config.no_junction
+    }
+
+    fn proxy(&self) -> Option<&crate::proxy::Proxy> {
+        self.config().proxy.as_ref()
     }
 
     #[must_use]

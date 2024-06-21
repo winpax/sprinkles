@@ -20,12 +20,12 @@
 
 use git2::Repository;
 
-use crate::{config, contexts::ScoopContext};
+use crate::{contexts::ScoopContext};
 
 pub type ProgressCallback<'a> = &'a dyn Fn(git2::Progress<'_>, bool) -> bool;
 
 fn do_fetch<'a>(
-    ctx: &impl ScoopContext<config::Scoop>,
+    ctx: &impl ScoopContext,
     repo: &'a git2::Repository,
     refs: &[&str],
     remote: &'a mut git2::Remote<'_>,
@@ -159,7 +159,7 @@ fn do_merge<'a>(
 /// # Errors
 /// - git2 errors
 pub fn pull(
-    ctx: &impl ScoopContext<config::Scoop>,
+    ctx: &impl ScoopContext,
     repo: &super::Repo,
     remote: Option<&str>,
     branch: Option<&str>,
