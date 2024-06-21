@@ -96,4 +96,40 @@ impl Installer {
             .map(InstallerRunner::Script)
             .or_else(|| self.file.clone().map(InstallerRunner::File))
     }
+
+    /// Get the installer host for the installer
+    ///
+    /// Will return `None` if the installer does not have a script or file
+    pub fn host<C: ScoopContext<config::Scoop>>(self, ctx: &C) -> Option<InstallerHost<'_, C>> {
+        InstallerHost::from_installer(ctx, self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use scripts::PowershellScript;
+
+    use crate::contexts::User;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_powershell_hello_world() {
+        let ctx = User::new();
+
+        let installer = Installer {
+            comment: None,
+            args: None,
+            file: None,
+            keep: None,
+            script: Some(PowershellScript::new("Write-Host 'Hello, world!'")),
+        };
+
+        let host = installer.host(&ctx).unwrap();
+
+        let output = host.await.unwrap();
+
+        assert_eq!(output.status.code(), Some(0));
+        assert_eq!(output.stdout, b"Hello, world!\r\n");
+    }
 }

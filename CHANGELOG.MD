@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `InstallerHost` struct for running installers
+- Tests for `InstallerHost` and `PowershellScript`
 
 ## [0.15.2]
 
