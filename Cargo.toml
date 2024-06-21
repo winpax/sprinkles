@@ -150,7 +150,12 @@ reqwest = { version = "0.12", default-features = false }
 anyhow = "1.0"
 criterion = { version = "0.5.1", features = ["html_reports", "tokio"] }
 rayon = "1.10"
-tokio = { version = "1.37", features = ["macros", "process"] }
+tokio = { version = "1.37", features = [
+    "rt",
+    "rt-multi-thread",
+    "macros",
+    "process",
+] }
 
 [build-dependencies]
 heck = "0.5"
