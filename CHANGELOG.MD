@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added `EmptyConfig` struct for when your implementation does not have a config
+- `InstallerHost` struct for running installers
+- Tests for `InstallerHost` and `PowershellScript`
 
 ## [0.15.2]
 
