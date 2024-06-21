@@ -20,7 +20,7 @@
 
 use git2::Repository;
 
-use crate::{contexts::ScoopContext};
+use crate::contexts::ScoopContext;
 
 pub type ProgressCallback<'a> = &'a dyn Fn(git2::Progress<'_>, bool) -> bool;
 

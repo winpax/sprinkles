@@ -2,7 +2,7 @@
 
 use git2::{Progress, ProxyOptions, RemoteCallbacks};
 
-use crate::{contexts::ScoopContext};
+use crate::contexts::ScoopContext;
 
 #[derive(Default)]
 /// An opinionated [`git2::FetchOptions`] wrapper
