@@ -5,9 +5,15 @@ use url::Url;
 
 use crate::{
     hash::url_ext::UrlExt,
-    packages::models::manifest::{AliasArray, Installer, StringArray, TOrArrayOfTs},
+    packages::models::manifest::{AliasArray, Installer, TOrArrayOfTs},
     version::Version,
 };
+
+fn replace_in_place(string: &mut String, from: &str, to: &str) {
+    for (start, part) in string.clone().match_indices(from) {
+        string.replace_range(start..start + part.len(), to);
+    }
+}
 
 #[derive(Debug, Clone, Deref, DerefMut)]
 pub struct SubstitutionMap(HashMap<String, String>);
@@ -26,8 +32,8 @@ impl SubstitutionMap {
         map
     }
 
-    pub fn substitute(&self, builder: SubstituteBuilder, regex_escape: bool) -> String {
-        builder.substitute(self, regex_escape)
+    pub fn substitute(&self, string: &mut String, regex_escape: bool) {
+        SubstituteBuilder::String(string).substitute(self, regex_escape);
     }
 
     /// Append version information to the map
@@ -46,108 +52,112 @@ impl Default for SubstitutionMap {
     }
 }
 
-pub enum SubstituteBuilder {
-    String(String),
+pub enum SubstituteBuilder<'a> {
+    String(&'a mut String),
 }
 
-impl SubstituteBuilder {
-    pub fn substitute(self, params: &SubstitutionMap, regex_escape: bool) -> String {
+impl<'a> SubstituteBuilder<'a> {
+    pub fn substitute(self, params: &SubstitutionMap, regex_escape: bool) {
         match self {
-            SubstituteBuilder::String(entity) => {
-                let mut new_entity = entity;
-
+            SubstituteBuilder::String(new_entity) => {
                 for key in params.keys() {
                     let value = params.get(key).unwrap();
 
                     if regex_escape {
-                        new_entity = new_entity.replace(key, &regex::escape(value));
+                        replace_in_place(new_entity, key, &regex::escape(value));
                     } else {
-                        new_entity = new_entity.replace(key, value);
+                        replace_in_place(new_entity, key, value);
                     }
                 }
-
-                new_entity
             }
         }
     }
 }
 
 pub trait Substitute {
-    fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool)
+    fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool);
+
+    #[must_use]
+    fn into_substituted(mut self, params: &SubstitutionMap, regex_escape: bool) -> Self
     where
         Self: Clone,
     {
-        let substituted = self.clone().into_substituted(params, regex_escape);
-
-        *self = substituted;
+        self.substitute(params, regex_escape);
+        self
     }
-
-    #[must_use]
-    fn into_substituted(self, params: &SubstitutionMap, regex_escape: bool) -> Self;
 }
 
 impl Substitute for String {
-    fn into_substituted(self, params: &SubstitutionMap, regex_escape: bool) -> Self {
-        SubstituteBuilder::String(self).substitute(params, regex_escape)
+    fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
+        SubstituteBuilder::String(self).substitute(params, regex_escape);
     }
 }
 
-impl Substitute for TOrArrayOfTs<String> {
-    fn into_substituted(self, params: &SubstitutionMap, regex_escape: bool) -> Self {
-        self.map(|s| s.into_substituted(params, regex_escape))
-    }
-}
-
-impl Substitute for Vec<String> {
-    fn into_substituted(self, params: &SubstitutionMap, regex_escape: bool) -> Self {
-        self.into_iter()
-            .map(|s| s.into_substituted(params, regex_escape))
-            .collect()
-    }
-}
-
-impl Substitute for Vec<Vec<String>> {
-    fn into_substituted(self, params: &SubstitutionMap, regex_escape: bool) -> Self {
-        self.into_iter()
-            .map(|s| s.into_substituted(params, regex_escape))
-            .collect()
-    }
-}
-
-impl Substitute for AliasArray<String> {
-    fn into_substituted(self, params: &SubstitutionMap, regex_escape: bool) -> Self {
+impl<T: Substitute> Substitute for TOrArrayOfTs<T> {
+    fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
         match self {
-            AliasArray::NestedArray(StringArray::Single(s)) => AliasArray::NestedArray(
-                StringArray::Single(s.into_substituted(params, regex_escape)),
-            ),
-            AliasArray::NestedArray(StringArray::Array(s)) => {
-                AliasArray::NestedArray(StringArray::Array(
-                    s.into_iter()
-                        .map(|s| s.into_substituted(params, regex_escape))
-                        .collect(),
-                ))
+            TOrArrayOfTs::Single(s) => s.substitute(params, regex_escape),
+            TOrArrayOfTs::Array(a) => {
+                for s in a.iter_mut() {
+                    s.substitute(params, regex_escape);
+                }
             }
-            AliasArray::AliasArray(s) => AliasArray::AliasArray(
-                s.into_iter()
-                    .map(|s| s.into_substituted(params, regex_escape))
-                    .collect(),
-            ),
+        }
+    }
+}
+
+impl<T: Substitute> Substitute for Vec<T> {
+    fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
+        self.iter_mut()
+            .for_each(|s| s.substitute(params, regex_escape));
+    }
+}
+
+impl<T: Substitute> Substitute for AliasArray<T> {
+    fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
+        match self {
+            AliasArray::NestedArray(TOrArrayOfTs::Single(s)) => s.substitute(params, regex_escape),
+            AliasArray::NestedArray(TOrArrayOfTs::Array(s)) => s
+                .iter_mut()
+                .for_each(|s| s.substitute(params, regex_escape)),
+            AliasArray::AliasArray(s) => s
+                .iter_mut()
+                .for_each(|s| s.substitute(params, regex_escape)),
         }
     }
 }
 
 impl Substitute for Installer {
-    fn into_substituted(self, params: &SubstitutionMap, regex_escape: bool) -> Self {
-        Installer {
-            file: self.file.map(|s| s.into_substituted(params, regex_escape)),
-            comment: self
-                .comment
-                .map(|s| s.into_substituted(params, regex_escape)),
-            args: self.args.map(|s| s.into_substituted(params, regex_escape)),
-            keep: self.keep,
-            script: self
-                .script
-                .map(|s| s.into_substituted(params, regex_escape)),
+    fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
+        if let Some(s) = self.file.as_mut() {
+            s.substitute(params, regex_escape);
         }
+
+        if let Some(s) = self.comment.as_mut() {
+            s.substitute(params, regex_escape);
+        }
+
+        if let Some(s) = self.args.as_mut() {
+            s.substitute(params, regex_escape);
+        }
+
+        if let Some(s) = self.script.as_mut() {
+            s.substitute(params, regex_escape);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::replace_in_place;
+
+    #[test]
+    fn test_replace_in_place() {
+        let mut string = String::from("Hello, world!");
+        let should_be = string.replace("world", "rust");
+
+        replace_in_place(&mut string, "world", "rust");
+
+        assert_eq!(string, should_be);
     }
 }

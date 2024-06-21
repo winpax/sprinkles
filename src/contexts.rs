@@ -152,7 +152,7 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
 
     /// List all scoop apps and return their paths, except for the context's app
     fn installed_apps(&self) -> std::io::Result<Vec<PathBuf>> {
-        #[cfg(feature = "parallel")]
+        #[cfg(feature = "rayon")]
         use rayon::prelude::*;
 
         let apps_path = self.apps_path();
@@ -161,7 +161,7 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
 
         Ok({
             cfg_if::cfg_if! {
-                if #[cfg(feature = "parallel")] {
+                if #[cfg(feature = "rayon")] {
                     read.par_bridge()
                 } else {
                     read

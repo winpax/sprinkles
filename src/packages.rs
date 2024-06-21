@@ -4,7 +4,7 @@ use std::{path::Path, time::SystemTimeError};
 
 use chrono::{DateTime, FixedOffset};
 use gix::{object::tree::diff::Action, traverse::commit::simple::Sorting};
-#[cfg(feature = "parallel")]
+#[cfg(feature = "rayon")]
 use rayon::prelude::*;
 use regex::Regex;
 use serde::Deserialize;
@@ -33,6 +33,7 @@ use crate::{
     packages::manifest::TOrArrayOfTs,
 };
 
+pub(crate) mod array;
 pub mod downloading;
 pub mod installer;
 pub mod models;
@@ -387,7 +388,7 @@ impl InstallManifest {
         let installed_apps = ctx.installed_apps()?;
         {
             cfg_if::cfg_if! {
-                if #[cfg(feature = "parallel")] {
+                if #[cfg(feature = "rayon")] {
                     installed_apps.par_iter()
                 } else {
                     installed_apps.iter()
@@ -407,7 +408,7 @@ impl InstallManifest {
 
         Ok({
             cfg_if::cfg_if! {
-                if #[cfg(feature = "parallel")] {
+                if #[cfg(feature = "rayon")] {
                     installed_apps.par_iter()
                 } else {
                     installed_apps.iter()
@@ -535,7 +536,7 @@ impl Manifest {
 
         Ok({
             cfg_if::cfg_if! {
-                if #[cfg(feature = "parallel")] {
+                if #[cfg(feature = "rayon")] {
                     installed_apps.par_iter()
                 } else {
                     installed_apps.iter()
@@ -622,7 +623,14 @@ impl Manifest {
 
         use crate::hash::Hash;
 
-        self.version = version.into();
+        let version = version.into();
+
+        if self.version == version {
+            // We don't need to do anything
+            return Ok(());
+        }
+
+        self.version = version;
 
         let autoupdate = self.autoupdate.as_ref().ok_or(Error::MissingAutoUpdate)?;
 

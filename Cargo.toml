@@ -37,7 +37,7 @@ rustc-args = ["--cfg", "docsrs", "--cfg", "reqwest_unstable"]
 
 [features]
 beta = []
-default = ["manifest-hashes", "parallel"]
+default = ["manifest-hashes", "rayon"]
 manifest-hashes = [
     "base64",
     "digest",
@@ -53,8 +53,8 @@ manifest-hashes = [
     "urlencoding",
     "tokio/fs",
 ]
-parallel = ["blake3/rayon", "indicatif/rayon", "rayon"]
 parking_lot = ["tokio/parking_lot"]
+rayon = ["dep:rayon", "blake3/rayon", "indicatif/rayon"]
 rustls-tls = [
     "gix/blocking-http-transport-reqwest-rust-tls",
     "reqwest/rustls-tls",
@@ -104,7 +104,7 @@ itertools = "0.13"
 log = "0.4"
 md-5 = "0.10"
 phf = { version = "0.11", default-features = false }
-quick-xml = { version = "0.31", optional = true, features = ["serialize"] }
+quick-xml = { version = "0.32", optional = true, features = ["serialize"] }
 quork = "0.7"
 rayon = { version = "1.10", optional = true }
 regex = "1.10"
@@ -133,7 +133,7 @@ windows = { version = "0.57", features = [
 winreg = "0.52"
 
 [target.'cfg(not(docsrs))'.dependencies]
-git2 = "0.18"
+git2 = "0.19"
 reqwest = { version = "0.12", features = [
     "blocking",
     "brotli",
@@ -143,14 +143,19 @@ reqwest = { version = "0.12", features = [
 ] }
 
 [target.'cfg(docsrs)'.dependencies]
-git2 = { version = "0.18", default-features = false }
+git2 = { version = "0.19", default-features = false }
 reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"
 criterion = { version = "0.5.1", features = ["html_reports", "tokio"] }
 rayon = "1.10"
-tokio = { version = "1.37", features = ["macros", "process"] }
+tokio = { version = "1.37", features = [
+    "rt",
+    "rt-multi-thread",
+    "macros",
+    "process",
+] }
 
 [build-dependencies]
 heck = "0.5"
