@@ -6,7 +6,6 @@ use itertools::Itertools;
 
 use crate::{
     buckets::Bucket,
-    config,
     contexts::ScoopContext,
     hacks::let_chain,
     handles::{self, packages::PackageHandle},
@@ -91,7 +90,7 @@ impl Reference {
     /// Parse the bucket and package to get the manifest path
     ///
     /// Returns [`None`] if the bucket is not valid or the manifest does not exist
-    pub fn manifest_path(&self, ctx: &impl ScoopContext<config::Scoop>) -> Option<PathBuf> {
+    pub fn manifest_path(&self, ctx: &impl ScoopContext) -> Option<PathBuf> {
         if let Some(bucket_name) = self.bucket() {
             let bucket = Bucket::from_name(ctx, bucket_name).ok()?;
 
@@ -111,10 +110,7 @@ impl Reference {
     /// - If the app dir cannot be read
     /// - If the bucket is not valid
     /// - If the bucket is not found
-    pub async fn manifest(
-        &self,
-        ctx: &impl ScoopContext<config::Scoop>,
-    ) -> Result<Manifest, Error> {
+    pub async fn manifest(&self, ctx: &impl ScoopContext) -> Result<Manifest, Error> {
         // TODO: Map output to fix version
 
         let mut manifest = if {
@@ -170,10 +166,7 @@ impl Reference {
     /// - If the package is not installed
     /// - Package was missing a name
     /// - Listing the installed apps failed
-    pub fn first_installed_path(
-        &self,
-        ctx: &impl ScoopContext<config::Scoop>,
-    ) -> Result<PathBuf, Error> {
+    pub fn first_installed_path(&self, ctx: &impl ScoopContext) -> Result<PathBuf, Error> {
         let installed_apps = ctx.installed_apps()?;
 
         let app_path = installed_apps.into_iter().find(|path| {
@@ -194,10 +187,7 @@ impl Reference {
     /// - Failed to parse the manifest
     /// - Package was missing a name
     /// - Listing the installed apps failed
-    pub fn first_installed(
-        &self,
-        ctx: &impl ScoopContext<config::Scoop>,
-    ) -> Result<Manifest, Error> {
+    pub fn first_installed(&self, ctx: &impl ScoopContext) -> Result<Manifest, Error> {
         let app_path = self.first_installed_path(ctx)?;
 
         Ok(Manifest::from_path(
@@ -209,7 +199,7 @@ impl Reference {
     /// Find the first matching manifest in local buckets
     ///
     /// Returns [`None`] if no matching manifest is found
-    pub fn first(&self, ctx: &impl ScoopContext<config::Scoop>) -> Option<Manifest> {
+    pub fn first(&self, ctx: &impl ScoopContext) -> Option<Manifest> {
         let Ok(buckets) = Bucket::list_all(ctx) else {
             return None;
         };
@@ -228,7 +218,7 @@ impl Reference {
     /// Returns a [`Vec`] with a single manifest path if the reference is valid
     ///
     /// Otherwise returns a [`Vec`] containing each matching manifest path found in each local bucket
-    pub fn list_manifest_paths(&self, ctx: &impl ScoopContext<config::Scoop>) -> Vec<PathBuf> {
+    pub fn list_manifest_paths(&self, ctx: &impl ScoopContext) -> Vec<PathBuf> {
         if let Some(manifest_path) = self.manifest_path(ctx) {
             vec![manifest_path]
         } else {
@@ -263,10 +253,7 @@ impl Reference {
     /// - If the app dir cannot be read
     /// - If any of the buckets are not valid
     /// - If any of the buckets are not found
-    pub async fn list_manifests(
-        &self,
-        ctx: &impl ScoopContext<config::Scoop>,
-    ) -> Result<Vec<Manifest>, Error> {
+    pub async fn list_manifests(&self, ctx: &impl ScoopContext) -> Result<Vec<Manifest>, Error> {
         futures::future::try_join_all(
             self.list_manifest_paths(ctx)
                 .into_iter()
@@ -289,7 +276,7 @@ impl Reference {
     /// # Errors
     /// - Reading app dir fails
     /// - Missing app name
-    pub fn installed(&self, ctx: &impl ScoopContext<config::Scoop>) -> Result<bool, Error> {
+    pub fn installed(&self, ctx: &impl ScoopContext) -> Result<bool, Error> {
         let name = self.name().ok_or(Error::MissingAppName)?;
 
         Ok(ctx.app_installed(name)?)
@@ -299,7 +286,7 @@ impl Reference {
     ///
     /// # Errors
     /// - The package is not installed
-    pub async fn open_handle<C: ScoopContext<config::Scoop>>(
+    pub async fn open_handle<C: ScoopContext>(
         self,
         ctx: &C,
     ) -> Result<PackageHandle<'_, C>, handles::packages::Error> {
