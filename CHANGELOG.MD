@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Provide more default trait methods for `ScoopContext`. This may cause different outputs for certain implementations.
 - Removed `v1` feature. `v1` breaking changes have been merged in this release.
 
-## Changes
+### Changes
 
 - Refactor substitutions trait. It now only requires `fn substitute` rather than `fn into_substituted`
 - Do not do any manifest updates if the version is the same as the current version
@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `InstallerHost` struct for running installers
+- Tests for `InstallerHost` and `PowershellScript`
 - `from/to_object` methods for Scoop config for converting to/from serde_json objects
 - Implement `FromStr` for `ScoopBranch`
 
