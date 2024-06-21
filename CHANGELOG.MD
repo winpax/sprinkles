@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Default logging directory for `User` context implementation is now `%LocalAppData%/sfsu/logs` instead of `<sfsu app path>/logs`
 - Provide more default trait methods for `ScoopContext`. This may cause different outputs for certain implementations.
+- Removed `v1` feature. `v1` breaking changes have been merged in this release.
 
 ## Changes
 

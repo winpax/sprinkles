@@ -60,7 +60,6 @@ rustls-tls = [
     "reqwest/rustls-tls",
 ]
 rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
-v1 = []
 vendored-libgit2 = ["git2/vendored-libgit2"]
 vendored-native-tls = [
     "gix/blocking-http-transport-reqwest-native-tls",
