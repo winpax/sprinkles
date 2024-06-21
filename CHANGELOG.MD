@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Do not do any manifest updates if the version is the same as the current version
 - Replace `parallel` feature with `rayon` feature
 
+### Added
+
+- `from/to_object` methods for Scoop config for converting to/from serde_json objects
+- Implement `FromStr` for `ScoopBranch`
+
 ## [0.15.2]
 
 ### Fixed
