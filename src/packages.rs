@@ -12,7 +12,6 @@ use strum::Display;
 
 use crate::{
     buckets::{self, Bucket},
-    config,
     contexts::ScoopContext,
     git::{
         self,
@@ -384,7 +383,7 @@ impl InstallManifest {
     /// # Errors
     /// - Invalid install manifest
     /// - Reading directories fails
-    pub fn list_all(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Self>> {
+    pub fn list_all(ctx: &impl ScoopContext) -> Result<Vec<Self>> {
         let installed_apps = ctx.installed_apps()?;
         {
             cfg_if::cfg_if! {
@@ -403,7 +402,7 @@ impl InstallManifest {
     ///
     /// # Errors
     /// - Reading directories fails
-    pub fn list_all_unchecked(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Self>> {
+    pub fn list_all_unchecked(ctx: &impl ScoopContext) -> Result<Vec<Self>> {
         let installed_apps = ctx.installed_apps()?;
 
         Ok({
@@ -484,7 +483,7 @@ impl Manifest {
     /// # Errors
     /// - If the manifest doesn't exist or bucket is invalid
     pub fn from_reference(
-        ctx: &impl ScoopContext<config::Scoop>,
+        ctx: &impl ScoopContext,
         (bucket, name): (String, String),
     ) -> Result<Self> {
         Bucket::from_name(ctx, bucket)?.get_manifest(name)
@@ -531,7 +530,7 @@ impl Manifest {
     ///
     /// # Panics
     /// - If the file name is invalid
-    pub fn list_installed(ctx: &impl ScoopContext<config::Scoop>) -> Result<Vec<Result<Self>>> {
+    pub fn list_installed(ctx: &impl ScoopContext) -> Result<Vec<Result<Self>>> {
         let installed_apps = ctx.installed_apps()?;
 
         Ok({
@@ -559,11 +558,7 @@ impl Manifest {
 
     #[must_use]
     /// Check if the manifest is installed
-    pub fn is_installed(
-        &self,
-        ctx: &impl ScoopContext<config::Scoop>,
-        bucket: Option<&str>,
-    ) -> bool {
+    pub fn is_installed(&self, ctx: &impl ScoopContext, bucket: Option<&str>) -> bool {
         is_installed(ctx, unsafe { self.name() }, bucket)
     }
 
@@ -616,7 +611,7 @@ impl Manifest {
     /// - Hash error
     pub async fn set_version(
         &mut self,
-        ctx: &impl ScoopContext<config::Scoop>,
+        ctx: &impl ScoopContext,
         version: String,
     ) -> Result<(), Error> {
         use quork::traits::list::ListVariants;
@@ -779,7 +774,7 @@ impl Manifest {
     /// - Internal git2 errors
     pub fn last_updated_info(
         &self,
-        ctx: &impl ScoopContext<config::Scoop>,
+        ctx: &impl ScoopContext,
     ) -> Result<(Option<DateTime<FixedOffset>>, Option<Signature>)> {
         let bucket = Bucket::from_name(ctx, unsafe { self.bucket() })?;
 
@@ -869,10 +864,7 @@ impl Manifest {
     ///
     /// # Errors
     /// - Missing or invalid [`InstallManifest`]
-    pub fn install_manifest(
-        &self,
-        ctx: &impl ScoopContext<config::Scoop>,
-    ) -> Result<InstallManifest> {
+    pub fn install_manifest(&self, ctx: &impl ScoopContext) -> Result<InstallManifest> {
         let apps_path = ctx.apps_path();
         let install_path = apps_path
             .join(unsafe { self.name() })
@@ -890,7 +882,7 @@ impl Manifest {
 /// # Panics
 /// - The file was not valid UTF-8
 pub fn is_installed(
-    ctx: &impl ScoopContext<config::Scoop>,
+    ctx: &impl ScoopContext,
     manifest_name: impl AsRef<Path>,
     bucket: Option<impl AsRef<str>>,
 ) -> bool {

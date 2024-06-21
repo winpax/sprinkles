@@ -8,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{config, git};
+use crate::{config, git, proxy::Proxy};
 
 mod global;
 mod user;
@@ -45,6 +45,10 @@ impl Error {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+/// An empty config struct for when your implementation does not have a config
+pub struct EmptyConfig;
+
 /// An adapter for Scoop-like contexts
 ///
 /// This is used to provide a common interface for Scoop-like contexts, and to allow for mocking in tests
@@ -58,7 +62,10 @@ impl Error {
 /// let context = User::new();
 /// let scoop_path = context.path();
 /// ```
-pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
+pub trait ScoopContext: Clone + Send + Sync + 'static {
+    /// The config used by the given context
+    type Config;
+
     /// The name of the context
     ///
     /// This is used internally to ignore this app when searching for installed apps,
@@ -77,10 +84,22 @@ pub trait ScoopContext<C>: Clone + Send + Sync + 'static {
     const CONTEXT_NAME: &'static str = Self::APP_NAME;
 
     /// Get a reference to the context's configuration
-    fn config(&self) -> &C;
+    fn config(&self) -> &Self::Config;
 
     /// Get a mutable reference to the context's configuration
-    fn config_mut(&mut self) -> &mut C;
+    fn config_mut(&mut self) -> &mut Self::Config;
+
+    /// Check if symlinks are enabled
+    ///
+    /// Generally this is an option in the config,
+    /// and should be passed directly from the config.
+    fn symlinks_enabled(&self) -> bool;
+
+    /// Get the proxy for the context
+    ///
+    /// Generally this is an option in the config,
+    /// and should be passed directly from the config.
+    fn proxy(&self) -> Option<&Proxy>;
 
     #[must_use]
     /// Gets the context's path
@@ -234,7 +253,9 @@ pub enum AnyContext {
     Global(Global),
 }
 
-impl ScoopContext<config::Scoop> for AnyContext {
+impl ScoopContext for AnyContext {
+    type Config = config::Scoop;
+
     const APP_NAME: &'static str = User::APP_NAME;
     const CONTEXT_NAME: &'static str = "Unknown context";
 
@@ -249,6 +270,20 @@ impl ScoopContext<config::Scoop> for AnyContext {
         match self {
             AnyContext::User(user) => user.config_mut(),
             AnyContext::Global(global) => global.config_mut(),
+        }
+    }
+
+    fn symlinks_enabled(&self) -> bool {
+        match self {
+            AnyContext::User(user) => user.symlinks_enabled(),
+            AnyContext::Global(global) => global.symlinks_enabled(),
+        }
+    }
+
+    fn proxy(&self) -> Option<&Proxy> {
+        match self {
+            AnyContext::User(user) => user.proxy(),
+            AnyContext::Global(global) => global.proxy(),
         }
     }
 

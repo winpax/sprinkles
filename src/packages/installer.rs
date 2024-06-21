@@ -4,7 +4,7 @@ use std::{future::IntoFuture, process::Output};
 
 use futures::FutureExt;
 
-use crate::{config, contexts::ScoopContext, packages::manifest::Installer, scripts};
+use crate::{contexts::ScoopContext, packages::manifest::Installer, scripts};
 
 use super::models::manifest::{InstallerRunner, TOrArrayOfTs};
 
@@ -26,13 +26,13 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 /// An installer host
 ///
 /// This is used to run the installers
-pub struct InstallerHost<'ctx, C: ScoopContext<config::Scoop>> {
+pub struct InstallerHost<'ctx, C: ScoopContext> {
     ctx: &'ctx C,
     installer: Installer,
     runner: InstallerRunner,
 }
 
-impl<'ctx, C: ScoopContext<config::Scoop>> InstallerHost<'ctx, C> {
+impl<'ctx, C: ScoopContext> InstallerHost<'ctx, C> {
     /// Create a new installer host
     pub fn new(ctx: &'ctx C, installer: Installer, runner: InstallerRunner) -> Self {
         Self {
@@ -76,7 +76,7 @@ impl<'ctx, C: ScoopContext<config::Scoop>> InstallerHost<'ctx, C> {
     }
 }
 
-impl<'ctx, C: ScoopContext<config::Scoop>> IntoFuture for InstallerHost<'ctx, C> {
+impl<'ctx, C: ScoopContext> IntoFuture for InstallerHost<'ctx, C> {
     type Output = Result<Output>;
 
     type IntoFuture =
@@ -100,7 +100,7 @@ impl Installer {
     /// Get the installer host for the installer
     ///
     /// Will return `None` if the installer does not have a script or file
-    pub fn host<C: ScoopContext<config::Scoop>>(self, ctx: &C) -> Option<InstallerHost<'_, C>> {
+    pub fn host<C: ScoopContext>(self, ctx: &C) -> Option<InstallerHost<'_, C>> {
         InstallerHost::from_installer(ctx, self)
     }
 }

@@ -15,7 +15,6 @@ pub(crate) mod known {
 }
 
 use crate::{
-    config,
     contexts::ScoopContext,
     git::{self, Repo},
     packages::{self, CreateManifest, InstallManifest, Manifest, SearchMode},
@@ -57,7 +56,7 @@ impl Bucket {
     ///
     /// # Errors
     /// - Bucket does not exist
-    pub fn from_name<C>(ctx: &impl ScoopContext<C>, name: impl AsRef<Path>) -> Result<Self> {
+    pub fn from_name(ctx: &impl ScoopContext, name: impl AsRef<Path>) -> Result<Self> {
         Self::from_path(ctx.buckets_path().join(name))
     }
 
@@ -80,8 +79,8 @@ impl Bucket {
     /// # Errors
     /// - Any listed or provided bucket is invalid
     /// - Unable to read the bucket directory
-    pub fn one_or_all<C>(
-        ctx: &impl ScoopContext<C>,
+    pub fn one_or_all(
+        ctx: &impl ScoopContext,
         name: Option<impl AsRef<Path>>,
     ) -> Result<Vec<Self>> {
         if let Some(name) = name {
@@ -123,7 +122,7 @@ impl Bucket {
     /// # Errors
     /// - Was unable to read the bucket directory
     /// - Any listed bucket is invalid
-    pub fn list_all<C>(ctx: &impl ScoopContext<C>) -> Result<Vec<Bucket>> {
+    pub fn list_all(ctx: &impl ScoopContext) -> Result<Vec<Bucket>> {
         let bucket_dir = std::fs::read_dir(ctx.buckets_path())?;
 
         bucket_dir
@@ -254,7 +253,7 @@ impl Bucket {
     ///
     /// # Errors
     /// - Could not load the manifest from the path
-    pub fn matches<'a, C: ScoopContext<config::Scoop>>(
+    pub fn matches<'a, C: ScoopContext>(
         &self,
         ctx: &'a C,
         installed_only: bool,
@@ -307,7 +306,7 @@ impl Bucket {
     /// # Errors
     /// Invalid install manifest
     /// Reading directories fails
-    pub fn used(ctx: &impl ScoopContext<config::Scoop>) -> packages::Result<HashSet<String>> {
+    pub fn used(ctx: &impl ScoopContext) -> packages::Result<HashSet<String>> {
         #[cfg(feature = "rayon")]
         use rayon::prelude::*;
 
@@ -332,7 +331,7 @@ impl Bucket {
     /// # Errors
     /// Invalid install manifest
     /// Reading directories fails
-    pub fn is_used(&self, ctx: &impl ScoopContext<config::Scoop>) -> packages::Result<bool> {
+    pub fn is_used(&self, ctx: &impl ScoopContext) -> packages::Result<bool> {
         Ok(Self::used(ctx)?.contains(&self.name().to_string()))
     }
 

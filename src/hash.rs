@@ -13,7 +13,6 @@ use url::Url;
 
 use crate::{
     cache::{self, Downloader, Handle},
-    config,
     contexts::ScoopContext,
     hash::url_ext::UrlExt,
     packages::{
@@ -359,7 +358,7 @@ impl Hash {
     /// - If the hash is not found in the text
     /// - If the hash is not found in the JSON
     pub async fn get_for_app(
-        ctx: &impl ScoopContext<config::Scoop>,
+        ctx: &impl ScoopContext,
         manifest: &Manifest,
         arch: Architecture,
     ) -> Result<Vec<Hash>, Error> {
