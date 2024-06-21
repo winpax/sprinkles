@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Provide more default trait methods for `ScoopContext`. This may cause different outputs for certain implementations.
 - Config type is now an associated type of `ScoopContext` rather than a generic type parameter
   - This saves a lot of boilerplate, internally and externally, having generics everywhere to account for the config type
+- Removed `v1` feature. `v1` breaking changes have been merged in this release.
 
 ### Changes
 
@@ -25,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `EmptyConfig` struct for when your implementation does not have a config
 - `InstallerHost` struct for running installers
 - Tests for `InstallerHost` and `PowershellScript`
+- `from/to_object` methods for Scoop config for converting to/from serde_json objects
+- Implement `FromStr` for `ScoopBranch`
 
 ## [0.15.2]
 

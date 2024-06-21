@@ -1,6 +1,6 @@
 //! Scoop branch configuration
 
-use std::fmt::Display;
+use std::{convert::Infallible, fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
@@ -55,5 +55,25 @@ impl ScoopBranch {
 impl Display for ScoopBranch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name())
+    }
+}
+
+impl FromStr for ScoopBranch {
+    type Err = Infallible;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Ok(match value {
+            "master" => Self::Master,
+            "develop" => Self::Develop,
+            _ => Self::Other(value.to_string()),
+        })
+    }
+}
+
+impl<T: AsRef<str>> From<T> for ScoopBranch {
+    fn from(value: T) -> Self {
+        // SAFETY: `unwrap_unchecked` here is safe because the `FromStr` implementation
+        // will never return an error
+        unsafe { value.as_ref().parse().unwrap_unchecked() }
     }
 }

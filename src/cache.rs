@@ -57,7 +57,7 @@ impl<'a> CacheFile<'a> {
     }
 
     #[must_use]
-    #[cfg_attr(feature = "v1", deprecated)]
+    #[deprecated]
     /// Get the cache file name using the legacy format
     pub fn filename_legacy(&self) -> String {
         let mut file_name = self.name.to_string();
@@ -456,6 +456,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_cache_file_legacy() {
         use crate::packages::downloading::DownloadUrl;
 
@@ -484,6 +485,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_cache_file_renamed_legacy() {
         use crate::packages::downloading::DownloadUrl;
 
