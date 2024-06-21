@@ -14,11 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Config type is now an associated type of `ScoopContext` rather than a generic type parameter
   - This saves a lot of boilerplate, internally and externally, having generics everywhere to account for the config type
 
-## Changes
+### Changes
 
 - Refactor substitutions trait. It now only requires `fn substitute` rather than `fn into_substituted`
 - Do not do any manifest updates if the version is the same as the current version
 - Replace `parallel` feature with `rayon` feature
+
+### Added
+
+- Added `EmptyConfig` struct for when your implementation does not have a config
 
 ## [0.15.2]
 

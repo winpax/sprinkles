@@ -45,6 +45,10 @@ impl Error {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+/// An empty config struct for when your implementation does not have a config
+pub struct EmptyConfig;
+
 /// An adapter for Scoop-like contexts
 ///
 /// This is used to provide a common interface for Scoop-like contexts, and to allow for mocking in tests
