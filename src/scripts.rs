@@ -16,7 +16,7 @@
 
 use std::{
     path::{Path, PathBuf},
-    process::ExitStatus,
+    process::{ExitStatus, Output},
 };
 
 use tokio::process::Command;
@@ -28,7 +28,7 @@ use crate::{config, contexts::ScoopContext, packages::models::manifest::TOrArray
 /// Errors that can occur when running a script
 pub enum Error {
     #[error("Powershell exited with code {0}")]
-    PowershellExit(ExitStatus),
+    PowershellExit(ExitStatus, Output),
     #[error("Could not find powershell in path")]
     FindPowershell(#[from] which::Error),
     #[error("Running script: {0}")]
@@ -171,7 +171,7 @@ impl ScriptRunner {
     /// - If powershell exited with a non-zero exit code
     /// - If powershell could not be found in the system path
     /// - If the script could not be written to the path
-    pub async fn run(&self) -> Result<()> {
+    pub async fn run(&self) -> Result<Output> {
         let output = Command::new(&self.powershell_path)
             .arg("-NoProfile")
             .arg("-ExecutionPolicy")
@@ -182,10 +182,10 @@ impl ScriptRunner {
             .await?;
 
         if !output.status.success() {
-            return Err(Error::PowershellExit(output.status));
+            return Err(Error::PowershellExit(output.status, output));
         }
 
-        Ok(())
+        Ok(output)
     }
 }
 
@@ -218,5 +218,26 @@ mod ser_de {
 
             Ok(PowershellScript::from(script_array))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::contexts::User;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_powershell_hello_world() {
+        let ctx = User::new();
+
+        let script = PowershellScript::new("Write-Host 'Hello, world!'")
+            .save(&ctx)
+            .unwrap();
+
+        let output = script.run().await.unwrap();
+
+        assert_eq!(output.status.code(), Some(0));
+        assert_eq!(output.stdout, b"Hello, world!\r\n");
     }
 }
