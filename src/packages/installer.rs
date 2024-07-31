@@ -1,8 +1,6 @@
 //! Installer helpers
 
-use std::{future::IntoFuture, process::Output};
-
-use futures::FutureExt;
+use std::process::Output;
 
 use crate::{contexts::ScoopContext, packages::manifest::Installer, scripts};
 
@@ -53,7 +51,7 @@ impl<'ctx, C: ScoopContext> InstallerHost<'ctx, C> {
     ///
     /// # Errors
     /// - If the installer could not be run
-    pub async fn run(self) -> Result<Output> {
+    pub fn run(self) -> Result<Output> {
         let runner = self.runner;
         let args = self.installer.args.clone().map(TOrArrayOfTs::to_vec);
 
@@ -69,21 +67,10 @@ impl<'ctx, C: ScoopContext> InstallerHost<'ctx, C> {
                 .spawn()?
                 .wait_with_output()?
             }
-            InstallerRunner::Script(script) => script.save(self.ctx)?.run().await?,
+            InstallerRunner::Script(script) => script.save(self.ctx)?.run()?,
         };
 
         Ok(output)
-    }
-}
-
-impl<'ctx, C: ScoopContext> IntoFuture for InstallerHost<'ctx, C> {
-    type Output = Result<Output>;
-
-    type IntoFuture =
-        std::pin::Pin<Box<dyn std::future::Future<Output = Self::Output> + Send + 'ctx>>;
-
-    fn into_future(self) -> Self::IntoFuture {
-        self.run().boxed()
     }
 }
 
@@ -113,8 +100,8 @@ mod tests {
 
     use super::*;
 
-    #[tokio::test]
-    async fn test_powershell_hello_world() {
+    #[test]
+    fn test_powershell_hello_world() {
         let ctx = User::new();
 
         let installer = Installer {
@@ -127,7 +114,7 @@ mod tests {
 
         let host = installer.host(&ctx).unwrap();
 
-        let output = host.await.unwrap();
+        let output = host.run().unwrap();
 
         assert_eq!(output.status.code(), Some(0));
         assert_eq!(output.stdout, b"Hello, world!\r\n");
