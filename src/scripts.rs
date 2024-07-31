@@ -9,9 +9,7 @@
 //! let script = PowershellScript::new("Write-Host 'Hello, world!'");
 //! # let ctx = User::new();
 //! let runner = script.save_to(ctx.scripts_path()).unwrap();
-//! # tokio::runtime::Runtime::new().unwrap().block_on(async {
-//! runner.run().await.unwrap();
-//! # });
+//! runner.run().unwrap();
 //! ```
 
 use std::{
