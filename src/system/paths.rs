@@ -11,6 +11,7 @@ pub enum WindowsPath {
 }
 
 impl WindowsPath {
+    #[cfg(windows)]
     pub fn as_csidl(self) -> u32 {
         use windows::Win32::UI::Shell::{CSIDL_APPDATA, CSIDL_COMMON_APPDATA, CSIDL_LOCAL_APPDATA};
 
@@ -19,11 +20,6 @@ impl WindowsPath {
             WindowsPath::AppData => CSIDL_APPDATA,
             WindowsPath::LocalAppData => CSIDL_LOCAL_APPDATA,
         }
-    }
-
-    #[cfg(not(windows))]
-    pub fn to_path(&self) -> windows::core::Result<PathBuf> {
-        unimplemented!()
     }
 
     #[cfg(windows)]
@@ -52,5 +48,10 @@ impl WindowsPath {
         } else {
             None
         }
+    }
+
+    #[cfg(not(windows))]
+    pub fn into_path(self) -> Option<PathBuf> {
+        unimplemented!()
     }
 }
