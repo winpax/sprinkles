@@ -26,19 +26,22 @@ version = "0.16.0"
 name = "sprinkles"
 
 [package.metadata.docs.rs]
-default-target = "x86_64-unknown-linux-gnu"
+default-features = false
+default-target = "x86_64-pc-windows-msvc"
 features = [
     "beta",
     "git2/vendored-libgit2",
     "gix/blocking-http-transport-reqwest-native-tls",
     "reqwest/native-tls-vendored",
     "git2/vendored-openssl",
+    "manifest-hashes",
 ]
 rustc-args = ["--cfg", "docsrs", "--cfg", "reqwest_unstable"]
 
 [features]
 beta = []
-default = ["manifest-hashes", "rayon"]
+default = ["manifest-hashes", "rayon", "downloads"]
+downloads = ["tokio", "tokio-util"]
 manifest-hashes = [
     "base64",
     "digest",
@@ -49,7 +52,6 @@ manifest-hashes = [
     "sha2",
     "sxd-document",
     "sxd-xpath",
-    "tokio-util",
     "url",
     "urlencoding",
     "tokio/fs",
@@ -119,7 +121,7 @@ strum = { version = "0.26", features = ["derive"] }
 sxd-document = { version = "0.3", optional = true }
 sxd-xpath = { version = "0.4", optional = true }
 thiserror = "1.0"
-tokio = { version = "1.37", features = ["process"] }
+tokio = { version = "1.37", features = ["process"], optional = true }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 url = { version = "2.5", features = ["serde"], optional = true }
 urlencoding = { version = "2.1", optional = true }
