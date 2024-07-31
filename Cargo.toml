@@ -26,7 +26,6 @@ version = "0.16.0"
 name = "sprinkles"
 
 [package.metadata.docs.rs]
-default-features = false
 default-target = "x86_64-pc-windows-msvc"
 features = [
     "beta",
@@ -41,7 +40,6 @@ rustc-args = ["--cfg", "docsrs", "--cfg", "reqwest_unstable"]
 [features]
 beta = []
 default = ["manifest-hashes", "rayon", "downloads"]
-downloads = ["tokio", "tokio-util"]
 manifest-hashes = [
     "base64",
     "digest",
@@ -52,6 +50,8 @@ manifest-hashes = [
     "sha2",
     "sxd-document",
     "sxd-xpath",
+    "tokio",
+    "tokio-util",
     "url",
     "urlencoding",
     "tokio/fs",
