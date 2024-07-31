@@ -10,8 +10,6 @@ use digest::Digest;
 use futures::{Stream, StreamExt, TryStreamExt};
 use indicatif::{MultiProgress, ProgressBar};
 use reqwest::{Response, StatusCode};
-use tokio::io::AsyncWriteExt;
-use tokio_util::codec::{BytesCodec, FramedRead};
 
 use crate::{
     hacks::let_chain,
@@ -352,7 +350,8 @@ impl Downloader {
     }
 
     async fn handle_buf<D: Digest>(self) -> Result<Vec<u8>, Error> {
-        use tokio::fs::File;
+        use tokio::{fs::File, io::AsyncWriteExt};
+        use tokio_util::codec::{BytesCodec, FramedRead};
 
         enum Source<T: futures::Stream<Item = reqwest::Result<bytes::Bytes>> + std::marker::Unpin> {
             Cache(futures::prelude::stream::IntoStream<FramedRead<File, BytesCodec>>),

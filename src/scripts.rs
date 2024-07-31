@@ -9,17 +9,13 @@
 //! let script = PowershellScript::new("Write-Host 'Hello, world!'");
 //! # let ctx = User::new();
 //! let runner = script.save_to(ctx.scripts_path()).unwrap();
-//! # tokio::runtime::Runtime::new().unwrap().block_on(async {
-//! runner.run().await.unwrap();
-//! # });
+//! runner.run().unwrap();
 //! ```
 
 use std::{
     path::{Path, PathBuf},
-    process::{ExitStatus, Output},
+    process::{Command, ExitStatus, Output},
 };
-
-use tokio::process::Command;
 
 use crate::{contexts::ScoopContext, packages::models::manifest::TOrArrayOfTs};
 
@@ -171,15 +167,14 @@ impl ScriptRunner {
     /// - If powershell exited with a non-zero exit code
     /// - If powershell could not be found in the system path
     /// - If the script could not be written to the path
-    pub async fn run(&self) -> Result<Output> {
+    pub fn run(&self) -> Result<Output> {
         let output = Command::new(&self.powershell_path)
             .arg("-NoProfile")
             .arg("-ExecutionPolicy")
             .arg("Bypass")
             .arg("-File")
             .arg(&self.path)
-            .output()
-            .await?;
+            .output()?;
 
         if !output.status.success() {
             return Err(Error::PowershellExit(output.status, output));
@@ -227,15 +222,15 @@ mod tests {
 
     use super::*;
 
-    #[tokio::test]
-    async fn test_powershell_hello_world() {
+    #[test]
+    fn test_powershell_hello_world() {
         let ctx = User::new();
 
         let script = PowershellScript::new("Write-Host 'Hello, world!'")
             .save(&ctx)
             .unwrap();
 
-        let output = script.run().await.unwrap();
+        let output = script.run().unwrap();
 
         assert_eq!(output.status.code(), Some(0));
         assert_eq!(output.stdout, b"Hello, world!\r\n");
