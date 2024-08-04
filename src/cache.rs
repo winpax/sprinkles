@@ -14,7 +14,7 @@ use reqwest::{Response, StatusCode};
 use crate::{
     hacks::let_chain,
     hash::{url_ext::UrlExt, Hash, HashType},
-    packages::{downloading::DownloadUrl, models::manifest::TOrArrayOfTs, Manifest},
+    packages::{downloading::DownloadUrl, models::manifest::SingleOrArray, Manifest},
     progress,
     requests::ClientLike,
     version::Version,
@@ -230,7 +230,7 @@ impl Handle {
         let hashes = manifest
             .install_config(arch)
             .hash
-            .map(TOrArrayOfTs::to_vec)
+            .map(SingleOrArray::to_vec)
             // .map(|hash| hash.map(Hash::hash_type).to_vec())
             .unwrap_or_default()
             .into_iter();

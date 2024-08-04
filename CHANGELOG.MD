@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `v1` feature. `v1` breaking changes have been merged in this release.
 - Updated git2 to v0.19
 - Updated quick-xml to v0.34
+- Renamed `AliasArray` to `NestedArray`
+- Renamed `TOrArrayOfTs` to `SingleOrArray`
 
 ### Changes
 

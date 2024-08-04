@@ -29,7 +29,7 @@ use crate::{
         self,
         substitutions::{Substitute, SubstitutionMap},
     },
-    packages::manifest::TOrArrayOfTs,
+    packages::manifest::SingleOrArray,
 };
 
 pub(crate) mod array;
@@ -148,8 +148,8 @@ pub(crate) use arch_config;
 pub(crate) use arch_field;
 
 use self::models::manifest::{
-    self, AliasArray, AutoupdateArchitecture, AutoupdateConfig, HashExtraction,
-    HashExtractionOrArrayOfHashExtractions, ManifestArchitecture,
+    self, AutoupdateArchitecture, AutoupdateConfig, HashExtraction,
+    HashExtractionOrArrayOfHashExtractions, ManifestArchitecture, NestedArray,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -474,7 +474,7 @@ impl Manifest {
     pub fn depends(&self) -> Vec<reference::manifest::Reference> {
         self.depends
             .clone()
-            .map(manifest::TOrArrayOfTs::to_vec)
+            .map(manifest::SingleOrArray::to_vec)
             .unwrap_or_default()
     }
 
@@ -498,14 +498,14 @@ impl Manifest {
             .merge_default(self.install_config.clone(), arch)
             .bin
         {
-            Some(AliasArray::NestedArray(StringArray::Single(ref binary))) => {
+            Some(NestedArray::NestedArray(StringArray::Single(ref binary))) => {
                 if regex.is_match(binary) {
                     Some(vec![binary.to_string()])
                 } else {
                     None
                 }
             }
-            Some(AliasArray::NestedArray(StringArray::Array(ref binaries))) => {
+            Some(NestedArray::NestedArray(StringArray::Array(ref binaries))) => {
                 let matched: Vec<_> = binaries
                     .iter()
                     .filter(|binary| regex.is_match(binary))
@@ -582,7 +582,7 @@ impl Manifest {
     }
 
     #[cfg(feature = "manifest-hashes")]
-    fn get_new_urls(&self, autoupdate: &AutoupdateConfig) -> Option<TOrArrayOfTs<String>> {
+    fn get_new_urls(&self, autoupdate: &AutoupdateConfig) -> Option<SingleOrArray<String>> {
         use crate::hash::substitutions::Substitute;
 
         if let Some(autoupdate_urls) = &autoupdate.url {
@@ -684,10 +684,10 @@ impl Manifest {
                 Self::update_field(
                     arch_field!(arch => arch_config.hash as mut),
                     &mut self.install_config.hash,
-                    TOrArrayOfTs::from_vec(hashes),
+                    SingleOrArray::from_vec(hashes),
                 );
             } else {
-                self.install_config.hash = TOrArrayOfTs::from_vec(hashes);
+                self.install_config.hash = SingleOrArray::from_vec(hashes);
             }
         }
 

@@ -17,7 +17,7 @@ use std::{
     process::{Command, ExitStatus, Output},
 };
 
-use crate::{contexts::ScoopContext, packages::models::manifest::TOrArrayOfTs};
+use crate::{contexts::ScoopContext, packages::models::manifest::SingleOrArray};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -104,11 +104,11 @@ impl From<PowershellScript> for String {
     }
 }
 
-impl From<TOrArrayOfTs<String>> for PowershellScript {
-    fn from(value: TOrArrayOfTs<String>) -> Self {
+impl From<SingleOrArray<String>> for PowershellScript {
+    fn from(value: SingleOrArray<String>) -> Self {
         match value {
-            TOrArrayOfTs::Single(s) => Self::from(s),
-            TOrArrayOfTs::Array(array) => Self::from(array.join("\n")),
+            SingleOrArray::Single(s) => Self::from(s),
+            SingleOrArray::Array(array) => Self::from(array.join("\n")),
         }
     }
 }
@@ -187,7 +187,7 @@ impl ScriptRunner {
 mod ser_de {
     use serde::{Deserialize, Serialize};
 
-    use crate::packages::models::manifest::TOrArrayOfTs;
+    use crate::packages::models::manifest::SingleOrArray;
 
     use super::PowershellScript;
 
@@ -198,7 +198,7 @@ mod ser_de {
         {
             let lines = self.script.lines().collect::<Vec<_>>();
 
-            let script_array = TOrArrayOfTs::from_vec(lines);
+            let script_array = SingleOrArray::from_vec(lines);
 
             script_array.serialize(serializer)
         }
@@ -209,7 +209,7 @@ mod ser_de {
         where
             D: serde::Deserializer<'de>,
         {
-            let script_array = TOrArrayOfTs::<String>::deserialize(deserializer)?;
+            let script_array = SingleOrArray::<String>::deserialize(deserializer)?;
 
             Ok(PowershellScript::from(script_array))
         }
