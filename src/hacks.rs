@@ -42,3 +42,19 @@ mod hackros {
 #[allow(unused_imports)]
 pub(crate) use inline_const;
 pub(crate) use let_chain;
+
+/// Takes the value out of a mutable reference, replacing it with uninitialized memory.
+///
+/// # Safety
+/// This function is unsafe because it replaces the reference with uninitialized memory.
+/// The caller is responsible for ensuring that the reference is not used after calling this function.
+/// Using the reference after calling this function is undefined behavior.
+pub unsafe fn take<T>(ptr: &mut T) -> T {
+    use std::mem::{swap, MaybeUninit};
+
+    let mut dest: T = unsafe { MaybeUninit::uninit().assume_init() };
+
+    swap(&mut dest, ptr);
+
+    dest
+}

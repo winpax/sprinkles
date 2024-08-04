@@ -1,11 +1,16 @@
 //! Array helpers (currently unused)
 
+use std::collections::VecDeque;
+
 use super::models::manifest::SingleOrArray;
 
 impl<T> SingleOrArray<T> {
     /// Get an iterator over the array
-    pub fn iter(&self) -> TOrArrayOfTsIter<'_, T> {
-        self.into_iter()
+    pub fn iter(&self) -> NestedIterator<&T> {
+        match self {
+            SingleOrArray::Single(s) => NestedIterator::Single(Some(s)),
+            SingleOrArray::Array(a) => NestedIterator::Array(a.iter().collect()),
+        }
     }
 
     /// Get the length of the array
@@ -22,79 +27,43 @@ impl<T> SingleOrArray<T> {
     }
 }
 
+impl<'a, T> IntoIterator for &'a SingleOrArray<T> {
+    type Item = &'a T;
+    type IntoIter = NestedIterator<&'a T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 impl<T> IntoIterator for SingleOrArray<T> {
     type Item = T;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type IntoIter = NestedIterator<T>;
 
     fn into_iter(self) -> Self::IntoIter {
         match self {
-            SingleOrArray::Single(s) => vec![s].into_iter(),
-            SingleOrArray::Array(a) => a.into_iter(),
+            SingleOrArray::Single(s) => NestedIterator::Single(Some(s)),
+            SingleOrArray::Array(a) => NestedIterator::Array(a.into()),
         }
     }
 }
 
-impl<'a, T> IntoIterator for &'a SingleOrArray<T> {
-    type IntoIter = TOrArrayOfTsIter<'a, T>;
-    type Item = &'a T;
-
-    fn into_iter(self) -> Self::IntoIter {
-        TOrArrayOfTsIter {
-            inner: self,
-            idx: 0,
-        }
-    }
+#[derive(Debug, Clone)]
+/// An iterator over a nested array
+pub enum NestedIterator<T> {
+    /// A single element
+    Single(Option<T>),
+    /// An array of elements
+    Array(VecDeque<T>),
 }
 
-pub struct TOrArrayOfTsIter<'a, T> {
-    inner: &'a SingleOrArray<T>,
-    idx: usize,
-}
-
-impl<'a, T> Iterator for TOrArrayOfTsIter<'a, T> {
-    type Item = &'a T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.idx >= self.inner.len() {
-            None
-        } else {
-            let item = match self.inner {
-                SingleOrArray::Single(s) => Some(s),
-                SingleOrArray::Array(v) => v.get(self.idx),
-            };
-
-            self.idx += 1;
-
-            item
-        }
-    }
-}
-
-pub struct TOrArrayOfTsIterator<T> {
-    inner: SingleOrArray<T>,
-    idx: usize,
-}
-
-impl<T> Iterator for TOrArrayOfTsIterator<T> {
+impl<T> Iterator for NestedIterator<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.idx >= self.inner.len() {
-            None
-        } else {
-            let mut item: T = unsafe { std::mem::zeroed() };
-
-            match &mut self.inner {
-                SingleOrArray::Single(s) => std::mem::swap(&mut item, s),
-                SingleOrArray::Array(v) => {
-                    let found_item = unsafe { v.get_mut(self.idx).unwrap_unchecked() };
-                    std::mem::swap(&mut item, found_item);
-                }
-            };
-
-            self.idx += 1;
-
-            Some(item)
+        match self {
+            Self::Single(s) => std::mem::take(s),
+            Self::Array(a) => a.pop_front(),
         }
     }
 }

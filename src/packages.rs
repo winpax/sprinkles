@@ -32,7 +32,7 @@ use crate::{
     packages::manifest::SingleOrArray,
 };
 
-pub(crate) mod array;
+pub mod array;
 pub mod downloading;
 pub mod installer;
 pub mod models;
