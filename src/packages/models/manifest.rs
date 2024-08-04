@@ -41,7 +41,7 @@ pub struct Manifest {
     /// Undocumented: Found at <https://github.com/se35710/scoop-java/search?l=JSON&q=cookie>
     pub cookie: Option<HashMap<String, Option<serde_json::Value>>>,
     /// The dependencies of the package
-    pub depends: Option<TOrArrayOfTs<crate::packages::reference::manifest::Reference>>,
+    pub depends: Option<SingleOrArray<crate::packages::reference::manifest::Reference>>,
     /// The description of the package
     pub description: Option<String>,
     /// Extract to dir or dirs
@@ -57,7 +57,7 @@ pub struct Manifest {
     /// The manifest notes
     pub notes: Option<StringArray>,
     /// Directories to persist when updating
-    pub persist: Option<AliasArray<String>>,
+    pub persist: Option<NestedArray<String>>,
     /// The `PowerShell` module of the package
     pub psmodule: Option<Psmodule>,
     /// The suggested dependencies of the package
@@ -154,14 +154,14 @@ impl std::ops::Index<Architecture> for ManifestArchitecture {
 /// The install configuration
 pub struct InstallConfig {
     /// The package binaries
-    pub bin: Option<AliasArray<String>>,
+    pub bin: Option<NestedArray<String>>,
     /// The checkver configuration
     pub checkver: Option<Checkver>,
     /// The directories to extract to
     pub extract_dir: Option<StringArray>,
     #[cfg(feature = "manifest-hashes")]
     /// The hash(es) of the package
-    pub hash: Option<TOrArrayOfTs<crate::hash::Hash>>,
+    pub hash: Option<SingleOrArray<crate::hash::Hash>>,
     /// The installer configuration
     pub installer: Option<Installer>,
     #[deprecated]
@@ -170,7 +170,7 @@ pub struct InstallConfig {
     pub post_uninstall: Option<PowershellScript>,
     pub pre_install: Option<PowershellScript>,
     pub pre_uninstall: Option<PowershellScript>,
-    pub shortcuts: Option<AliasArray<String>>,
+    pub shortcuts: Option<NestedArray<String>>,
     pub uninstaller: Option<Uninstaller>,
     pub url: Option<StringArray>,
 }
@@ -237,7 +237,7 @@ pub struct Autoupdate {
     pub architecture: Option<AutoupdateArchitecture>,
     pub license: Option<AutoupdateLicense>,
     pub notes: Option<StringArray>,
-    pub persist: Option<AliasArray<String>>,
+    pub persist: Option<NestedArray<String>>,
     pub psmodule: Option<AutoupdatePsmodule>,
     #[serde(flatten)]
     pub default_config: AutoupdateConfig,
@@ -258,13 +258,13 @@ pub struct AutoupdateArchitecture {
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct AutoupdateConfig {
-    pub bin: Option<AliasArray<String>>,
+    pub bin: Option<NestedArray<String>>,
     pub env_add_path: Option<StringArray>,
     pub env_set: Option<HashMap<String, Option<serde_json::Value>>>,
     pub extract_dir: Option<StringArray>,
     pub hash: Option<HashExtractionOrArrayOfHashExtractions>,
     pub installer: Option<Installer>,
-    pub shortcuts: Option<AliasArray<String>>,
+    pub shortcuts: Option<NestedArray<String>>,
     pub url: Option<StringArray>,
 }
 
@@ -323,17 +323,18 @@ pub struct Suggest {}
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
-pub enum AliasArray<T> {
-    NestedArray(TOrArrayOfTs<T>),
-    AliasArray(Vec<TOrArrayOfTs<T>>),
+/// A single element, or an array, or an array of arrays
+pub enum NestedArray<T> {
+    NestedArray(SingleOrArray<T>),
+    AliasArray(Vec<SingleOrArray<T>>),
 }
 
-impl<T> AliasArray<T> {
+impl<T> NestedArray<T> {
     #[must_use]
     pub fn from_vec(vec: Vec<Vec<T>>) -> Self {
         let output = vec
             .into_iter()
-            .map(TOrArrayOfTs::from_vec_or_default)
+            .map(SingleOrArray::from_vec_or_default)
             .collect();
 
         Self::AliasArray(output)
@@ -346,25 +347,27 @@ impl<T> AliasArray<T> {
         T: Clone,
     {
         match self {
-            AliasArray::NestedArray(TOrArrayOfTs::Single(v)) => vec![v.to_owned()],
-            AliasArray::NestedArray(TOrArrayOfTs::Array(v)) => v.to_owned(),
-            AliasArray::AliasArray(v) => v.iter().cloned().flat_map(TOrArrayOfTs::to_vec).collect(),
+            NestedArray::NestedArray(SingleOrArray::Single(v)) => vec![v.to_owned()],
+            NestedArray::NestedArray(SingleOrArray::Array(v)) => v.to_owned(),
+            NestedArray::AliasArray(v) => {
+                v.iter().cloned().flat_map(SingleOrArray::to_vec).collect()
+            }
         }
     }
 }
 
-impl<T: Display> Display for AliasArray<T> {
+impl<T: Display> Display for NestedArray<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AliasArray::NestedArray(v) => {
+            NestedArray::NestedArray(v) => {
                 debug!("wtf bro");
                 v.fmt(f)
             }
-            AliasArray::AliasArray(alias_array) => alias_array
+            NestedArray::AliasArray(alias_array) => alias_array
                 .iter()
                 .map(|alias| match alias {
-                    TOrArrayOfTs::Single(v) => v,
-                    TOrArrayOfTs::Array(v) => &v[1],
+                    SingleOrArray::Single(v) => v,
+                    SingleOrArray::Array(v) => &v[1],
                 })
                 .format(", ")
                 .fmt(f),
@@ -383,24 +386,25 @@ pub enum Checkver {
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
+/// A single element, or an array
 // TODO: Implement serializing manually so as to enable serializing null if it is an empty array
-pub enum TOrArrayOfTs<T> {
+pub enum SingleOrArray<T> {
     Single(T),
     Array(Vec<T>),
 }
 
-impl<T> TOrArrayOfTs<T> {
-    pub fn map<O>(self, f: impl Fn(T) -> O) -> TOrArrayOfTs<O> {
+impl<T> SingleOrArray<T> {
+    pub fn map<O>(self, f: impl Fn(T) -> O) -> SingleOrArray<O> {
         match self {
-            Self::Single(s) => TOrArrayOfTs::Single(f(s)),
-            Self::Array(s) => TOrArrayOfTs::Array(s.into_iter().map(f).collect()),
+            Self::Single(s) => SingleOrArray::Single(f(s)),
+            Self::Array(s) => SingleOrArray::Array(s.into_iter().map(f).collect()),
         }
     }
 
     pub fn to_vec(self) -> Vec<T> {
         match self {
-            TOrArrayOfTs::Single(t) => vec![t],
-            TOrArrayOfTs::Array(array) => array,
+            SingleOrArray::Single(t) => vec![t],
+            SingleOrArray::Array(array) => array,
         }
     }
 
@@ -411,9 +415,9 @@ impl<T> TOrArrayOfTs<T> {
         if array.is_empty() {
             None
         } else if array.len() == 1 {
-            Some(TOrArrayOfTs::Single(array.into_iter().next().unwrap()))
+            Some(SingleOrArray::Single(array.into_iter().next().unwrap()))
         } else {
-            Some(TOrArrayOfTs::Array(array))
+            Some(SingleOrArray::Array(array))
         }
     }
 
@@ -422,20 +426,20 @@ impl<T> TOrArrayOfTs<T> {
     #[allow(clippy::missing_panics_doc)]
     pub fn from_vec_or_default(array: Vec<T>) -> Self {
         if array.len() == 1 {
-            TOrArrayOfTs::Single(array.into_iter().next().unwrap())
+            SingleOrArray::Single(array.into_iter().next().unwrap())
         } else {
-            TOrArrayOfTs::Array(array)
+            SingleOrArray::Array(array)
         }
     }
 
     pub fn to_option(self) -> Option<Self> {
         match self {
-            TOrArrayOfTs::Single(_) => Some(self),
-            TOrArrayOfTs::Array(array) => {
+            SingleOrArray::Single(_) => Some(self),
+            SingleOrArray::Array(array) => {
                 if array.is_empty() {
                     None
                 } else {
-                    Some(TOrArrayOfTs::Array(array))
+                    Some(SingleOrArray::Array(array))
                 }
             }
         }
@@ -444,21 +448,21 @@ impl<T> TOrArrayOfTs<T> {
     /// Returns Some(T) if it is a single value, None otherwise
     pub fn single(self) -> Option<T> {
         match self {
-            TOrArrayOfTs::Single(t) => Some(t),
-            TOrArrayOfTs::Array(_) => None,
+            SingleOrArray::Single(t) => Some(t),
+            SingleOrArray::Array(_) => None,
         }
     }
 
     /// Returns [`Some`] if it is an array, [`None`] otherwise
     pub fn array(self) -> Option<Vec<T>> {
         match self {
-            TOrArrayOfTs::Single(_) => None,
-            TOrArrayOfTs::Array(array) => Some(array),
+            SingleOrArray::Single(_) => None,
+            SingleOrArray::Array(array) => Some(array),
         }
     }
 }
 
-impl<A> FromIterator<A> for TOrArrayOfTs<A> {
+impl<A> FromIterator<A> for SingleOrArray<A> {
     fn from_iter<T: IntoIterator<Item = A>>(iter: T) -> Self {
         let vec: Vec<A> = iter.into_iter().collect();
 
@@ -466,16 +470,16 @@ impl<A> FromIterator<A> for TOrArrayOfTs<A> {
     }
 }
 
-impl<T: Display> Display for TOrArrayOfTs<T> {
+impl<T: Display> Display for SingleOrArray<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            TOrArrayOfTs::Single(v) => v.fmt(f),
-            TOrArrayOfTs::Array(v) => v.iter().format(", ").fmt(f),
+            SingleOrArray::Single(v) => v.fmt(f),
+            SingleOrArray::Array(v) => v.iter().format(", ").fmt(f),
         }
     }
 }
 
-pub type StringArray = TOrArrayOfTs<String>;
+pub type StringArray = SingleOrArray<String>;
 
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

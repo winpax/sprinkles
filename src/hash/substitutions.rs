@@ -5,7 +5,7 @@ use url::Url;
 
 use crate::{
     hash::url_ext::UrlExt,
-    packages::models::manifest::{AliasArray, Installer, TOrArrayOfTs},
+    packages::models::manifest::{Installer, NestedArray, SingleOrArray},
     version::Version,
 };
 
@@ -93,11 +93,11 @@ impl Substitute for String {
     }
 }
 
-impl<T: Substitute> Substitute for TOrArrayOfTs<T> {
+impl<T: Substitute> Substitute for SingleOrArray<T> {
     fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
         match self {
-            TOrArrayOfTs::Single(s) => s.substitute(params, regex_escape),
-            TOrArrayOfTs::Array(a) => {
+            SingleOrArray::Single(s) => s.substitute(params, regex_escape),
+            SingleOrArray::Array(a) => {
                 for s in a.iter_mut() {
                     s.substitute(params, regex_escape);
                 }
@@ -113,14 +113,16 @@ impl<T: Substitute> Substitute for Vec<T> {
     }
 }
 
-impl<T: Substitute> Substitute for AliasArray<T> {
+impl<T: Substitute> Substitute for NestedArray<T> {
     fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
         match self {
-            AliasArray::NestedArray(TOrArrayOfTs::Single(s)) => s.substitute(params, regex_escape),
-            AliasArray::NestedArray(TOrArrayOfTs::Array(s)) => s
+            NestedArray::NestedArray(SingleOrArray::Single(s)) => {
+                s.substitute(params, regex_escape)
+            }
+            NestedArray::NestedArray(SingleOrArray::Array(s)) => s
                 .iter_mut()
                 .for_each(|s| s.substitute(params, regex_escape)),
-            AliasArray::AliasArray(s) => s
+            NestedArray::AliasArray(s) => s
                 .iter_mut()
                 .for_each(|s| s.substitute(params, regex_escape)),
         }

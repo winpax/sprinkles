@@ -637,7 +637,7 @@ mod tests {
         buckets::Bucket,
         contexts::User,
         packages::{
-            models::manifest::{HashExtractionOrArrayOfHashExtractions, TOrArrayOfTs},
+            models::manifest::{HashExtractionOrArrayOfHashExtractions, SingleOrArray},
             reference,
         },
         requests::Client,
@@ -726,7 +726,7 @@ mod tests {
 
         let actual_hash = manifest.architecture.unwrap().x64.unwrap().hash.unwrap();
 
-        assert_eq!(actual_hash, TOrArrayOfTs::from_vec_or_default(hash));
+        assert_eq!(actual_hash, SingleOrArray::from_vec_or_default(hash));
     }
 
     pub struct TestHandler {
@@ -752,7 +752,7 @@ mod tests {
                 .hash
                 .unwrap();
 
-            assert_eq!(actual_hash, TOrArrayOfTs::from_vec_or_default(hash));
+            assert_eq!(actual_hash, SingleOrArray::from_vec_or_default(hash));
 
             Ok(())
         }

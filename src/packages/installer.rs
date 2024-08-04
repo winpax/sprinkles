@@ -4,7 +4,7 @@ use std::process::Output;
 
 use crate::{contexts::ScoopContext, packages::manifest::Installer, scripts};
 
-use super::models::manifest::{InstallerRunner, TOrArrayOfTs};
+use super::models::manifest::{InstallerRunner, SingleOrArray};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -53,7 +53,7 @@ impl<'ctx, C: ScoopContext> InstallerHost<'ctx, C> {
     /// - If the installer could not be run
     pub fn run(self) -> Result<Output> {
         let runner = self.runner;
-        let args = self.installer.args.clone().map(TOrArrayOfTs::to_vec);
+        let args = self.installer.args.clone().map(SingleOrArray::to_vec);
 
         let output = match runner {
             InstallerRunner::File(file) => {
