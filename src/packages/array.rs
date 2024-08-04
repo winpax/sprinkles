@@ -87,3 +87,55 @@ impl<T> DoubleEndedIterator for NestedIterator<T> {
 impl<T> ExactSizeIterator for NestedIterator<T> {}
 
 impl<T> FusedIterator for NestedIterator<T> {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_nested_iterator() {
+        let array = SingleOrArray::from_vec_or_default(vec![1, 2, 3]);
+
+        let mut iter = array.iter();
+
+        assert_eq!(iter.next(), Some(&1));
+        assert_eq!(iter.next(), Some(&2));
+        assert_eq!(iter.next(), Some(&3));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_single_iterator() {
+        let array = SingleOrArray::from_vec_or_default(vec![1]);
+
+        let mut iter = array.iter();
+
+        assert_eq!(iter.next(), Some(&1));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_fused_iterator() {
+        let array = SingleOrArray::from_vec_or_default(vec![1]);
+
+        let mut iter = array.iter();
+
+        assert_eq!(iter.next(), Some(&1));
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.next(), None);
+    }
+}
