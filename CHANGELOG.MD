@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `from/to_object` methods for Scoop config for converting to/from serde_json objects
 - Implement `FromStr` for `ScoopBranch`
 - `array` module for working with nested arrays
+- Implement `DoubleEndedIterator`, `FusedIterator` and `ExactSizeIterator` for `NestedIterator`
 
 ## [0.15.2]
 

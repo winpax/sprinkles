@@ -1,6 +1,6 @@
 //! Array helpers (currently unused)
 
-use std::collections::VecDeque;
+use std::{collections::VecDeque, iter::FusedIterator};
 
 use super::models::manifest::SingleOrArray;
 
@@ -60,6 +60,13 @@ pub enum NestedIterator<T> {
 impl<T> Iterator for NestedIterator<T> {
     type Item = T;
 
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        match self {
+            Self::Single(s) => s.as_ref().map_or((0, Some(0)), |_| (1, Some(1))),
+            Self::Array(a) => (a.len(), Some(a.len())),
+        }
+    }
+
     fn next(&mut self) -> Option<Self::Item> {
         match self {
             Self::Single(s) => std::mem::take(s),
@@ -67,3 +74,16 @@ impl<T> Iterator for NestedIterator<T> {
         }
     }
 }
+
+impl<T> DoubleEndedIterator for NestedIterator<T> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        match self {
+            Self::Single(s) => std::mem::take(s),
+            Self::Array(a) => a.pop_back(),
+        }
+    }
+}
+
+impl<T> ExactSizeIterator for NestedIterator<T> {}
+
+impl<T> FusedIterator for NestedIterator<T> {}
