@@ -34,6 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement `FromStr` for `ScoopBranch`
 - `array` module for working with nested arrays
 - Implement `DoubleEndedIterator`, `FusedIterator` and `ExactSizeIterator` for `NestedIterator`
+- Sha512 hash benchmark
+
+### Removed
+
+- Removed bench files and file benchmarks
+- Removed blake3 benchmarks
 
 ## [0.15.2]
 
