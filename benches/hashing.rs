@@ -21,18 +21,19 @@ $url = "https://github.com/ScoopInstaller/Main/releases/download/v$version/scoop
 $hash = "e2a1c7dd49d547fdfe05fc45f0c9e276cb992bd94af151f0cf7d3e2ecfdc4233"
 "#;
 
-use std::{
-    fs::File,
-    io::{BufRead, BufReader},
-};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion};
+use sha2::Digest;
 
 #[inline(always)]
-fn sha256_hash(input: impl AsRef<[u8]>) -> String {
-    use sha2::Digest;
-
-    let mut hasher = sha2::Sha256::new();
+fn sha2_hash<D: Digest>(input: impl AsRef<[u8]>) -> String
+// WTF is this
+where
+    <D as sha2::digest::OutputSizeUser>::OutputSize: std::ops::Add,
+    <<D as sha2::digest::OutputSizeUser>::OutputSize as std::ops::Add>::Output:
+        sha2::digest::generic_array::ArrayLength<u8>,
+{
+    let mut hasher = D::new();
 
     hasher.update(input);
 
@@ -40,60 +41,13 @@ fn sha256_hash(input: impl AsRef<[u8]>) -> String {
 }
 
 #[inline(always)]
-fn blake3_hash(input: impl AsRef<[u8]>) -> String {
-    let mut hasher = blake3::Hasher::new();
-
-    hasher.update(input.as_ref());
-
-    format!("{}", hasher.finalize())
+fn sha256_hash(input: impl AsRef<[u8]>) -> String {
+    sha2_hash::<sha2::Sha256>(input)
 }
 
 #[inline(always)]
-fn sha256_hash_reader(mut input: impl BufRead) -> String {
-    use sha2::Digest;
-
-    let mut hasher = sha2::Sha256::new();
-
-    loop {
-        let data_len = if let Ok(data) = input.fill_buf() {
-            if data.is_empty() {
-                break;
-            }
-
-            hasher.update(data);
-
-            data.len()
-        } else {
-            break;
-        };
-
-        input.consume(data_len);
-    }
-
-    format!("{:x}", hasher.finalize())
-}
-
-#[inline(always)]
-fn blake3_hash_reader(mut input: impl BufRead) -> String {
-    let mut hasher = blake3::Hasher::new();
-
-    loop {
-        let data_len = if let Ok(data) = input.fill_buf() {
-            if data.is_empty() {
-                break;
-            }
-
-            hasher.update(data);
-
-            data.len()
-        } else {
-            break;
-        };
-
-        input.consume(data_len);
-    }
-
-    format!("{}", hasher.finalize())
+fn sha512_hash(input: impl AsRef<[u8]>) -> String {
+    sha2_hash::<sha2::Sha512>(input)
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
@@ -101,44 +55,8 @@ fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| sha256_hash(black_box(SCRIPT)))
     });
 
-    c.bench_function("blake3 hash script", |b| {
-        b.iter(|| blake3_hash(black_box(SCRIPT)))
-    });
-
-    const SMALL_FILE_PATH: &str = "bench files/sfsu-x86_64-1.14.0-beta.1.exe";
-
-    c.bench_function("sha256 hash small file", |b| {
-        b.iter_batched(
-            || std::fs::read(black_box(SMALL_FILE_PATH)).expect("could not read file"),
-            |file| sha256_hash(black_box(file)),
-            BatchSize::SmallInput,
-        )
-    });
-
-    c.bench_function("blake3 hash small file", |b| {
-        b.iter_batched(
-            || std::fs::read(black_box(SMALL_FILE_PATH)).expect("could not read file"),
-            |file| blake3_hash(black_box(file)),
-            BatchSize::SmallInput,
-        )
-    });
-
-    const LARGE_FILE_PATH: &str = "bench files/sfsu-x86_64-1.14.0-beta.1.exe";
-
-    c.bench_function("sha256 hash large file", |b| {
-        b.iter_batched(
-            || BufReader::new(File::open(black_box(LARGE_FILE_PATH)).expect("could not read file")),
-            |file| sha256_hash_reader(black_box(file)),
-            BatchSize::SmallInput,
-        )
-    });
-
-    c.bench_function("blake3 hash large file", |b| {
-        b.iter_batched(
-            || BufReader::new(File::open(black_box(LARGE_FILE_PATH)).expect("could not read file")),
-            |file| blake3_hash_reader(black_box(file)),
-            BatchSize::SmallInput,
-        )
+    c.bench_function("sha512 hash script", |b| {
+        b.iter(|| sha512_hash(black_box(SCRIPT)))
     });
 }
 
