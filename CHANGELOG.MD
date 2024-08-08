@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Do not do any manifest updates if the version is the same as the current version
 - Replace `parallel` feature with `rayon` feature
 - Updated `derive_more` to v1.0
+- Performance improvements for `Process::find_running` when using `Process::ExactExe`
 
 ### Added
 

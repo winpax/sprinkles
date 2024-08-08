@@ -142,6 +142,7 @@ fn get_compare_string(exe_file: &[u16]) -> String {
 }
 
 pub enum Process {
+    #[allow(dead_code)]
     ExactExe(PathBuf),
     BaseDir(PathBuf),
 }
@@ -166,6 +167,15 @@ impl Process {
             let process_iterator = ProcessIterator::new(h_process_snap);
 
             for pe32 in process_iterator {
+                if let Self::ExactExe(path) = &self {
+                    if let Some(file_name) = path.file_name() {
+                        if get_compare_string(&pe32.szExeFile) == file_name.to_string_lossy() {
+                            proc_running = true;
+                            break;
+                        }
+                    }
+                }
+
                 // This can sometimes return an error, but we don't care about it (it usually means the process is irrevelant)
                 let compare = unsafe { match_process_path(&pe32, path) }.unwrap_or_default();
 
