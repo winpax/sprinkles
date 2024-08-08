@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `array` module for working with nested arrays
 - Implement `DoubleEndedIterator`, `FusedIterator` and `ExactSizeIterator` for `NestedIterator`
 - Sha512 hash benchmark
+- Function for finding running processes
 
 ### Removed
 

@@ -206,6 +206,10 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
     pub fn reference(&self) -> &package::Reference {
         self.as_ref()
     }
+
+    // pub fn running(&self) -> bool {
+    //     let process_dir = self.version_dir();
+    // }
 }
 
 impl<C> AsRef<package::Reference> for PackageHandle<'_, C> {
