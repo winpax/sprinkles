@@ -19,6 +19,8 @@ use std::{
 
 use crate::{contexts::ScoopContext, packages::models::manifest::SingleOrArray};
 
+pub mod installer;
+
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
 /// Errors that can occur when running a script

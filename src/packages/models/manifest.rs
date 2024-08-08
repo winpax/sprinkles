@@ -228,7 +228,7 @@ pub struct Installer {
 pub struct Uninstaller {
     pub args: Option<StringArray>,
     pub file: Option<String>,
-    pub script: Option<StringArray>,
+    pub script: Option<PowershellScript>,
 }
 
 #[skip_serializing_none]
