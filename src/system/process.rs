@@ -130,10 +130,10 @@ fn get_compare_string(exe_file: &[u16]) -> String {
     let utf8_string = os_string.to_string_lossy();
     let trimmed = utf8_string.trim_end_matches('\0');
 
-    dbg!(trimmed.to_string())
+    trimmed.to_string()
 }
 
-pub unsafe fn find_running_process(base_dir: &str) -> windows::core::Result<bool> {
+pub unsafe fn find_running_process(base_dir: impl AsRef<Path>) -> windows::core::Result<bool> {
     let mut proc_running = false;
 
     let h_process_snap = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)? };
@@ -144,9 +144,11 @@ pub unsafe fn find_running_process(base_dir: &str) -> windows::core::Result<bool
         let process_iterator = ProcessIterator::new(h_process_snap);
 
         for pe32 in process_iterator {
-            let compare = unsafe { match_process_path(&pe32, base_dir)? };
+            // This can sometimes return an error, but we don't care about it (it usually means the process is irrevelant)
+            let compare = unsafe { match_process_path(&pe32, &base_dir) }.unwrap_or_default();
 
             if !compare.is_empty() {
+                dbg!(compare);
                 proc_running = true;
                 break;
             }
@@ -164,8 +166,9 @@ mod tests {
     // This test looks for 'cargo.exe', which can only exist on Windows
     #[cfg_attr(not(windows), ignore)]
     fn test_find_running_process() {
-        let process = "cargo.exe";
-        let result = unsafe { find_running_process(process) };
+        let cargo_path = which::which("cargo").unwrap();
+        let base_dir = cargo_path.parent().unwrap();
+        let result = unsafe { find_running_process(base_dir) };
 
         match result {
             Err(e) => {
