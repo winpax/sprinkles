@@ -5,7 +5,7 @@ use std::{path::PathBuf, rc::Rc};
 use crate::{
     contexts::ScoopContext,
     packages::{
-        reference::{self, package},
+        reference::{self, manifest, package},
         CreateManifest, InstallManifest, Manifest,
     },
 };
@@ -26,6 +26,10 @@ pub enum Error {
     PackageNotInstalled,
     #[error("Package was not installed correctly")]
     BrokenInstall,
+    #[error("Manifest was not provided a bucket")]
+    MissingBucket,
+    #[error("Manifest was not provided a name")]
+    MissingName,
 }
 
 /// Package handle result type
@@ -73,6 +77,24 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
             remote_manifest,
             path,
         })
+    }
+
+    /// Create a new package handle from a manifest
+    ///
+    /// # Errors
+    /// - The manifest was not provided a bucket
+    /// - The manifest was not provided a name
+    /// - Any further errors from [`PackageHandle::new`]
+    pub async fn from_manifest(ctx: &'a C, manifest: &Manifest) -> Result<Self> {
+        let reference = manifest::Reference::BucketNamePair {
+            bucket: manifest
+                .bucket_opt()
+                .ok_or(Error::MissingBucket)?
+                .to_string(),
+            name: manifest.name_opt().ok_or(Error::MissingName)?.to_string(),
+        };
+
+        Self::new(ctx, reference.into()).await
     }
 
     #[must_use]
@@ -205,6 +227,20 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
     /// Get the package's reference
     pub fn reference(&self) -> &package::Reference {
         self.as_ref()
+    }
+
+    #[must_use]
+    /// Check if the package handle owns a running process
+    pub fn running(&self) -> bool {
+        use crate::system::process;
+
+        let process_dir = self.version_dir();
+
+        #[cfg(not(windows))]
+        unimplemented!("Not implemented on non-windows platforms");
+
+        #[cfg(windows)]
+        unsafe { process::Process::BaseDir(process_dir).find_running() }.unwrap_or(false)
     }
 }
 

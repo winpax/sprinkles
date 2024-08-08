@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Do not do any manifest updates if the version is the same as the current version
 - Replace `parallel` feature with `rayon` feature
 - Updated `derive_more` to v1.0
+- Performance improvements for `Process::find_running` when using `Process::ExactExe`
 
 ### Added
 
@@ -38,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `array` module for working with nested arrays
 - Implement `DoubleEndedIterator`, `FusedIterator` and `ExactSizeIterator` for `NestedIterator`
 - Sha512 hash benchmark
+- Added running function for package handles
+- Internal: Function for finding running processes
+- Internal: Process enum for handling the finding of running processes
+- Implemented `Manifest` to `PackageHandle` conversion
 
 ### Removed
 
