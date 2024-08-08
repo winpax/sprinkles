@@ -207,9 +207,20 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
         self.as_ref()
     }
 
-    // pub fn running(&self) -> bool {
-    //     let process_dir = self.version_dir();
-    // }
+    #[must_use]
+    /// Check if the package handle owns a running process
+    pub fn running(&self) -> bool {
+        use crate::system::process;
+
+        let process_dir = self.version_dir();
+
+        #[cfg(not(windows))]
+        unimplemented!("Not implemented on non-windows platforms");
+
+        #[cfg(windows)]
+        unsafe { process::find_running_process(process_dir.to_string_lossy().as_ref()) }
+            .unwrap_or(false)
+    }
 }
 
 impl<C> AsRef<package::Reference> for PackageHandle<'_, C> {
