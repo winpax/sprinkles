@@ -8,7 +8,7 @@ use std::{
 };
 
 use windows::Win32::{
-    Foundation::{CloseHandle, INVALID_HANDLE_VALUE, MAX_PATH},
+    Foundation::{CloseHandle, INVALID_HANDLE_VALUE},
     System::Diagnostics::ToolHelp::{
         CreateToolhelp32Snapshot, Module32FirstW, Module32NextW, Process32FirstW, Process32NextW,
         MODULEENTRY32W, PROCESSENTRY32W, TH32CS_SNAPMODULE, TH32CS_SNAPPROCESS,
@@ -23,12 +23,16 @@ struct ModuleIterator {
 
 impl ModuleIterator {
     fn new(h_module_snap: windows::Win32::Foundation::HANDLE) -> Self {
+        #[allow(
+            clippy::cast_possible_truncation,
+            clippy::uninit_assumed_init,
+            invalid_value
+        )]
         Self {
             h_module_snap,
-            #[allow(clippy::cast_possible_truncation)]
             me32: MODULEENTRY32W {
                 dwSize: std::mem::size_of::<MODULEENTRY32W>() as u32,
-                ..Default::default()
+                ..unsafe { MaybeUninit::uninit().assume_init() }
             },
             first: true,
         }
@@ -65,9 +69,13 @@ struct ProcessIterator {
 
 impl ProcessIterator {
     fn new(h_process_snap: windows::Win32::Foundation::HANDLE) -> Self {
+        #[allow(
+            clippy::cast_possible_truncation,
+            clippy::uninit_assumed_init,
+            invalid_value
+        )]
         Self {
             h_process_snap,
-            #[allow(clippy::cast_possible_truncation)]
             pe32: PROCESSENTRY32W {
                 dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
                 ..unsafe { MaybeUninit::uninit().assume_init() }
@@ -133,29 +141,44 @@ fn get_compare_string(exe_file: &[u16]) -> String {
     trimmed.to_string()
 }
 
-pub unsafe fn find_running_process(base_dir: impl AsRef<Path>) -> windows::core::Result<bool> {
-    let mut proc_running = false;
+pub enum Process {
+    ExactExe(PathBuf),
+    BaseDir(PathBuf),
+}
 
-    let h_process_snap = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)? };
+impl Process {
+    /// Finds if the process is running
+    ///
+    /// If passed a [`Process::BaseDir`], it will check if any processes are running in that directory
+    /// If passed a [`Process::ExactExe`], it will check if any processes are running using that exact executable
+    pub unsafe fn find_running(self) -> windows::core::Result<bool> {
+        let mut proc_running = false;
 
-    if h_process_snap == INVALID_HANDLE_VALUE {
-        proc_running = false;
-    } else {
-        let process_iterator = ProcessIterator::new(h_process_snap);
+        let h_process_snap = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)? };
 
-        for pe32 in process_iterator {
-            // This can sometimes return an error, but we don't care about it (it usually means the process is irrevelant)
-            let compare = unsafe { match_process_path(&pe32, &base_dir) }.unwrap_or_default();
+        if h_process_snap == INVALID_HANDLE_VALUE {
+            proc_running = false;
+        } else {
+            let path = match &self {
+                Process::ExactExe(path) | Process::BaseDir(path) => path,
+            };
 
-            if !compare.is_empty() {
-                dbg!(compare);
-                proc_running = true;
-                break;
+            let process_iterator = ProcessIterator::new(h_process_snap);
+
+            for pe32 in process_iterator {
+                // This can sometimes return an error, but we don't care about it (it usually means the process is irrevelant)
+                let compare = unsafe { match_process_path(&pe32, path) }.unwrap_or_default();
+
+                if !compare.is_empty() {
+                    dbg!(compare);
+                    proc_running = true;
+                    break;
+                }
             }
         }
-    }
 
-    Ok(proc_running)
+        Ok(proc_running)
+    }
 }
 
 #[cfg(test)]
@@ -165,10 +188,29 @@ mod tests {
     #[test]
     // This test looks for 'cargo.exe', which can only exist on Windows
     #[cfg_attr(not(windows), ignore)]
-    fn test_find_running_process() {
+    fn test_find_running_process_exact() {
+        let cargo_path = which::which("cargo").unwrap();
+        let process = Process::ExactExe(cargo_path);
+        let result = unsafe { process.find_running() };
+
+        match result {
+            Err(e) => {
+                eprintln!("Finding process returned an error: {e}");
+                panic!("Finding process returned an error");
+            }
+            Ok(false) => panic!("Could not find running process"),
+            _ => {}
+        }
+    }
+
+    #[test]
+    // This test looks for 'cargo.exe', which can only exist on Windows
+    #[cfg_attr(not(windows), ignore)]
+    fn test_find_running_process_base() {
         let cargo_path = which::which("cargo").unwrap();
         let base_dir = cargo_path.parent().unwrap();
-        let result = unsafe { find_running_process(base_dir) };
+        let process = Process::BaseDir(base_dir.to_path_buf());
+        let result = unsafe { process.find_running() };
 
         match result {
             Err(e) => {

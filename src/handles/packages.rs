@@ -217,9 +217,11 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
         #[cfg(not(windows))]
         unimplemented!("Not implemented on non-windows platforms");
 
-        #[cfg(windows)]
-        unsafe { process::find_running_process(process_dir.to_string_lossy().as_ref()) }
-            .unwrap_or(false)
+        // #[cfg(windows)]
+        // unsafe { process::find_running_process(process_dir.to_string_lossy().as_ref()) }
+        //     .unwrap_or(false)
+
+        todo!()
     }
 }
 
