@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added running function for package handles
 - Internal: Function for finding running processes
 - Internal: Process enum for handling the finding of running processes
+- Implemented `Manifest` to `PackageHandle` conversion
 
 ### Removed
 
