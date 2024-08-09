@@ -4,11 +4,13 @@ use crate::contexts::ScoopContext;
 use crate::handles::packages::PackageHandle;
 use crate::hash::substitutions::{Substitute, SubstitutionMap};
 use crate::hash::url_ext::UrlExt;
+use crate::packages::models::manifest::SingleOrArray;
 use crate::{
     packages::models::manifest::{Installer, Uninstaller},
     packages::Manifest,
     Architecture,
 };
+use quork::prelude::ContainsTruth;
 use std::collections::HashMap;
 use url::Url;
 
@@ -28,6 +30,10 @@ pub enum Error {
     HandleError(#[from] crate::handles::packages::Error),
     #[error("Could not run the powershell script: {0}")]
     PowershellError(#[from] super::Error),
+    #[error("Could not invoke the uninstaller: {0}")]
+    IO(#[from] std::io::Error),
+    #[error("Uninstaller exited with code {0}")]
+    Uninstaller(std::process::ExitStatus),
 }
 
 #[allow(missing_docs)]
@@ -73,8 +79,19 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
 
     /// Run the installer
     ///
+    /// Note that this does not run the 'uninstall' hook script.
+    /// It is expected that you run the hook script yourself.
+    ///
+    ///
     /// # Errors
-    /// - get fucked (todo)
+    /// - The uninstaller could not be found
+    /// - The uninstaller could not be run
+    /// - The uninstaller exited with a non-zero exit code
+    /// - The uninstaller is outside the version directory
+    /// - Failed to invoke the uninstaller
+    /// - The manifest install config had neither a file name nor urls
+    /// - The url provided was invalid
+    /// For more information, see [`Error`]
     pub fn run(self, ctx: &impl ScoopContext, manifest: &Manifest) -> Result<()> {
         let installer = self.installer;
 
@@ -119,7 +136,7 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
             let args = installer
                 .args
                 .map(|args| args.into_substituted(&substitutions, false))
-                .map(|args| args.to_vec())
+                .map(SingleOrArray::to_vec)
                 .unwrap_or_default();
 
             if prog_name.extension() == Some(std::ffi::OsStr::new("ps1")) {
@@ -127,9 +144,23 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
                 let mut runner = script.save(ctx)?;
                 runner.set_args(args);
                 runner.run()?;
-            } else {}
+            } else {
+                let mut cmd = std::process::Command::new(&prog_name);
+
+                cmd.args(args);
+
+                let output = cmd.output()?;
+
+                if !output.status.success() {
+                    return Err(Error::Uninstaller(output.status));
+                }
+
+                if !installer.keep.contains_truth() {
+                    std::fs::remove_file(prog_name)?;
+                }
+            }
         }
 
-        todo!()
+        Ok(())
     }
 }
