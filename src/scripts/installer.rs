@@ -30,8 +30,8 @@ pub struct Runner {
 
 impl Runner {
     /// Construct a new installer runner from an installer
-    pub fn new(installer: Installer) -> Self {
-        Self { installer }
+    pub fn new(installer: impl Into<Installer>) -> Self {
+        Self { installer: installer.into() }
     }
 
     /// Construct a new installer runner from an installer
@@ -41,7 +41,7 @@ impl Runner {
 
     /// Construct a new installer runner from an uninstaller
     pub fn from_uninstaller(uninstaller: Uninstaller) -> Self {
-        Self::from_installer(uninstaller.into())
+        Self::new(uninstaller)
     }
 
     /// Run the installer
