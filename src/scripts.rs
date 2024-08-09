@@ -19,6 +19,8 @@ use std::{
 
 use crate::{contexts::ScoopContext, packages::models::manifest::SingleOrArray};
 
+pub mod installer;
+
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
 /// Errors that can occur when running a script
@@ -49,6 +51,14 @@ impl PowershellScript {
         Self {
             script: script.into(),
         }
+    }
+
+    /// Create a new powershell script from a file
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self> {
+        let path = path.as_ref();
+        let contents = std::fs::read_to_string(path)?;
+
+        Ok(Self::new(contents))
     }
 
     #[must_use]
@@ -130,6 +140,7 @@ impl crate::hash::substitutions::Substitute for PowershellScript {
 ///
 /// This is used to run scripts in a powershell environment
 pub struct ScriptRunner {
+    args: Vec<String>,
     path: PathBuf,
     powershell_path: PathBuf,
 }
@@ -141,9 +152,15 @@ impl ScriptRunner {
         let powershell_path = powershell_path.as_ref().to_path_buf();
 
         Self {
+            args: vec![],
             path,
             powershell_path,
         }
+    }
+
+    /// Set the arguments to pass to the script
+    pub fn set_args(&mut self, args: Vec<String>) {
+        self.args = args;
     }
 
     /// Create a new script runner, getting powershell from the system path
@@ -156,6 +173,7 @@ impl ScriptRunner {
         let powershell_path = which::which("pwsh").or_else(|_| which::which("powershell"))?;
 
         Ok(Self {
+            args: vec![],
             path,
             powershell_path,
         })
@@ -174,6 +192,7 @@ impl ScriptRunner {
             .arg("Bypass")
             .arg("-File")
             .arg(&self.path)
+            .args(&self.args)
             .output()?;
 
         if !output.status.success() {
