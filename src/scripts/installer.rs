@@ -26,6 +26,8 @@ pub enum Error {
     InvalidUrl(#[from] url::ParseError),
     #[error("Could not open the package handle: {0}")]
     HandleError(#[from] crate::handles::packages::Error),
+    #[error("Could not run the powershell script: {0}")]
+    PowershellError(#[from] super::Error),
 }
 
 #[allow(missing_docs)]
@@ -117,10 +119,15 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
             let args = installer
                 .args
                 .map(|args| args.into_substituted(&substitutions, false))
-                .map(|args| args.to_string())
+                .map(|args| args.to_vec())
                 .unwrap_or_default();
 
-            if prog_name.extension() == Some(std::ffi::OsStr::new("ps1")) {}
+            if prog_name.extension() == Some(std::ffi::OsStr::new("ps1")) {
+                let script = super::PowershellScript::from_path(prog_name)?;
+                let mut runner = script.save(ctx)?;
+                runner.set_args(args);
+                runner.run()?;
+            } else {}
         }
 
         todo!()
