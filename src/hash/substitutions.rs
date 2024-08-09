@@ -52,6 +52,18 @@ impl Default for SubstitutionMap {
     }
 }
 
+impl From<HashMap<String, String>> for SubstitutionMap {
+    fn from(map: HashMap<String, String>) -> Self {
+        Self(map)
+    }
+}
+
+impl<'a> From<HashMap<&'a str, String>> for SubstitutionMap {
+    fn from(map: HashMap<&'a str, String>) -> Self {
+        Self(map.into_iter().map(|(k, v)| (k.to_string(), v)).collect())
+    }
+}
+
 pub enum SubstituteBuilder<'a> {
     String(&'a mut String),
 }
