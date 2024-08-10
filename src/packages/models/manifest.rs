@@ -172,7 +172,8 @@ pub struct InstallConfig {
     pub pre_uninstall: Option<PowershellScript>,
     pub shortcuts: Option<NestedArray<String>>,
     pub uninstaller: Option<Uninstaller>,
-    pub url: Option<StringArray>,
+    #[serde(rename = "url")]
+    pub urls: Option<StringArray>,
 }
 
 #[skip_serializing_none]

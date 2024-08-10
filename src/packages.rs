@@ -449,7 +449,7 @@ impl Manifest {
     #[must_use]
     /// Get the download urls for a given architecture
     pub fn download_urls(&self, arch: Architecture) -> Option<Vec<DownloadUrl>> {
-        let urls = self.install_config(arch).url?;
+        let urls = self.install_config(arch).urls?;
 
         Some(
             urls.to_vec()
@@ -639,12 +639,12 @@ impl Manifest {
 
             if let Some(arch_config) = &mut self.architecture {
                 Self::update_field(
-                    arch_field!(arch => arch_config.url as mut),
-                    &mut self.install_config.url,
+                    arch_field!(arch => arch_config.urls as mut),
+                    &mut self.install_config.urls,
                     arch_url,
                 );
             } else {
-                self.install_config.url = self.get_new_urls(&autoupdate.default_config);
+                self.install_config.urls = self.get_new_urls(&autoupdate.default_config);
             }
         }
 
@@ -961,7 +961,7 @@ impl MergeDefaults for Option<&ManifestArchitecture> {
             pre_uninstall: config.pre_uninstall.or(default.pre_uninstall),
             shortcuts: config.shortcuts.or(default.shortcuts),
             uninstaller: config.uninstaller.or(default.uninstaller),
-            url: config.url.or(default.url),
+            urls: config.urls.or(default.urls),
         }
     }
 }

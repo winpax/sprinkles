@@ -109,7 +109,7 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
         } else {
             let install_config = manifest.install_config(self.architecture);
 
-            if let Some(urls) = install_config.url {
+            if let Some(urls) = install_config.urls {
                 let mut urls = urls.iter();
                 let first_url = urls.next();
 
