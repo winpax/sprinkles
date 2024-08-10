@@ -1,5 +1,6 @@
 //! Downloading helpers for packages
 
+use std::future::Future;
 use std::path::PathBuf;
 
 use regex::Regex;
@@ -96,4 +97,15 @@ impl From<&DownloadUrl> for PathBuf {
     fn from(url: &DownloadUrl) -> Self {
         url.to_path_buf()
     }
+}
+
+/// A generic trait for downloading files
+pub trait Downloader {
+    /// Error type
+    type Error;
+    /// Output type
+    type Output;
+
+    /// Download the file
+    fn download(self) -> impl Future<Output = Result<Self::Output, Self::Error>>;
 }

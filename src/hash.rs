@@ -11,8 +11,10 @@ use reqwest::{
 use substitutions::SubstitutionMap;
 use url::Url;
 
+use self::substitutions::Substitute;
+use crate::packages::downloading::Downloader;
 use crate::{
-    cache::{self, Downloader, Handle},
+    cache::{self, DownloadHandle, Handle},
     contexts::ScoopContext,
     hash::url_ext::UrlExt,
     packages::{
@@ -26,8 +28,6 @@ use crate::{
     version::Version,
     Architecture,
 };
-
-use self::substitutions::Substitute;
 
 pub(crate) mod formats;
 pub(crate) mod hash_serde;
@@ -88,9 +88,11 @@ pub enum Error {
     HashMode,
     #[error("Missing hash extraction object")]
     MissingHashExtraction,
-    #[error("Hash extraction url where there should be a hash extraction object. This is a bug, please report it.")]
+    #[error("Hash extraction url where there should be a hash extraction object. This is a bug, please report it."
+    )]
     HashExtractionUrl,
-    #[error("Missing part of hash extraction object, where it should exist. This is a bug, please report it.")]
+    #[error("Missing part of hash extraction object, where it should exist. This is a bug, please report it."
+    )]
     MissingExtraction,
     #[error("Fosshub regex failed to match")]
     MissingFosshubCaptures,
@@ -371,12 +373,12 @@ impl Hash {
         if hash_mode == HashMode::Download {
             let cache_handles = Handle::open_manifest(ctx.cache_path(), manifest, arch)?;
 
-            let downloaders = cache_handles
-                .into_iter()
-                .map(|handle| async move { Downloader::new::<AsyncClient>(handle, None).await });
+            let downloaders = cache_handles.into_iter().map(|handle| async move {
+                DownloadHandle::new::<AsyncClient>(handle, None).await
+            });
             let downloaders = futures::future::try_join_all(downloaders).await?;
 
-            let hashes = downloaders.into_iter().map(Downloader::download);
+            let hashes = downloaders.into_iter().map(DownloadHandle::download);
             let hashes = futures::future::try_join_all(hashes)
                 .await?
                 .into_iter()
