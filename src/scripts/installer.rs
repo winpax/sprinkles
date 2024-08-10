@@ -7,8 +7,7 @@ use crate::hash::url_ext::UrlExt;
 use crate::packages::models::manifest::SingleOrArray;
 use crate::scripts::summary::Summary;
 use crate::{
-    packages::models::manifest::{Installer, Uninstaller}
-    ,
+    packages::models::manifest::{Installer, Uninstaller},
     Architecture,
 };
 use quork::prelude::ContainsTruth;
@@ -131,9 +130,15 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
 
     pub(crate) fn substitutions(&self) -> SubstitutionMap {
         let mut map = HashMap::new();
-        map.insert("$dir", self.handle.version_dir().to_string_lossy().to_string());
+        map.insert(
+            "$dir",
+            self.handle.version_dir().to_string_lossy().to_string(),
+        );
         map.insert("$global", (C::CONTEXT_NAME == "global").to_string());
-        map.insert("$version", self.handle.remote_manifest().version.to_string());
+        map.insert(
+            "$version",
+            self.handle.remote_manifest().version.to_string(),
+        );
 
         SubstitutionMap::from(map)
     }
@@ -142,14 +147,16 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
         let substitutions = self.substitutions();
 
         self.installer
-            .args.clone()
+            .args
+            .clone()
             .map(|args| args.into_substituted(&substitutions, false))
             .map(SingleOrArray::to_vec)
             .unwrap_or_default()
     }
 
     pub(crate) fn is_powershell(&self) -> bool {
-        self.prog_name().is_ok_and(|path| path.extension() == Some(std::ffi::OsStr::new("ps1")))
+        self.prog_name()
+            .is_ok_and(|path| path.extension() == Some(std::ffi::OsStr::new("ps1")))
     }
 
     /// Run the installer
