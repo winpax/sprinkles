@@ -60,10 +60,12 @@ impl PowershellScript {
     ///
     /// This will clone the [`PowershellScript`].
     /// To get the summary without cloning use [`PowershellScript::into_summary`]
+    #[must_use]
     pub fn get_summary(&self) -> Summary {
         self.clone().into_summary()
     }
     /// Get a summary of what will run from the [`PowershellScript`]
+    #[must_use]
     pub fn into_summary(self) -> Summary {
         Summary::from(self)
     }
