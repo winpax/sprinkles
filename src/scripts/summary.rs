@@ -2,10 +2,7 @@
 
 use std::path::PathBuf;
 
-use crate::{
-    contexts::ScoopContext,
-    scripts::PowershellScript,
-};
+use crate::{contexts::ScoopContext, scripts::PowershellScript};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// A summary of what will run for a hook or installer
