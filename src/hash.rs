@@ -11,6 +11,8 @@ use reqwest::{
 use substitutions::SubstitutionMap;
 use url::Url;
 
+use self::substitutions::Substitute;
+use crate::packages::downloading::Downloader;
 use crate::{
     cache::{self, DownloadHandle, Handle},
     contexts::ScoopContext,
@@ -26,8 +28,6 @@ use crate::{
     version::Version,
     Architecture,
 };
-
-use self::substitutions::Substitute;
 
 pub(crate) mod formats;
 pub(crate) mod hash_serde;
