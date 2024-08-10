@@ -257,7 +257,7 @@ impl HashMode {
             .architecture
             .merge_default(manifest.install_config.clone(), arch);
 
-        if let Some(StringArray::Single(url)) = install_config.url {
+        if let Some(StringArray::Single(url)) = install_config.urls {
             if Self::fosshub_regex().is_match(&url) {
                 return Some(Self::Fosshub);
             }
@@ -399,7 +399,7 @@ impl Hash {
 
         let manifest_urls = manifest
             .install_config(arch)
-            .url
+            .urls
             .clone()
             .ok_or(Error::UrlNotFound)?
             .to_vec()
