@@ -2,8 +2,17 @@ use std::error::Error;
 
 use serde_json::json;
 
+fn download_buckets() -> reqwest::Result<serde_json::Value> {
+    let response = reqwest::blocking::get(
+        "https://raw.githubusercontent.com/ScoopInstaller/Scoop/master/buckets.json",
+    )?;
+    response.json()
+}
+
 fn get_known_buckets() -> Result<String, Box<dyn Error>> {
-    let body = if cfg!(docsrs) {
+    let body = download_buckets().unwrap_or_else(|_| {
+        println!("cargo::warning=Failed to download buckets.json, using default buckets");
+
         json!({
             "main": "https://github.com/ScoopInstaller/Main",
             "extras": "https://github.com/ScoopInstaller/Extras",
@@ -16,12 +25,7 @@ fn get_known_buckets() -> Result<String, Box<dyn Error>> {
             "java": "https://github.com/ScoopInstaller/Java",
             "games": "https://github.com/Calinou/scoop-games"
         })
-    } else {
-        let response = reqwest::blocking::get(
-            "https://raw.githubusercontent.com/ScoopInstaller/Scoop/master/buckets.json",
-        )?;
-        response.json()?
-    };
+    });
 
     let buckets = body.as_object().unwrap();
 
