@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     type
 - Removed `v1` feature. `v1` breaking changes have been merged in this release.
 - Updated git2 to v0.19
-- Updated quick-xml to v0.34
 - Renamed `AliasArray` to `NestedArray`
 - Renamed `TOrArrayOfTs` to `SingleOrArray`
 - Renamed `Downloader` to `DownloadHandle`
@@ -31,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace `parallel` feature with `rayon` feature
 - Updated `derive_more` to v1.0
 - Performance improvements for `Process::find_running` when using `Process::ExactExe`
+- Updated quick-xml to v0.34
 - Builds will fail less often by falling back to
   the default buckets if the buckets.json file fails to download
 
