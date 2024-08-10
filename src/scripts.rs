@@ -20,6 +20,7 @@ use std::{
 use crate::{contexts::ScoopContext, packages::models::manifest::SingleOrArray};
 
 pub mod installer;
+pub mod summary;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -54,6 +55,9 @@ impl PowershellScript {
     }
 
     /// Create a new powershell script from a file
+    ///
+    /// # Errors
+    /// - Reading the file failed
     pub fn from_path(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         let contents = std::fs::read_to_string(path)?;

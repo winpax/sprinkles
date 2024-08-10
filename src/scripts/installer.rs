@@ -5,13 +5,14 @@ use crate::handles::packages::PackageHandle;
 use crate::hash::substitutions::{Substitute, SubstitutionMap};
 use crate::hash::url_ext::UrlExt;
 use crate::packages::models::manifest::SingleOrArray;
+use crate::scripts::summary::Summary;
 use crate::{
     packages::models::manifest::{Installer, Uninstaller},
-    packages::Manifest,
     Architecture,
 };
 use quork::prelude::ContainsTruth;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use url::Url;
 
 #[derive(Debug, thiserror::Error)]
@@ -77,6 +78,87 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
         }
     }
 
+    /// Get a summary of what will be run for this installer
+    ///
+    /// # Errors
+    /// - Could not determine the program name
+    /// - Could not create a [`PowershellScript`] from the program name
+    pub fn get_summary(&self) -> Result<Summary> {
+        let prog_name = self.prog_name()?;
+        let args = self.subbed_args();
+
+        Ok(if self.is_powershell() {
+            Summary::Powershell {
+                script: super::PowershellScript::from_path(prog_name)?,
+                args,
+            }
+        } else {
+            Summary::Command {
+                command: prog_name,
+                args,
+            }
+        })
+    }
+
+    pub(crate) fn prog_name(&self) -> Result<PathBuf> {
+        let installer = &self.installer;
+        let manifest = self.handle.remote_manifest();
+
+        let name = if let Some(name) = &installer.file {
+            name.clone()
+        } else {
+            let install_config = manifest.install_config(self.architecture);
+
+            if let Some(urls) = install_config.url {
+                let mut urls = urls.iter();
+                let first_url = urls.next();
+
+                if let Some(first_url) = first_url {
+                    Url::parse(first_url)?.remote_filename()
+                } else {
+                    return Err(Error::MissingFileName);
+                }
+            } else {
+                return Err(Error::MissingFileName);
+            }
+        };
+
+        let version_dir = self.handle.version_dir();
+
+        Ok(dunce::canonicalize(version_dir.join(name))?)
+    }
+
+    pub(crate) fn substitutions(&self) -> SubstitutionMap {
+        let mut map = HashMap::new();
+        map.insert(
+            "$dir",
+            self.handle.version_dir().to_string_lossy().to_string(),
+        );
+        map.insert("$global", (C::CONTEXT_NAME == "global").to_string());
+        map.insert(
+            "$version",
+            self.handle.remote_manifest().version.to_string(),
+        );
+
+        SubstitutionMap::from(map)
+    }
+
+    pub(crate) fn subbed_args(&self) -> Vec<String> {
+        let substitutions = self.substitutions();
+
+        self.installer
+            .args
+            .clone()
+            .map(|args| args.into_substituted(&substitutions, false))
+            .map(SingleOrArray::to_vec)
+            .unwrap_or_default()
+    }
+
+    pub(crate) fn is_powershell(&self) -> bool {
+        self.prog_name()
+            .is_ok_and(|path| path.extension() == Some(std::ffi::OsStr::new("ps1")))
+    }
+
     /// Run the installer
     ///
     /// Note that this does not run the 'uninstall' hook script.
@@ -91,32 +173,14 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
     /// - Failed to invoke the uninstaller
     /// - The manifest install config had neither a file name nor urls
     /// - The url provided was invalid
-    /// For more information, see [`Error`]
-    pub fn run(self, ctx: &impl ScoopContext, manifest: &Manifest) -> Result<()> {
-        let installer = self.installer;
+    ///
+    /// For more information on errors, see [`Error`]
+    pub fn run(self, ctx: &impl ScoopContext) -> Result<()> {
+        let installer = &self.installer;
 
         if installer.file.is_some() || installer.args.is_some() {
-            let name = if let Some(name) = installer.file {
-                name
-            } else {
-                let install_config = manifest.install_config(self.architecture);
-
-                if let Some(urls) = install_config.url {
-                    let mut urls = urls.iter();
-                    let first_url = urls.next();
-
-                    if let Some(first_url) = first_url {
-                        Url::parse(first_url)?.remote_filename()
-                    } else {
-                        return Err(Error::MissingFileName);
-                    }
-                } else {
-                    return Err(Error::MissingFileName);
-                }
-            };
-
             let version_dir = self.handle.version_dir();
-            let prog_name = version_dir.join(name);
+            let prog_name = self.prog_name()?;
 
             if !prog_name.starts_with(&version_dir) {
                 return Err(Error::ProgramOutsideVersionDir);
@@ -124,22 +188,9 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
                 return Err(Error::ProgramNotFound);
             }
 
-            let substitutions = {
-                let mut map = HashMap::new();
-                map.insert("$dir", version_dir.to_string_lossy().to_string());
-                map.insert("$global", (C::CONTEXT_NAME == "global").to_string());
-                map.insert("$version", manifest.version.to_string());
+            let args = self.subbed_args();
 
-                SubstitutionMap::from(map)
-            };
-
-            let args = installer
-                .args
-                .map(|args| args.into_substituted(&substitutions, false))
-                .map(SingleOrArray::to_vec)
-                .unwrap_or_default();
-
-            if prog_name.extension() == Some(std::ffi::OsStr::new("ps1")) {
+            if self.is_powershell() {
                 let script = super::PowershellScript::from_path(prog_name)?;
                 let mut runner = script.save(ctx)?;
                 runner.set_args(args);

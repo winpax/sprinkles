@@ -129,7 +129,7 @@ impl<T: Substitute> Substitute for NestedArray<T> {
     fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
         match self {
             NestedArray::NestedArray(SingleOrArray::Single(s)) => {
-                s.substitute(params, regex_escape)
+                s.substitute(params, regex_escape);
             }
             NestedArray::NestedArray(SingleOrArray::Array(s)) => s
                 .iter_mut()
