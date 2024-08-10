@@ -107,5 +107,5 @@ pub trait Downloader {
     type Output;
 
     /// Download the file
-    fn download(self) -> impl Future<Output=Result<Self::Output, Self::Error>>;
+    fn download(self) -> impl Future<Output = Result<Self::Output, Self::Error>>;
 }

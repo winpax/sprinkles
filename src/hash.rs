@@ -170,14 +170,14 @@ impl FromStr for HashType {
             128 => Ok(HashType::SHA512),
             _ => Err(Error::InvalidHash),
         }
-            .or_else(|_| {
-                value
-                    .starts_with("sha512:")
-                    .then_some(HashType::SHA512)
-                    .or_else(|| value.starts_with("sha1:").then_some(HashType::SHA1))
-                    .or_else(|| value.starts_with("md5:").then_some(HashType::MD5))
-                    .ok_or(Error::InvalidHash)
-            })
+        .or_else(|_| {
+            value
+                .starts_with("sha512:")
+                .then_some(HashType::SHA512)
+                .or_else(|| value.starts_with("sha1:").then_some(HashType::SHA1))
+                .or_else(|| value.starts_with("md5:").then_some(HashType::MD5))
+                .ok_or(Error::InvalidHash)
+        })
     }
 }
 
@@ -373,9 +373,9 @@ impl Hash {
         if hash_mode == HashMode::Download {
             let cache_handles = Handle::open_manifest(ctx.cache_path(), manifest, arch)?;
 
-            let downloaders = cache_handles
-                .into_iter()
-                .map(|handle| async move { DownloadHandle::new::<AsyncClient>(handle, None).await });
+            let downloaders = cache_handles.into_iter().map(|handle| async move {
+                DownloadHandle::new::<AsyncClient>(handle, None).await
+            });
             let downloaders = futures::future::try_join_all(downloaders).await?;
 
             let hashes = downloaders.into_iter().map(DownloadHandle::download);
