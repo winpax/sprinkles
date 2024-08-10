@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace `parallel` feature with `rayon` feature
 - Updated `derive_more` to v1.0
 - Performance improvements for `Process::find_running` when using `Process::ExactExe`
-- Internal: Builds will fail less often by falling back to
+- Builds will fail less often by falling back to
   the default buckets if the buckets.json file fails to download
 
 ### Added
@@ -44,8 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement `DoubleEndedIterator`, `FusedIterator` and `ExactSizeIterator` for `NestedIterator`
 - Sha512 hash benchmark
 - Added running function for package handles
-- Internal: Function for finding running processes
-- Internal: Process enum for handling the finding of running processes
+- Function for finding running processes
+- Process enum for handling the finding of running processes
 - Implemented `Manifest` to `PackageHandle` conversion
 - Added Summary struct for determining what will run for (un)installers and scripts
 - Implemented `Runner` for (un)installers
