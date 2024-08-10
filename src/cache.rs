@@ -11,6 +11,7 @@ use futures::{Stream, StreamExt, TryStreamExt};
 use indicatif::{MultiProgress, ProgressBar};
 use reqwest::{Response, StatusCode};
 
+use crate::packages::downloading::Downloader;
 use crate::{
     hacks::let_chain,
     hash::{url_ext::UrlExt, Hash, HashType},
@@ -101,8 +102,8 @@ impl<'a> CacheFile<'a> {
         } else {
             PathBuf::from(self.url)
         }
-        .extension()
-        .map(ToOwned::to_owned);
+            .extension()
+            .map(ToOwned::to_owned);
 
         let mut file_name = String::new();
 
@@ -258,21 +259,21 @@ impl Handle {
     pub async fn begin_download<T: ClientLike<reqwest::Client>>(
         self,
         mp: Option<&MultiProgress>,
-    ) -> Result<Downloader, Error> {
-        Downloader::new::<T>(self, mp).await
+    ) -> Result<DownloadHandle, Error> {
+        DownloadHandle::new::<T>(self, mp).await
     }
 }
 
 #[derive(Debug)]
 #[must_use = "Does nothing until `download` is called"]
 /// A cache handle downloader
-pub struct Downloader {
+pub struct DownloadHandle {
     cache: Handle,
     resp: Response,
     pb: Option<ProgressBar>,
 }
 
-impl Downloader {
+impl DownloadHandle {
     /// Create a new downloader
     ///
     /// # Errors
@@ -325,42 +326,18 @@ impl Downloader {
         Ok(Self { cache, resp, pb })
     }
 
-    /// Download the file to the cache
-    ///
-    /// Returns the cache file name, and the computed hash
-    ///
-    /// # Errors
-    /// - If the file cannot be written to the cache
-    pub async fn download(self) -> Result<DownloadResult, Error> {
-        let actual_hash = self.cache.actual_hash.clone();
-
-        let file_name = self.cache.file_name.clone();
-        let hash_bytes = match self.cache.hash_type {
-            HashType::SHA512 => self.handle_buf::<sha2::Sha512>().await,
-            HashType::SHA256 => self.handle_buf::<sha2::Sha256>().await,
-            HashType::SHA1 => self.handle_buf::<sha1::Sha1>().await,
-            HashType::MD5 => self.handle_buf::<md5::Md5>().await,
-        }?;
-
-        Ok(DownloadResult {
-            file_name: file_name.as_path().try_into()?,
-            computed_hash: Hash::from_hex(&hash_bytes),
-            actual_hash,
-        })
-    }
-
     async fn handle_buf<D: Digest>(self) -> Result<Vec<u8>, Error> {
         use tokio::{fs::File, io::AsyncWriteExt};
         use tokio_util::codec::{BytesCodec, FramedRead};
 
-        enum Source<T: futures::Stream<Item = reqwest::Result<bytes::Bytes>> + std::marker::Unpin> {
+        enum Source<T: futures::Stream<Item=reqwest::Result<bytes::Bytes>> + std::marker::Unpin> {
             Cache(futures::prelude::stream::IntoStream<FramedRead<File, BytesCodec>>),
             Network(T),
         }
 
         impl<T> Stream for Source<T>
         where
-            T: futures::Stream<Item = reqwest::Result<bytes::Bytes>> + std::marker::Unpin,
+            T: futures::Stream<Item=reqwest::Result<bytes::Bytes>> + std::marker::Unpin,
         {
             type Item = reqwest::Result<bytes::Bytes>;
 
@@ -419,6 +396,35 @@ impl Downloader {
         }
 
         Ok(hasher.finalize()[..].to_vec())
+    }
+}
+
+impl Downloader for DownloadHandle {
+    type Error = Error;
+    type Output = DownloadResult;
+
+    /// Download the file to the cache
+    ///
+    /// Returns the cache file name, and the computed hash
+    ///
+    /// # Errors
+    /// - If the file cannot be written to the cache
+    async fn download(self) -> Result<DownloadResult, Error> {
+        let actual_hash = self.cache.actual_hash.clone();
+
+        let file_name = self.cache.file_name.clone();
+        let hash_bytes = match self.cache.hash_type {
+            HashType::SHA512 => self.handle_buf::<sha2::Sha512>().await,
+            HashType::SHA256 => self.handle_buf::<sha2::Sha256>().await,
+            HashType::SHA1 => self.handle_buf::<sha1::Sha1>().await,
+            HashType::MD5 => self.handle_buf::<md5::Md5>().await,
+        }?;
+
+        Ok(DownloadResult {
+            file_name: file_name.as_path().try_into()?,
+            computed_hash: Hash::from_hex(&hash_bytes),
+            actual_hash,
+        })
     }
 }
 

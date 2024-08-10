@@ -12,7 +12,7 @@ use substitutions::SubstitutionMap;
 use url::Url;
 
 use crate::{
-    cache::{self, Downloader, Handle},
+    cache::{self, DownloadHandle, Handle},
     contexts::ScoopContext,
     hash::url_ext::UrlExt,
     packages::{
@@ -88,9 +88,11 @@ pub enum Error {
     HashMode,
     #[error("Missing hash extraction object")]
     MissingHashExtraction,
-    #[error("Hash extraction url where there should be a hash extraction object. This is a bug, please report it.")]
+    #[error("Hash extraction url where there should be a hash extraction object. This is a bug, please report it."
+    )]
     HashExtractionUrl,
-    #[error("Missing part of hash extraction object, where it should exist. This is a bug, please report it.")]
+    #[error("Missing part of hash extraction object, where it should exist. This is a bug, please report it."
+    )]
     MissingExtraction,
     #[error("Fosshub regex failed to match")]
     MissingFosshubCaptures,
@@ -168,14 +170,14 @@ impl FromStr for HashType {
             128 => Ok(HashType::SHA512),
             _ => Err(Error::InvalidHash),
         }
-        .or_else(|_| {
-            value
-                .starts_with("sha512:")
-                .then_some(HashType::SHA512)
-                .or_else(|| value.starts_with("sha1:").then_some(HashType::SHA1))
-                .or_else(|| value.starts_with("md5:").then_some(HashType::MD5))
-                .ok_or(Error::InvalidHash)
-        })
+            .or_else(|_| {
+                value
+                    .starts_with("sha512:")
+                    .then_some(HashType::SHA512)
+                    .or_else(|| value.starts_with("sha1:").then_some(HashType::SHA1))
+                    .or_else(|| value.starts_with("md5:").then_some(HashType::MD5))
+                    .ok_or(Error::InvalidHash)
+            })
     }
 }
 
@@ -373,10 +375,10 @@ impl Hash {
 
             let downloaders = cache_handles
                 .into_iter()
-                .map(|handle| async move { Downloader::new::<AsyncClient>(handle, None).await });
+                .map(|handle| async move { DownloadHandle::new::<AsyncClient>(handle, None).await });
             let downloaders = futures::future::try_join_all(downloaders).await?;
 
-            let hashes = downloaders.into_iter().map(Downloader::download);
+            let hashes = downloaders.into_iter().map(DownloadHandle::download);
             let hashes = futures::future::try_join_all(hashes)
                 .await?
                 .into_iter()
