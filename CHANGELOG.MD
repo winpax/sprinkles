@@ -15,8 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of `<sfsu app path>/logs`
 - Provide more default trait methods for `ScoopContext`. This may cause different outputs for certain implementations.
 - Config type is now an associated type of `ScoopContext` rather than a generic type parameter
-    - This saves a lot of boilerplate, internally and externally, having generics everywhere to account for the config
-      type
+  - This saves a lot of boilerplate, internally and externally, having generics everywhere to account for the config
+    type
 - Removed `v1` feature. `v1` breaking changes have been merged in this release.
 - Updated git2 to v0.19
 - Updated quick-xml to v0.34
@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace `parallel` feature with `rayon` feature
 - Updated `derive_more` to v1.0
 - Performance improvements for `Process::find_running` when using `Process::ExactExe`
+- Builds will fail less often by falling back to
+  the default buckets if the buckets.json file fails to download
 
 ### Added
 
@@ -43,10 +45,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement `DoubleEndedIterator`, `FusedIterator` and `ExactSizeIterator` for `NestedIterator`
 - Sha512 hash benchmark
 - Added running function for package handles
-- Internal: Function for finding running processes
-- Internal: Process enum for handling the finding of running processes
+- Function for finding running processes
+- Process enum for handling the finding of running processes
 - Implemented `Manifest` to `PackageHandle` conversion
 - Downloader trait for downloading files
+- Added Summary struct for determining what will run for (un)installers and scripts
+- Implemented `Runner` for (un)installers
 
 ### Removed
 
@@ -74,7 +78,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For older version's changelogs, see the [releases](https://github.com/winpax/sprinkles/releases) page.
 
 [Unreleased]: https://github.com/winpax/sfsu/compare/v0.15.1...HEAD
-
 [0.15.2]: https://github.com/winpax/sprinkles/releases/tag/v0.15.2
-
 [0.15.1]: https://github.com/winpax/sprinkles/releases/tag/v0.15.1

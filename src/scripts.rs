@@ -17,6 +17,8 @@ use std::{
     process::{Command, ExitStatus, Output},
 };
 
+use summary::Summary;
+
 use crate::{contexts::ScoopContext, packages::models::manifest::SingleOrArray};
 
 pub mod installer;
@@ -52,6 +54,18 @@ impl PowershellScript {
         Self {
             script: script.into(),
         }
+    }
+
+    /// Get a summary of what will run from the [`PowershellScript`]
+    ///
+    /// This will clone the [`PowershellScript`].
+    /// To get the summary without cloning use [`PowershellScript::into_summary`]
+    pub fn get_summary(&self) -> Summary {
+        self.clone().into_summary()
+    }
+    /// Get a summary of what will run from the [`PowershellScript`]
+    pub fn into_summary(self) -> Summary {
+        Summary::from(self)
     }
 
     /// Create a new powershell script from a file
