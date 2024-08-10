@@ -20,6 +20,7 @@ use std::{
 use crate::{contexts::ScoopContext, packages::models::manifest::SingleOrArray};
 
 pub mod installer;
+pub mod summary;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
