@@ -80,6 +80,10 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
     }
 
     /// Get a summary of what will be run for this installer
+    ///
+    /// # Errors
+    /// - Could not determine the program name
+    /// - Could not create a [`PowershellScript`] from the program name
     pub fn get_summary(&self) -> Result<Summary> {
         let prog_name = self.prog_name()?;
         let args = self.subbed_args();
@@ -145,7 +149,7 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
     }
 
     pub(crate) fn is_powershell(&self) -> bool {
-        self.prog_name().map(|path| path.extension() == Some(std::ffi::OsStr::new("ps1"))).unwrap_or_default()
+        self.prog_name().is_ok_and(|path| path.extension() == Some(std::ffi::OsStr::new("ps1")))
     }
 
     /// Run the installer
