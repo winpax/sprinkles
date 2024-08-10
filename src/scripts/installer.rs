@@ -173,7 +173,8 @@ impl<'a, 'c, C: ScoopContext> Runner<'a, 'c, C> {
     /// - Failed to invoke the uninstaller
     /// - The manifest install config had neither a file name nor urls
     /// - The url provided was invalid
-    /// For more information, see [`Error`]
+    ///
+    /// For more information on errors, see [`Error`]
     pub fn run(self, ctx: &impl ScoopContext) -> Result<()> {
         let installer = &self.installer;
 
