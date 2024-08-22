@@ -100,7 +100,7 @@ gix = { version = "0.64", features = [
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.42"
+gix-object = "0.44"
 indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.13"
 log = "0.4"
