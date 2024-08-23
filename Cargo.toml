@@ -95,12 +95,12 @@ directories = "5.0"
 dunce = "1.0"
 futures = "0.3"
 getset = { version = "0.1", optional = true }
-gix = { version = "0.64", features = [
+gix = { version = "0.66", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.42"
+gix-object = "0.44"
 indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.13"
 log = "0.4"
@@ -126,7 +126,12 @@ tokio-util = { version = "0.7", features = ["codec"], optional = true }
 url = { version = "2.5", features = ["serde"], optional = true }
 urlencoding = { version = "2.1", optional = true }
 which = "6.0"
-windows = { version = "0.58", features = ["Win32_Storage_FileSystem", "Win32_UI_Shell", "Win32_System_Diagnostics", "Win32_System_Diagnostics_ToolHelp"] }
+windows = { version = "0.58", features = [
+    "Win32_Storage_FileSystem",
+    "Win32_UI_Shell",
+    "Win32_System_Diagnostics",
+    "Win32_System_Diagnostics_ToolHelp",
+] }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"
