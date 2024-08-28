@@ -51,6 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Downloader trait for downloading files
 - Added Summary struct for determining what will run for (un)installers and scripts
 - Implemented `Runner` for (un)installers
+- `VersionHandle` struct for handling version directories
+- Implemented `list_versions` for `PackageHandle`
 
 ### Removed
 

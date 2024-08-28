@@ -10,6 +10,8 @@ use crate::{
     },
 };
 
+use super::version::VersionHandle;
+
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
 /// Package handle errors
@@ -20,6 +22,8 @@ pub enum Error {
     PackagesError(#[from] crate::packages::Error),
     #[error("Linking/unlinking current failed: {0}")]
     IOError(#[from] std::io::Error),
+    #[error("Version handle error: {0}")]
+    VersionHandle(#[from] super::version::Error),
     #[error("Unsupported manifest reference. The manifest must be a local file")]
     UnsupportedManifestReference,
     #[error("Package not installed")]
@@ -157,6 +161,24 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
         };
 
         self.path.join(version)
+    }
+
+    /// List all versions of the package
+    ///
+    /// # Errors
+    /// - Reading the package's versions failed
+    pub fn list_versions(&self) -> Result<Vec<VersionHandle>, Error> {
+        let mut versions = Vec::new();
+
+        for entry in std::fs::read_dir(&self.path)? {
+            let path = entry?.path();
+
+            if let Ok(version) = VersionHandle::try_from(path) {
+                versions.push(version);
+            }
+        }
+
+        Ok(versions)
     }
 
     /// Unlink the current folder
