@@ -23,15 +23,25 @@ pub struct VersionHandle {
 
 impl VersionHandle {
     #[must_use]
+    #[inline]
     /// Get the version string
     pub fn version(&self) -> &str {
         &self.version
     }
 
     #[must_use]
+    #[inline]
     /// Get the version's directory
     pub fn path(&self) -> &Path {
         &self.path
+    }
+
+    /// Convert the version into a semver version requirement
+    ///
+    /// # Errors
+    /// - The version could not be parsed as a semver version requirement
+    pub fn into_semver(&self) -> Result<semver::Version, semver::Error> {
+        semver::Version::parse(self.version())
     }
 }
 

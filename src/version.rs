@@ -1,5 +1,7 @@
 //! Version helpers
 
+pub use super::handles::version as handle;
+
 use std::{
     borrow::Cow,
     fmt::{Display, Formatter},
