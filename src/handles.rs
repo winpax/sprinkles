@@ -2,3 +2,4 @@
 
 pub mod packages;
 pub mod shim;
+pub mod version;
