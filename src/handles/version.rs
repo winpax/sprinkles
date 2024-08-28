@@ -40,8 +40,20 @@ impl VersionHandle {
     ///
     /// # Errors
     /// - The version could not be parsed as a semver version requirement
-    pub fn into_semver(&self) -> Result<semver::Version, semver::Error> {
+    pub fn to_semver(&self) -> Result<semver::Version, semver::Error> {
         semver::Version::parse(self.version())
+    }
+}
+
+impl PartialOrd for VersionHandle {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        if let Ok(semver) = self.to_semver() {
+            if let Ok(other_semver) = other.to_semver() {
+                return semver.partial_cmp(&other_semver);
+            }
+        }
+
+        None
     }
 }
 
