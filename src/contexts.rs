@@ -45,6 +45,9 @@ impl Error {
     }
 }
 
+/// A result type for contexts
+pub type Result<T, E = Error> = std::result::Result<T, E>;
+
 #[derive(Debug, Copy, Clone)]
 /// An empty config struct for when your implementation does not have a config
 pub struct EmptyConfig;
@@ -59,7 +62,7 @@ pub struct EmptyConfig;
 /// # Example
 /// ```
 /// # use sprinkles::contexts::{ScoopContext, User};
-/// let context = User::new();
+/// let context = User::new().unwrap();
 /// let scoop_path = context.path();
 /// ```
 pub trait ScoopContext: Clone + Send + Sync + 'static {

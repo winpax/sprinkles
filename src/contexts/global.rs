@@ -4,6 +4,20 @@ use crate::{config, git};
 
 use super::{ScoopContext, User};
 
+#[derive(Debug, thiserror::Error)]
+#[allow(missing_docs)]
+/// Global Context Errors
+pub enum Error {
+    #[error("Failed to find real path to scoop -> IO Error: {0}")]
+    CanonPath(std::io::Error),
+    #[error("Scoop path does not exist. Looked at {0}")]
+    MissingScoopPath(PathBuf),
+    #[error("Failed to load User context -> {0}")]
+    UserContext(#[from] super::user::Error),
+}
+
+pub type Result<T, E = Error> = std::result::Result<T, E>;
+
 #[derive(Debug, Clone)]
 /// Global context adapter
 pub struct Global {
@@ -16,10 +30,10 @@ impl Global {
     ///
     /// # Errors
     /// - If the scoop global path does not exist and cannot be created
-    pub fn new() -> std::io::Result<Self> {
+    pub fn new() -> Result<Self> {
         use std::env::var_os;
 
-        let user_context = User::new();
+        let user_context = User::new()?;
 
         let path = {
             if let Some(path) = var_os("SCOOP_GLOBAL") {
@@ -30,9 +44,9 @@ impl Global {
         };
 
         let path = if path.exists() {
-            dunce::canonicalize(path).expect("failed to find real path to scoop")
+            dunce::canonicalize(path).map_err(Error::CanonPath)?
         } else {
-            path
+            return Err(Error::MissingScoopPath(path));
         };
 
         Ok(Self { path, user_context })

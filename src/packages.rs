@@ -999,7 +999,7 @@ mod tests {
     fn test_parse_all_manifests() -> Result<(), Box<dyn Error>> {
         const UNSUPPORTED_PACKAGES: &[&str] = &["unityhub"];
 
-        let buckets = Bucket::list_all(&User::new())?;
+        let buckets = Bucket::list_all(&User::new().unwrap())?;
 
         let manifests = buckets
             .into_par_iter()
