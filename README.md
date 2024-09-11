@@ -21,7 +21,7 @@ It provides a high-level API for interacting with [Scoop](https://scoop.sh/), su
 
 Please, please, please check the [FAQs](https://github.com/winpax/FAQs), before you report an issue.
 
-If you have a question, please ask it on [the discussions page](https://github.com/winpax/sfsu/discussions).
+If you have a question, please ask it on [the discussions page](https://github.com/orgs/winpax/discussions).
 
 If you have a bug report, feature request, or other issue, then [open an issue](https://github.com/winpax/sfsu/issues/new/choose).
 
