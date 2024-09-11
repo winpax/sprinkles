@@ -7,7 +7,7 @@
 //! # use sprinkles::{scripts::PowershellScript, contexts::{User, ScoopContext}};
 //!
 //! let script = PowershellScript::new("Write-Host 'Hello, world!'");
-//! # let ctx = User::new();
+//! # let ctx = User::new().unwrap();
 //! let runner = script.save_to(ctx.scripts_path()).unwrap();
 //! runner.run().unwrap();
 //! ```

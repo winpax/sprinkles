@@ -62,7 +62,7 @@ pub struct EmptyConfig;
 /// # Example
 /// ```
 /// # use sprinkles::contexts::{ScoopContext, User};
-/// let context = User::new();
+/// let context = User::new().unwrap();
 /// let scoop_path = context.path();
 /// ```
 pub trait ScoopContext: Clone + Send + Sync + 'static {

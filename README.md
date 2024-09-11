@@ -24,7 +24,7 @@ If you want a more in depth example of how to use the library, check out the [sf
 ```rust
 use sprinkles::contexts::{User, ScoopContext};
 
-let ctx = User::new();
+let ctx = User::new().unwrap();
 
 let apps = ctx.installed_apps().unwrap();
 
