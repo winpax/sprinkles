@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `Downloader` to `DownloadHandle`
 - Removed `Default` implementations for `User`
 - Added fallible `Result` return for `User` and `Global`
+- If Scoop path cannot be found both `User` and `Global` will return an error
+  - Previously `User` would panic and `Global` would return the invalid path anyway
 
 ### Changes
 

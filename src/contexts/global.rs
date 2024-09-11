@@ -10,8 +10,8 @@ use super::{ScoopContext, User};
 pub enum Error {
     #[error("Failed to find real path to scoop -> IO Error: {0}")]
     CanonPath(std::io::Error),
-    #[error("Scoop path does not exist")]
-    MissingScoopPath,
+    #[error("Scoop path does not exist. Looked at {0}")]
+    MissingScoopPath(PathBuf),
     #[error("Failed to load User context -> {0}")]
     UserContext(#[from] super::user::Error),
 }
@@ -46,7 +46,7 @@ impl Global {
         let path = if path.exists() {
             dunce::canonicalize(path).map_err(Error::CanonPath)?
         } else {
-            return Err(Error::MissingScoopPath);
+            return Err(Error::MissingScoopPath(path));
         };
 
         Ok(Self { path, user_context })

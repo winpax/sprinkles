@@ -10,8 +10,8 @@ pub enum Error {
     CanonPath(std::io::Error),
     #[error("Failed to load Scoop config -> IO Error: {0}")]
     LoadingConfig(std::io::Error),
-    #[error("Scoop path does not exist")]
-    MissingScoopPath,
+    #[error("Scoop path does not exist. Looked at {0}")]
+    MissingScoopPath(PathBuf),
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -40,7 +40,7 @@ impl User {
         let path = if path.exists() {
             dunce::canonicalize(path).map_err(Error::CanonPath)?
         } else {
-            panic!("Scoop path does not exist");
+            return Err(Error::MissingScoopPath(path));
         };
 
         let config = config::Scoop::load().map_err(Error::LoadingConfig)?;
