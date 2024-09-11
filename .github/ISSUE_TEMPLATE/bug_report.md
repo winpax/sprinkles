@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: "<COMMAND:> Brief issue description"
+title: "Brief issue description"
 labels: bug
 assignees: jewlexx
 ---
@@ -27,7 +27,11 @@ If applicable, add the entire output to help our diagnosis of the problem.
 
 ## Version
 
-[e.g. 1.4.0]
+sfsu version:
+
+<!-- Or -->
+
+sprinkles version:
 
 ## Additional context
 
