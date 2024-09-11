@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn test_powershell_hello_world() {
-        let ctx = User::new();
+        let ctx = User::new().unwrap();
 
         let script = PowershellScript::new("Write-Host 'Hello, world!'")
             .save(&ctx)

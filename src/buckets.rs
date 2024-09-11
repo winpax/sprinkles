@@ -380,7 +380,7 @@ mod tests {
 
     #[test]
     fn test_list_all_buckets() {
-        let ctx = User::new();
+        let ctx = User::new().unwrap();
         let buckets = Bucket::list_all(&ctx).unwrap();
 
         assert!(!buckets.is_empty());
@@ -388,27 +388,19 @@ mod tests {
 
     #[test]
     fn test_main_bucket_update() {
-        let ctx = User::new();
+        let ctx = User::new().unwrap();
 
         let bucket = Bucket::from_name(&ctx, "main").unwrap();
 
-        bucket
-            .open_repo()
-            .unwrap()
-            .pull(&User::new(), None)
-            .unwrap();
+        bucket.open_repo().unwrap().pull(&ctx, None).unwrap();
     }
 
     #[test]
     fn test_extras_bucket_update() {
-        let ctx = User::new();
+        let ctx = User::new().unwrap();
 
         let bucket = Bucket::from_name(&ctx, "extras").unwrap();
 
-        bucket
-            .open_repo()
-            .unwrap()
-            .pull(&User::new(), None)
-            .unwrap();
+        bucket.open_repo().unwrap().pull(&ctx, None).unwrap();
     }
 }

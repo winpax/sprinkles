@@ -673,7 +673,7 @@ mod tests {
     #[test]
     #[ignore = "Broken (not my fault, the chrome xml file does not include the hash for the current version)"]
     fn test_google_chrome_hashes() {
-        let manifest = Bucket::from_name(&User::new(), "extras")
+        let manifest = Bucket::from_name(&User::new().unwrap(), "extras")
             .unwrap()
             .get_manifest("googlechrome")
             .unwrap();
@@ -717,12 +717,12 @@ mod tests {
     #[ignore = "replaced"]
     #[tokio::test]
     async fn test_get_hash_for_googlechrome() {
-        let manifest = Bucket::from_name(&User::new(), "extras")
+        let manifest = Bucket::from_name(&User::new().unwrap(), "extras")
             .unwrap()
             .get_manifest("googlechrome")
             .unwrap();
 
-        let hash = Hash::get_for_app(&User::new(), &manifest, Architecture::ARCH)
+        let hash = Hash::get_for_app(&User::new().unwrap(), &manifest, Architecture::ARCH)
             .await
             .unwrap();
 
@@ -743,7 +743,7 @@ mod tests {
         }
 
         pub async fn test(self) -> anyhow::Result<()> {
-            let ctx = User::new();
+            let ctx = User::new().unwrap();
             let manifest = self.package.manifest(&ctx).await?;
 
             let hash = Hash::get_for_app(&ctx, &manifest, Architecture::ARCH).await?;
@@ -864,7 +864,7 @@ mod tests {
     async fn test_sfsu_autoupdate() -> anyhow::Result<()> {
         let mut package = reference::package::Reference::from_str("extras/sfsu")?;
         package.set_version("1.10.2".to_string());
-        let manifest = package.manifest(&User::new()).await?;
+        let manifest = package.manifest(&User::new().unwrap()).await?;
 
         assert_eq!(
             manifest
@@ -885,7 +885,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_computed_hash() -> anyhow::Result<()> {
-        let ctx = User::new();
+        let ctx = User::new().unwrap();
 
         let package = reference::package::Reference::from_str("extras/sfsu")?;
         let mut manifest = package.manifest(&ctx).await?;

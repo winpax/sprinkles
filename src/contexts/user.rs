@@ -1,6 +1,20 @@
 use std::path::{Path, PathBuf};
 
-use crate::{config, contexts::Error, git, system::paths::WindowsPath};
+use crate::{config, git, system::paths::WindowsPath};
+
+#[derive(Debug, thiserror::Error)]
+#[allow(missing_docs)]
+/// Global Context Errors
+pub enum Error {
+    #[error("Failed to find real path to scoop -> IO Error: {0}")]
+    CanonPath(std::io::Error),
+    #[error("Failed to load Scoop config -> IO Error: {0}")]
+    LoadingConfig(std::io::Error),
+    #[error("Scoop path does not exist")]
+    MissingScoopPath,
+}
+
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Clone)]
 /// User's Scoop install adapter
@@ -10,41 +24,28 @@ pub struct User {
 }
 
 impl User {
-    #[must_use]
     /// Construct a new user context adapter
-    pub fn new() -> Self {
+    pub fn new() -> Result<Self> {
+        let config = config::Scoop::load().map_err(Error::LoadingConfig)?;
+
         let path = {
             if let Some(path) = crate::env::paths::scoop_path() {
                 path
-            } else if let Ok(path) = Ok::<_, ()>(
-                config::Scoop::load()
-                    .map(|config| config.root_path)
-                    .unwrap(),
-            ) {
-                path
             } else {
-                directories::BaseDirs::new()
-                    .expect("user directories")
-                    .home_dir()
-                    .join("scoop")
+                // If not provided in the config, this will default to the <user's home directory>/scoop
+                config.root_path
             }
         };
 
         let path = if path.exists() {
-            dunce::canonicalize(path).expect("failed to find real path to scoop")
+            dunce::canonicalize(path).map_err(Error::CanonPath)?
         } else {
             panic!("Scoop path does not exist");
         };
 
-        let config = config::Scoop::load().expect("scoop config loaded correctly");
+        let config = config::Scoop::load().map_err(Error::LoadingConfig)?;
 
-        Self { config, path }
-    }
-}
-
-impl Default for User {
-    fn default() -> Self {
-        Self::new()
+        Ok(Self { config, path })
     }
 }
 
@@ -137,7 +138,7 @@ impl super::ScoopContext for User {
     /// # Errors
     /// - The Scoop app could not be opened as a repository
     /// - The Scoop app could not be checked for updates
-    async fn outdated(&self) -> Result<bool, Error> {
+    async fn outdated(&self) -> super::Result<bool> {
         let config = self.config();
         let scoop_repo = self.open_repo().expect("scoop repo")?;
 

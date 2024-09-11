@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_list_install_manifests() {
-        let ctx = User::new();
+        let ctx = User::new().unwrap();
         let app_paths = ctx.installed_apps().unwrap();
 
         app_paths

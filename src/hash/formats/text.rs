@@ -182,7 +182,7 @@ mod tests {
     #[test]
     #[ignore = "replaced by testhandler tests"]
     fn test_finding_vcredistaio_hashes() {
-        let ctx = User::new();
+        let ctx = User::new().unwrap();
 
         let manifest = Bucket::from_name(&ctx, "extras")
             .unwrap()
@@ -232,7 +232,7 @@ mod tests {
     fn test_finding_mysql_hashes() {
         const FIND_REGEX: &str = "md5\">$md5";
 
-        let ctx = User::new();
+        let ctx = User::new().unwrap();
         let mut text_url: String = "https://dev.mysql.com/downloads/mysql/".to_string();
 
         let url = Url::parse(&text_url).unwrap();
