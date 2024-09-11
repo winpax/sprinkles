@@ -23,7 +23,7 @@ Please, please, please check the [FAQs](https://github.com/winpax/FAQs), before 
 
 If you have a question, please ask it on [the discussions page](https://github.com/orgs/winpax/discussions).
 
-If you have a bug report, feature request, or other issue, then [open an issue](https://github.com/winpax/sfsu/issues/new/choose).
+If you have a bug report, feature request, or other issue, then [open an issue](https://github.com/winpax/sprinkles/issues/new/choose).
 
 ## Example Usage
 
