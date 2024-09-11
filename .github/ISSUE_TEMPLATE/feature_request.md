@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: "<COMMAND:> Brief feature description"
+title: "Brief feature description"
 labels: enhancement
 assignees: jewlexx
 ---
