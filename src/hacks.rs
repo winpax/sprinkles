@@ -2,14 +2,6 @@
 
 #[macro_use]
 mod hackros {
-    #[allow(unused_macros)]
-    macro_rules! inline_const {
-        ($type:tt $expr:expr) => {{
-            const OUTPUT: $type = { $expr };
-            OUTPUT
-        }};
-    }
-
     macro_rules! let_chain {
     (let $dis:ident($pat:ident) = $expr:expr; $(let $dis2:ident($pat2:ident) = $expr2:expr ;)+ $then:expr $(; else $else:expr)?) => {{
         if let $dis($pat) = $expr {
@@ -40,5 +32,4 @@ mod hackros {
 }
 
 #[allow(unused_imports)]
-pub(crate) use inline_const;
 pub(crate) use let_chain;
