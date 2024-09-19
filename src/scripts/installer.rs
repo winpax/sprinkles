@@ -6,10 +6,7 @@ use crate::hash::substitutions::{Substitute, SubstitutionMap};
 use crate::hash::url_ext::UrlExt;
 use crate::packages::models::manifest::SingleOrArray;
 use crate::scripts::summary::Summary;
-use crate::{
-    packages::models::manifest::{Installer, Uninstaller},
-    Architecture,
-};
+use crate::{packages::models::manifest::Installer, Architecture};
 use quork::prelude::ContainsTruth;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -39,18 +36,6 @@ pub enum Error {
 
 #[allow(missing_docs)]
 pub type Result<T, E = Error> = std::result::Result<T, E>;
-
-impl From<Uninstaller> for Installer {
-    fn from(uninstaller: Uninstaller) -> Self {
-        Installer {
-            file: uninstaller.file,
-            comment: None,
-            args: uninstaller.args,
-            keep: Some(false),
-            script: uninstaller.script,
-        }
-    }
-}
 
 #[must_use]
 /// Controller for the execution of installers

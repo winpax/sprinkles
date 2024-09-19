@@ -171,7 +171,7 @@ pub struct InstallConfig {
     pub pre_install: Option<PowershellScript>,
     pub pre_uninstall: Option<PowershellScript>,
     pub shortcuts: Option<NestedArray<String>>,
-    pub uninstaller: Option<Uninstaller>,
+    pub uninstaller: Option<Installer>,
     #[serde(rename = "url")]
     pub urls: Option<StringArray>,
 }
@@ -221,14 +221,6 @@ pub struct Installer {
     pub args: Option<StringArray>,
     pub file: Option<String>,
     pub keep: Option<bool>,
-    pub script: Option<PowershellScript>,
-}
-
-#[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct Uninstaller {
-    pub args: Option<StringArray>,
-    pub file: Option<String>,
     pub script: Option<PowershellScript>,
 }
 
