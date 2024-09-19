@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added fallible `Result` return for `User` and `Global`
 - If Scoop path cannot be found both `User` and `Global` will return an error
   - Previously `User` would panic and `Global` would return the invalid path anyway
+- Removed `Uninstaller` struct
+- `Uninstaller` struct has been replaced with `Installer` in the manifest
 
 ### Changes
 
