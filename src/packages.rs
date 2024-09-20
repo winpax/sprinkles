@@ -306,8 +306,8 @@ where
 
     /// # Errors
     /// - The contents are not a valid manifest
-    fn from_str(contents: String) -> serde_json::Result<Self> {
-        let trimmed = contents.trim_start_matches('\u{feff}');
+    fn from_str(contents: impl AsRef<str>) -> serde_json::Result<Self> {
+        let trimmed = contents.as_ref().trim_start_matches('\u{feff}');
 
         serde_json::from_str(trimmed)
     }

@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `Uninstaller` struct
 - `Uninstaller` struct has been replaced with `Installer` in the manifest
 - Installer host `run` function will now remove the installer file if `keep` is not set to true
+- `CreateManifest` `from_str` now takes `impl AsRef<str>` rather than `String`
+- An empty hash string now deserializes as `None` rather than throwing an error
 
 ### Changes
 
