@@ -5,6 +5,8 @@
 // Thanks to quicktype.io for saving me a lot of time.
 // The names are a bit weird at times but I'll work on that in future.
 
+mod ser_de;
+
 use std::{collections::HashMap, fmt::Display};
 
 use itertools::Itertools as _;
@@ -160,6 +162,7 @@ pub struct InstallConfig {
     /// The directories to extract to
     pub extract_dir: Option<StringArray>,
     #[cfg(feature = "manifest-hashes")]
+    #[serde(deserialize_with = "ser_de::deserialize_hash")]
     /// The hash(es) of the package
     pub hash: Option<SingleOrArray<crate::hash::Hash>>,
     /// The installer configuration
