@@ -3,15 +3,13 @@
 use std::{
     fmt::Display,
     path::{Path, PathBuf},
-    sync::Arc,
 };
 
-use bytes::BytesMut;
+use bytes::{Bytes, BytesMut};
 use digest::Digest;
 use futures::{Stream, StreamExt, TryStreamExt};
 use indicatif::{MultiProgress, ProgressBar};
 use reqwest::{Response, StatusCode};
-use tokio::sync::Mutex;
 
 use crate::packages::downloading::Downloader;
 use crate::{
@@ -32,6 +30,10 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
     #[error("Failed to write to file: {0}")]
     IO(#[from] std::io::Error),
+    #[error("Failed to join hashing task: {0}")]
+    JoinError(#[from] tokio::task::JoinError),
+    #[error("Failed to send to hashing channel")]
+    SendError,
     #[error("HTTP Error: {0}")]
     ErrorCode(StatusCode),
     #[error("Missing download url in manifest")]
@@ -328,7 +330,7 @@ impl DownloadHandle {
         Ok(Self { cache, resp, pb })
     }
 
-    async fn handle_buf<D: Digest>(self) -> Result<Vec<u8>, Error> {
+    async fn handle_buf<D: Digest + Send>(self) -> Result<Vec<u8>, Error> {
         use tokio::{fs::File, io::AsyncWriteExt};
         use tokio_util::codec::{BytesCodec, FramedRead};
 
@@ -376,24 +378,22 @@ impl DownloadHandle {
             Source::Network(self.resp.bytes_stream())
         };
 
-        let cache_file = match &reader {
-            Source::Cache(_) => None,
-            Source::Network(_) => Some(File::create(&cache_path).await?),
-        };
-        let cache_file = Arc::new(Mutex::new(cache_file));
+        let (tx, mut rx) = tokio::sync::mpsc::channel::<Bytes>(128);
 
-        let mut hasher = D::new();
+        let hash_thread = tokio::spawn({
+            let mut cache_file = match &reader {
+                Source::Cache(_) => None,
+                Source::Network(_) => Some(File::create(&cache_path).await?),
+            };
 
-        let mut pool = tokio::task::JoinSet::new();
+            let pb = self.pb.clone();
+            async move {
+                let mut hasher = D::new();
 
-        while let Some(Ok(chunk)) = reader.next().await {
-            hasher.update(&chunk);
+                while let Some(chunk) = rx.recv().await {
+                    hasher.update(&chunk);
 
-            pool.spawn({
-                let cache_file = cache_file.clone();
-                let pb = self.pb.clone();
-                async move {
-                    if let Some(cache_file) = cache_file.lock().await.as_mut() {
+                    if let Some(cache_file) = cache_file.as_mut() {
                         cache_file.write_all(&chunk).await?;
                     }
 
@@ -402,13 +402,19 @@ impl DownloadHandle {
                     if let Some(pb) = &pb {
                         pb.inc(chunk_length as u64);
                     }
-
-                    Ok::<_, tokio::io::Error>(())
                 }
-            });
+
+                Ok::<_, tokio::io::Error>(hasher.finalize()[..].to_vec())
+            }
+        });
+
+        while let Some(Ok(chunk)) = reader.next().await {
+            tx.send(chunk).await.map_err(|_| Error::SendError)?;
         }
 
-        Ok(hasher.finalize()[..].to_vec())
+        let hash = hash_thread.await??;
+
+        Ok(hash)
     }
 }
 
