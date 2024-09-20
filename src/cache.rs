@@ -389,7 +389,7 @@ impl DownloadHandle {
         while let Some(Ok(chunk)) = reader.next().await {
             hasher.update(&chunk);
 
-            pool.spawn_local({
+            pool.spawn({
                 let cache_file = cache_file.clone();
                 let pb = self.pb.clone();
                 async move {
