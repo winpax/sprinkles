@@ -162,7 +162,7 @@ pub struct InstallConfig {
     /// The directories to extract to
     pub extract_dir: Option<StringArray>,
     #[cfg(feature = "manifest-hashes")]
-    #[serde(deserialize_with = "ser_de::deserialize_hash")]
+    #[serde(default, deserialize_with = "ser_de::deserialize_hash")]
     /// The hash(es) of the package
     pub hash: Option<SingleOrArray<crate::hash::Hash>>,
     /// The installer configuration

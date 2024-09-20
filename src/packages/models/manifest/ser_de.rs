@@ -1,9 +1,63 @@
-use serde::Deserializer;
+use std::str::FromStr;
+
+use serde::{
+    de::{Error, Unexpected},
+    Deserialize, Deserializer,
+};
+
+use crate::hash::Hash;
 
 use super::SingleOrArray;
 
+fn parse_hash<'de, D: Deserializer<'de>>(value: &str) -> Result<Hash, D::Error> {
+    Hash::from_str(value).map_err(|_| Error::invalid_value(
+                Unexpected::Str(value),
+                &"a valid sha512, sha256, sha1 or md5 hash, with a prefix for any type other than sha256",
+            )
+)
+}
+
 pub(super) fn deserialize_hash<'de, D: Deserializer<'de>>(
     data: D,
-) -> Result<Option<SingleOrArray<crate::hash::Hash>>, D::Error> {
-    todo!()
+) -> Result<Option<SingleOrArray<Hash>>, D::Error> {
+    // This is an insanely inelegant workaround
+    // blame serde its not my fault
+
+    let value = serde_json::Value::deserialize(data)?;
+
+    if value.is_string() {
+        let real_value = unsafe { value.as_str().unwrap_unchecked() };
+
+        if real_value.is_empty() {
+            return Ok(None);
+        }
+
+        let hash = parse_hash::<D>(real_value)?;
+
+        Ok(Some(SingleOrArray::Single(hash)))
+    } else if value.is_array() {
+        let mut hashes = Vec::new();
+        let array = unsafe { value.as_array().unwrap_unchecked() };
+
+        for value in array {
+            if !value.is_string() {
+                return Err(Error::invalid_value(
+                    Unexpected::Other("array contained a non-string value"),
+                    &"a valid sha512, sha256, sha1 or md5 hash, with a prefix for any type other than sha256",
+                ));
+            }
+
+            let real_value = unsafe { value.as_str().unwrap_unchecked() };
+
+            let hash = parse_hash::<D>(real_value)?;
+
+            hashes.push(hash);
+        }
+
+        Ok(Some(SingleOrArray::Array(hashes)))
+    } else {
+        Err(Error::custom(
+            "data did not match any variant of untagged enum SingleOrArray",
+        ))
+    }
 }
