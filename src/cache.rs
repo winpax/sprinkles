@@ -3,6 +3,7 @@
 use std::{
     fmt::Display,
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use bytes::BytesMut;
@@ -10,6 +11,7 @@ use digest::Digest;
 use futures::{Stream, StreamExt, TryStreamExt};
 use indicatif::{MultiProgress, ProgressBar};
 use reqwest::{Response, StatusCode};
+use tokio::sync::Mutex;
 
 use crate::packages::downloading::Downloader;
 use crate::{
@@ -374,25 +376,36 @@ impl DownloadHandle {
             Source::Network(self.resp.bytes_stream())
         };
 
-        let mut cache_file = match &reader {
+        let cache_file = match &reader {
             Source::Cache(_) => None,
             Source::Network(_) => Some(File::create(&cache_path).await?),
         };
+        let cache_file = Arc::new(Mutex::new(cache_file));
 
         let mut hasher = D::new();
+
+        let mut pool = tokio::task::JoinSet::new();
 
         while let Some(Ok(chunk)) = reader.next().await {
             hasher.update(&chunk);
 
-            if let Some(cache_file) = cache_file.as_mut() {
-                cache_file.write_all(&chunk).await?;
-            }
+            pool.spawn_local({
+                let cache_file = cache_file.clone();
+                let pb = self.pb.clone();
+                async move {
+                    if let Some(cache_file) = cache_file.lock().await.as_mut() {
+                        cache_file.write_all(&chunk).await?;
+                    }
 
-            let chunk_length = chunk.len();
+                    let chunk_length = chunk.len();
 
-            if let Some(pb) = &self.pb {
-                pb.inc(chunk_length as u64);
-            }
+                    if let Some(pb) = &pb {
+                        pb.inc(chunk_length as u64);
+                    }
+
+                    Ok::<_, tokio::io::Error>(())
+                }
+            });
         }
 
         Ok(hasher.finalize()[..].to_vec())
