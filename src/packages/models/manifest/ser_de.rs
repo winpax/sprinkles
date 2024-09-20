@@ -25,9 +25,7 @@ pub(super) fn deserialize_hash<'de, D: Deserializer<'de>>(
 
     let value = serde_json::Value::deserialize(data)?;
 
-    if value.is_string() {
-        let real_value = unsafe { value.as_str().unwrap_unchecked() };
-
+    if let Some(real_value) = value.as_str() {
         if real_value.is_empty() {
             return Ok(None);
         }
@@ -35,23 +33,20 @@ pub(super) fn deserialize_hash<'de, D: Deserializer<'de>>(
         let hash = parse_hash::<D>(real_value)?;
 
         Ok(Some(SingleOrArray::Single(hash)))
-    } else if value.is_array() {
+    } else if let Some(array) = value.as_array() {
         let mut hashes = Vec::new();
-        let array = unsafe { value.as_array().unwrap_unchecked() };
 
         for value in array {
-            if !value.is_string() {
+            if let Some(real_value) = value.as_str() {
+                let hash = parse_hash::<D>(real_value)?;
+
+                hashes.push(hash);
+            } else {
                 return Err(Error::invalid_value(
                     Unexpected::Other("array contained a non-string value"),
                     &"a valid sha512, sha256, sha1 or md5 hash, with a prefix for any type other than sha256",
                 ));
             }
-
-            let real_value = unsafe { value.as_str().unwrap_unchecked() };
-
-            let hash = parse_hash::<D>(real_value)?;
-
-            hashes.push(hash);
         }
 
         Ok(Some(SingleOrArray::Array(hashes)))
