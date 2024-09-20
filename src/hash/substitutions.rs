@@ -1,3 +1,5 @@
+//! Substitution helpers
+
 use std::collections::HashMap;
 
 use derive_more::{Deref, DerefMut};

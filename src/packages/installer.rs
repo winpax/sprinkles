@@ -2,7 +2,14 @@
 
 use std::process::Output;
 
-use crate::{contexts::ScoopContext, packages::manifest::Installer, scripts};
+use quork::prelude::ContainsTruth;
+
+use crate::{
+    contexts::ScoopContext,
+    hash::substitutions::{Substitute, SubstitutionMap},
+    packages::manifest::Installer,
+    scripts,
+};
 
 use super::models::manifest::{InstallerRunner, SingleOrArray};
 
@@ -57,20 +64,35 @@ impl<'ctx, C: ScoopContext> InstallerHost<'ctx, C> {
 
         let output = match runner {
             InstallerRunner::File(file) => {
-                let mut command = std::process::Command::new(file);
+                let mut command = std::process::Command::new(&file);
 
-                if let Some(ref args) = args {
+                let output = if let Some(ref args) = args {
                     command.args(args)
                 } else {
                     &mut command
                 }
                 .spawn()?
-                .wait_with_output()?
+                .wait_with_output()?;
+
+                if !self.installer.keep.contains_truth() {
+                    std::fs::remove_file(file)?;
+                }
+
+                output
             }
             InstallerRunner::Script(script) => script.save(self.ctx)?.run()?,
         };
 
         Ok(output)
+    }
+}
+
+impl<'a, C: ScoopContext> Substitute for InstallerHost<'a, C> {
+    /// Substitute the installer's args, if there are any
+    fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
+        if let Some(ref mut args) = self.installer.args {
+            args.substitute(params, regex_escape);
+        }
     }
 }
 
