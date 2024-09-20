@@ -412,6 +412,8 @@ impl DownloadHandle {
             tx.send(chunk).await.map_err(|_| Error::SendError)?;
         }
 
+        drop(tx);
+
         let hash = hash_thread.await??;
 
         Ok(hash)
