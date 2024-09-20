@@ -1,3 +1,5 @@
+//! Substitution helpers
+
 use std::collections::HashMap;
 
 use derive_more::{Deref, DerefMut};
@@ -16,13 +18,18 @@ fn replace_in_place(string: &mut String, from: &str, to: &str) {
 }
 
 #[derive(Debug, Clone, Deref, DerefMut)]
+/// Substitution map
 pub struct SubstitutionMap(HashMap<String, String>);
 
 impl SubstitutionMap {
+    #[must_use]
+    /// Create a new substitution map
     pub fn new() -> Self {
         Self(HashMap::new())
     }
 
+    #[must_use]
+    /// Create a new substitution map from the version and url
     pub fn from_all(version: &Version, url: &Url) -> Self {
         let mut map = Self::new();
 
@@ -32,6 +39,7 @@ impl SubstitutionMap {
         map
     }
 
+    /// Substitute the string with the substitution map
     pub fn substitute(&self, string: &mut String, regex_escape: bool) {
         SubstituteBuilder::String(string).substitute(self, regex_escape);
     }
@@ -41,6 +49,7 @@ impl SubstitutionMap {
         self.extend(version.submap().0);
     }
 
+    /// Append the url to the substitution map
     pub fn append_url(&mut self, url: &Url) {
         self.extend(url.submap().0);
     }
@@ -64,17 +73,18 @@ impl<'a> From<HashMap<&'a str, String>> for SubstitutionMap {
     }
 }
 
+/// Substitute builder
 pub enum SubstituteBuilder<'a> {
+    /// Substitute a string
     String(&'a mut String),
 }
 
 impl<'a> SubstituteBuilder<'a> {
+    /// Substitute the builder with the substitution map
     pub fn substitute(self, params: &SubstitutionMap, regex_escape: bool) {
         match self {
             SubstituteBuilder::String(new_entity) => {
-                for key in params.keys() {
-                    let value = params.get(key).unwrap();
-
+                for (key, value) in params.iter() {
                     if regex_escape {
                         replace_in_place(new_entity, key, &regex::escape(value));
                     } else {
@@ -86,10 +96,16 @@ impl<'a> SubstituteBuilder<'a> {
     }
 }
 
+/// Substitute trait
+///
+/// This trait is used to substitute strings with a [`SubstitutionMap`]
+/// It is implemented for [`String`], [`SingleOrArray<String>`], and [`Installer`]
 pub trait Substitute {
+    /// Substitute the entity with the substitution map
     fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool);
 
     #[must_use]
+    /// Substitute the entity with the substitution map
     fn into_substituted(mut self, params: &SubstitutionMap, regex_escape: bool) -> Self
     where
         Self: Clone,

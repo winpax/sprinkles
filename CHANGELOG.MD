@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Previously `User` would panic and `Global` would return the invalid path anyway
 - Removed `Uninstaller` struct
 - `Uninstaller` struct has been replaced with `Installer` in the manifest
+- Installer host `run` function will now remove the installer file if `keep` is not set to true
 
 ### Changes
 
@@ -59,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented `Runner` for (un)installers
 - `VersionHandle` struct for handling version directories
 - Implemented `list_versions` for `PackageHandle`
+- Implemented `substitute` for `InstallerHost`
+- Made substitution module public
 
 ### Removed
 

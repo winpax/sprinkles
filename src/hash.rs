@@ -31,7 +31,7 @@ use crate::{
 
 pub(crate) mod formats;
 pub(crate) mod hash_serde;
-pub(crate) mod substitutions;
+pub mod substitutions;
 pub(crate) mod url_ext;
 
 /// Decode a hex string into bytes
