@@ -3,6 +3,8 @@ use sxd_xpath::{evaluate_xpath, Value};
 
 use crate::hash::substitutions::{Substitute, SubstitutionMap};
 
+use super::providers::{Provider, XMLProvider};
+
 #[derive(Debug, thiserror::Error)]
 pub enum XMLError {
     #[error("XML error: {0}")]
@@ -25,22 +27,7 @@ pub fn parse_xml(
     let mut xpath = xpath.as_ref().to_string();
     xpath.substitute(substitutions, false);
 
-    let pkg = parser::parse(source.as_ref())?;
-    let doc = pkg.as_document();
-
-    let value = evaluate_xpath(&doc, xpath.as_ref())?;
-
-    let hash = match value {
-        Value::Nodeset(nodes) => {
-            let node = nodes.iter().last().ok_or(XMLError::NotFound)?;
-
-            node.string_value()
-        }
-        Value::String(text) => text,
-        _ => return Err(XMLError::InvalidValue),
-    };
-
-    Ok(hash)
+    let hash = Provider::find_xpath(source.as_ref(), xpath.as_ref())?;
 }
 
 #[cfg(test)]
