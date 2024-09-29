@@ -61,7 +61,7 @@ mod tests {
     #[rstest]
     #[case(other::OtherProviders)]
     #[cfg_attr(feature = "libxml", case(libxml_provider::LibXML))]
-    fn test_finding_in_xml(#[case] provider: impl XMLProvider) -> anyhow::Result<()> {
+    fn test_xpath(#[case] provider: impl XMLProvider) -> anyhow::Result<()> {
         use crate::hash::substitutions::Substitute;
 
         const EXAMPLE_XML: &str = r#"
@@ -95,6 +95,34 @@ mod tests {
         let hash = provider.test_find_xpath(EXAMPLE_XML, xpath.as_str())?;
 
         assert_eq!(hash, "{35138b9a-5d96-4fbd-8e2d-a2440225f93a}");
+
+        Ok(())
+    }
+
+    #[rstest]
+    #[case(other::OtherProviders)]
+    #[cfg_attr(feature = "libxml", case(libxml_provider::LibXML))]
+    fn test_rdf(#[case] provider: impl XMLProvider) -> anyhow::Result<()> {
+        const RDF_FILE: &str = include_str!("../../../../../tests/fixtures/imagemagick.digest.rdf");
+
+        for file_name in [
+            "ImageMagick-i686-pc-cygwin.tar.gz",
+            "ImageMagick-i386-pc-solaris2.11.tar.gz",
+        ] {
+            let hash = provider.test_find_rdf(RDF_FILE, file_name)?;
+
+            match file_name {
+                "ImageMagick-i686-pc-cygwin.tar.gz" => assert_eq!(
+                    hash,
+                    "2eb106e7eda2b2c8300a19eebbe8258ece5624305a2e6248da98cfbb9cccbd62"
+                ),
+                "ImageMagick-i386-pc-solaris2.11.tar.gz" => assert_eq!(
+                    hash,
+                    "ed3ec2340dd84c7b4015fcd773ac32ab80b5c268aff234225c23ba7a6a98f326"
+                ),
+                _ => unreachable!(),
+            }
+        }
 
         Ok(())
     }

@@ -60,7 +60,7 @@ jobs:
           vcpkg integrate install
 
       - name: Build and Test
-        run: cargo test --features beta
+        run: cargo test --all-features
 
   build:
     name: Build
