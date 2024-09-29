@@ -63,6 +63,10 @@ rayon = ["dep:rayon", "blake3/rayon", "indicatif/rayon"]
 harness = false
 name = "hashing"
 
+[[bench]]
+harness = false
+name = "xml"
+
 [dependencies]
 base64 = { version = "0.22", optional = true }
 blake3 = "1.5"
