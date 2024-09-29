@@ -1,4 +1,4 @@
-#![allow(clippy::single_component_path_imports)]
+#![allow(clippy::single_component_path_imports, edition_2024_expr_fragment_specifier)]
 
 #[macro_use]
 mod hackros {

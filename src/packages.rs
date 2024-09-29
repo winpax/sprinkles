@@ -1,5 +1,7 @@
 //! Scoop package helpers
 
+#![allow(edition_2024_expr_fragment_specifier)]
+
 use std::{path::Path, time::SystemTimeError};
 
 use chrono::{DateTime, FixedOffset};
