@@ -71,7 +71,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install libxml2
-        uses: winpax/vcpkg-libxml-composite
+        uses: winpax/vcpkg-libxml-composite@a66626cdec1403e12907b526ff0e59b8c5913190
 
       - name: Build
         run: cargo build --features beta
