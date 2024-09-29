@@ -53,6 +53,12 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install and integrate libxml2
+        shell: pwsh
+        run: |
+          vcpkg install
+          vcpkg integrate install
+
       - name: Build and Test
         run: cargo test --features beta
 
@@ -69,12 +75,6 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Install and integrate libxml2
-        shell: pwsh
-        run: |
-          vcpkg install
-          vcpkg integrate install
 
       - name: Build
         run: cargo build --features beta
