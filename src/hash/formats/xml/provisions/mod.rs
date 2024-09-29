@@ -18,6 +18,8 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 pub trait XMLProvider {
     fn find_xpath(source: &str, xpath: &str) -> Result<String>;
+
+    fn find_rdf(input: impl AsRef<[u8]>, file_name: impl AsRef<str>) -> Result<String>;
 }
 
 cfg_if::cfg_if! {
