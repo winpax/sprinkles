@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use sxd_document::parser;
 use sxd_xpath::{evaluate_xpath, Value};
 
