@@ -64,8 +64,6 @@ pub enum Error {
     TextError(#[from] text::Error),
     #[error("Json error: {0}")]
     JsonError(#[from] json::Error),
-    #[error("RDF error: {0}")]
-    RDFError(#[from] formats::rdf::RDFError),
     #[error("XML error: {0}")]
     XMLError(#[from] formats::xml::XMLError),
     #[error("Error parsing json: {0}")]

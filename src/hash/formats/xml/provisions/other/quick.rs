@@ -3,6 +3,12 @@ use quick_xml::{events::Event, name::QName, reader::Reader};
 use super::super::{Error, Result};
 
 pub fn find_rdf(input: impl AsRef<[u8]>, file_name: impl AsRef<str>) -> Result<String> {
+    // This may well be "bad code"
+    // It's probably not very battle resistant.
+    // I'm honestly sick of dealing with XML
+    // As such I'm leaving it for the time being
+    // fuck xml :P
+
     let mut reader = Reader::from_reader(input.as_ref());
     reader.config_mut().trim_text(true);
 
