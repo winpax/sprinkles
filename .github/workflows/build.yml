@@ -73,5 +73,9 @@ jobs:
       - name: Install libxml2
         uses: winpax/vcpkg-libxml-composite@a66626cdec1403e12907b526ff0e59b8c5913190
 
+      - name: Integrate vcpkg
+        shell: pwsh
+        run: vcpkg integrate install
+
       - name: Build
         run: cargo build --features beta
