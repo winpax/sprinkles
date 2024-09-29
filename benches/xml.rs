@@ -3,8 +3,8 @@ use sxd_document::parser;
 use sxd_xpath::{evaluate_xpath, Value};
 
 fn xpaths(c: &mut Criterion) {
-    const XML_FILE: &str = include_str!("../tests/fixtures/sfsu.exe.manifest");
-    const XPATH: &str = "/assembly/compatibility/application/supportedOS/@Id";
+    const XML_FILE: &str = include_str!("../tests/fixtures/canada.xml");
+    const XPATH: &str = "/root/features/geometry/coordinates/entry";
 
     #[cfg(feature = "libxml")]
     c.bench_function("libxml xpath", |b| {
