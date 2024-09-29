@@ -70,11 +70,8 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Setup anew (or from cache) vcpkg (and does not build any package)
-        uses: lukka/run-vcpkg@v11
-        with:
-          runVcpkgInstall: true
-          vcpkgJsonGlob: "**/vcpkg.json"
+      - name: Install libxml2
+        uses: winpax/vcpkg-libxml-composite
 
       - name: Build
         run: cargo build --features beta
