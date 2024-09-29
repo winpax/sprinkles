@@ -2,7 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
     {
-      "name": "libxml2"
+      "name": "libxml2",
+      "platform": "windows & x86 & x64 & arm64"
     }
   ]
 }
