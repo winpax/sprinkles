@@ -69,27 +69,18 @@ pub fn parse_xml(input: impl AsRef<[u8]>, file_name: impl AsRef<str>) -> Result<
 
 #[cfg(test)]
 mod tests {
-    use crate::requests::Client;
 
     use super::*;
 
     #[test]
-    #[ignore = "imagemagick website connection timing out"]
     pub fn test_finding_imagemagick_hashes() {
-        const RDF_URL: &str = "https://download.imagemagick.org/archive/binaries/digest.rdf";
-
-        let rdf_file = Client::blocking()
-            .get(RDF_URL)
-            .send()
-            .unwrap()
-            .text()
-            .unwrap();
+        const RDF_FILE: &str = include_str!("../../../tests/fixtures/imagemagick.digest.rdf");
 
         for file_name in [
             "ImageMagick-i686-pc-cygwin.tar.gz",
             "ImageMagick-i386-pc-solaris2.11.tar.gz",
         ] {
-            let hash = parse_xml(&rdf_file, file_name).unwrap();
+            let hash = parse_xml(RDF_FILE, file_name).unwrap();
 
             match file_name {
                 "ImageMagick-i686-pc-cygwin.tar.gz" => assert_eq!(
