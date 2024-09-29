@@ -57,6 +57,9 @@ jobs:
         run: cargo test --features beta
 
   build:
+    strategy:
+      matrix:
+        architecture: [i686, x86_64, aarch64]
     name: Build
     runs-on: windows-latest
 
@@ -71,4 +74,4 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build
-        run: cargo build --features beta
+        run: cargo build --all-features --target ${{ matrix.architecture }}-pc-windows-msvc
