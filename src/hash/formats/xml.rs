@@ -9,8 +9,10 @@ pub fn parse_xml(
     substitutions: &SubstitutionMap,
     xpath: impl AsRef<str>,
 ) -> Result<String, provisions::Error> {
-    let mut xpath = xpath.as_ref().to_string();
-    xpath.substitute(substitutions, false);
+    let xpath = xpath
+        .as_ref()
+        .to_string()
+        .into_substituted(substitutions, false);
 
     Provider::find_xpath(source.as_ref(), xpath.as_ref())
 }
