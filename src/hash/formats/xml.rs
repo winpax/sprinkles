@@ -1,33 +1,18 @@
-use sxd_document::parser;
-use sxd_xpath::{evaluate_xpath, Value};
-
 use crate::hash::substitutions::{Substitute, SubstitutionMap};
 
-use super::providers::{Provider, XMLProvider};
+mod provisions;
 
-#[derive(Debug, thiserror::Error)]
-pub enum XMLError {
-    #[error("XML error: {0}")]
-    Xml(#[from] quick_xml::DeError),
-    #[error("XML Parsing: {0}")]
-    SXDXml(#[from] sxd_document::parser::Error),
-    #[error("XML XPath: {0}")]
-    XPath(#[from] sxd_xpath::Error),
-    #[error("Hash not found")]
-    NotFound,
-    #[error("Invalid value")]
-    InvalidValue,
-}
+use provisions::{Provider, XMLProvider};
 
 pub fn parse_xml(
     source: impl AsRef<str>,
     substitutions: &SubstitutionMap,
     xpath: impl AsRef<str>,
-) -> Result<String, XMLError> {
+) -> Result<String, provisions::Error> {
     let mut xpath = xpath.as_ref().to_string();
     xpath.substitute(substitutions, false);
 
-    let hash = Provider::find_xpath(source.as_ref(), xpath.as_ref())?;
+    Provider::find_xpath(source.as_ref(), xpath.as_ref())
 }
 
 #[cfg(test)]
