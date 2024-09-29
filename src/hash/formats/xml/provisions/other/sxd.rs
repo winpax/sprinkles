@@ -4,10 +4,10 @@ use sxd_xpath::{evaluate_xpath, Value};
 use super::super::{Error, Result};
 
 pub fn find_xpath(source: &str, xpath: &str) -> Result<String> {
-    let pkg = parser::parse(source.as_ref())?;
+    let pkg = parser::parse(source)?;
     let doc = pkg.as_document();
 
-    let value = evaluate_xpath(&doc, xpath.as_ref())?;
+    let value = evaluate_xpath(&doc, xpath)?;
 
     let hash = match value {
         Value::Nodeset(nodes) => {
