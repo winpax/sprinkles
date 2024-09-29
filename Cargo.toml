@@ -56,7 +56,7 @@ manifest-hashes = [
     "urlencoding",
     "tokio/fs",
 ]
-parking_lot = ["tokio/parking_lot"]
+parking_lot = ["dep:parking_lot","tokio/parking_lot"]
 rayon = ["dep:rayon", "blake3/rayon", "indicatif/rayon"]
 
 
