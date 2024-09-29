@@ -9,7 +9,6 @@ impl super::XMLProvider for LibXML {
         let parser = Parser::default();
         let doc = parser.parse_string(source)?;
 
-        let xpath = xpath.as_ref();
         let xpath_context =
             Context::new(&doc).expect("valid document. found internal libxml2 error");
 

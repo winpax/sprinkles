@@ -25,6 +25,18 @@ pub trait XMLProvider {
     fn find_xpath(source: &str, xpath: &str) -> Result<String>;
 
     fn find_rdf(input: impl AsRef<[u8]>, file_name: impl AsRef<str>) -> Result<String>;
+
+    // The following are little hacks I use to test the providers
+    // Look at the tests and it will make a bit more sense
+    #[cfg(test)]
+    fn test_find_xpath(&self, source: &str, xpath: &str) -> Result<String> {
+        Self::find_xpath(source, xpath)
+    }
+
+    #[cfg(test)]
+    fn test_find_rdf(&self, input: impl AsRef<[u8]>, file_name: impl AsRef<str>) -> Result<String> {
+        Self::find_rdf(input, file_name)
+    }
 }
 
 cfg_if::cfg_if! {
@@ -48,9 +60,10 @@ mod tests {
 
     #[rstest]
     #[case(other::OtherProviders)]
-    #[cfg(feature = "libxml")]
-    #[case(libxml_provider::LibXML)]
+    #[cfg_attr(feature = "libxml", case(libxml_provider::LibXML))]
     fn test_finding_in_xml(#[case] provider: impl XMLProvider) -> anyhow::Result<()> {
+        use crate::hash::substitutions::Substitute;
+
         const EXAMPLE_XML: &str = r#"
             <assembly>
                 <description>sfsu</description>
@@ -75,11 +88,11 @@ mod tests {
 
         submap.insert("$finalKey".to_string(), "supportedOS".to_string());
 
-        let hash = parse_xml(
-            EXAMPLE_XML,
-            &submap,
-            "/assembly/compatibility/application/$finalKey[last() - 1]/@Id",
-        )?;
+        let xpath = "/assembly/compatibility/application/$finalKey[last() - 1]/@Id"
+            .to_string()
+            .into_substituted(&submap, false);
+
+        let hash = provider.test_find_xpath(EXAMPLE_XML, xpath.as_str())?;
 
         assert_eq!(hash, "{35138b9a-5d96-4fbd-8e2d-a2440225f93a}");
 
