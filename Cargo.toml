@@ -58,20 +58,7 @@ manifest-hashes = [
 ]
 parking_lot = ["tokio/parking_lot"]
 rayon = ["dep:rayon", "blake3/rayon", "indicatif/rayon"]
-rustls-tls = [
-    "gix/blocking-http-transport-reqwest-rust-tls",
-    "reqwest/rustls-tls",
-]
-rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
-vendored-libgit2 = ["git2/vendored-libgit2"]
-vendored-native-tls = [
-    "gix/blocking-http-transport-reqwest-native-tls",
-    "reqwest/native-tls-vendored",
-]
-vendored-openssl = ["git2/vendored-openssl"]
-zlib-ng = ["gix/zlib-ng"]
-zlib-ng-compat = ["git2/zlib-ng-compat", "gix/zlib-ng-compat"]
-zlib-stock = ["gix/zlib-stock"]
+
 
 [[bench]]
 harness = false
