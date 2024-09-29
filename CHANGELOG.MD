@@ -31,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Installer host `run` function will now remove the installer file if `keep` is not set to true
 - `CreateManifest` `from_str` now takes `impl AsRef<str>` rather than `String`
 - An empty hash string now deserializes as `None` rather than throwing an error
+- Feature `rustls-tls` has been removed
+- Feature `rustls-tls-native-roots` has been removed
+- Feature `vendored-libgit2` has been removed
+- Feature `vendored-openssl` has been removed
+- Feature `zlib-ng` has been removed
+- Feature `zlib-ng-compat` has been removed
+- Feature `zlib-stock` has been removed
 
 ### Changes
 
