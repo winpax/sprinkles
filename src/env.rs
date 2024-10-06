@@ -25,7 +25,7 @@ pub mod paths {
     }
 
     pub fn config_dir() -> Option<PathBuf> {
-        env::var_os("XFG_CONFIG_HOME")
+        env::var_os("XDG_CONFIG_HOME")
             .map(PathBuf::from)
             .or_else(|| {
                 directories::BaseDirs::new().map(|base_dirs| base_dirs.home_dir().join(".config"))
