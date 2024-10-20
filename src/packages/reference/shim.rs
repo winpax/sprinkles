@@ -47,6 +47,8 @@ impl ShimsReferences {
     }
 }
 
+// TODO: Refactor this
+// A shim reference should reference only a single shim
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// A reference to a package's shim locally on disk
 pub struct ShimReference {
@@ -68,14 +70,13 @@ impl ShimReference {
         unimplemented!()
     }
 
-    /// Remove the given shim if it exists
-    ///
-    /// This function will also remove any '.exe' shims,
-    /// and removes extraneous extensions from the name of the latest shim
+    /// Get a list of all shims that are candidates for removal or renaming
     ///
     /// # Errors
-    /// - Removing the shim fails
-    pub fn remove(&self, ctx: &impl ScoopContext) -> Result<()> {
+    /// - Error listing shims
+    pub fn list_candidates(&self, ctx: &impl ScoopContext) -> Result<Vec<RemovalCandidate>> {
+        let mut candidates = vec![];
+
         for extension in Self::SHIM_EXTENSIONS {
             let path = self.path(ctx, extension);
 
@@ -83,24 +84,27 @@ impl ShimReference {
 
             if let Some(alt_path) = alt_path {
                 if alt_path.exists() {
-                    std::fs::remove_file(alt_path)?;
-                    return Ok(());
+                    candidates.push(RemovalCandidate::new_remove(alt_path));
+                    break;
                 }
             } else if path.exists() {
-                std::fs::remove_file(path)?;
+                candidates.push(RemovalCandidate::new_remove(path));
 
                 let old_shims = Self::ls_old_shims(ctx)?;
 
                 if old_shims.is_empty() && extension == ShimExtension::Shim {
                     let path = self.path(ctx, ShimExtension::Exe);
                     if path.exists() {
-                        std::fs::remove_file(path)?;
+                        candidates.push(RemovalCandidate::new_remove(path));
                     }
                 } else {
                     let latest_shim = unsafe {
                         old_shims
-                            .iter()
-                            .filter_map(|shim| Some((shim, shim.metadata().ok()?.modified().ok()?)))
+                            .into_iter()
+                            .filter_map(|shim| {
+                                let modified = shim.metadata().ok()?.modified().ok()?;
+                                Some((shim, modified))
+                            })
                             .max_by_key(|(_, modified)| *modified)
                             .map(|(shim, _)| shim)
                             // Safety:
@@ -109,11 +113,32 @@ impl ShimReference {
                     };
 
                     if let Some(new_name) = latest_shim.file_name().and_then(|name| name.to_str()) {
-                        let patched_name = Regex::new(r".[^.]*$")?.replace(new_name, "");
-                        std::fs::rename(latest_shim, PathBuf::from(patched_name.to_string()))?;
+                        let patched_name =
+                            Regex::new(r".[^.]*$")?.replace(new_name, "").to_string();
+                        candidates.push(RemovalCandidate::new_rename(
+                            latest_shim,
+                            PathBuf::from(patched_name),
+                        ));
                     }
                 }
             }
+        }
+
+        Ok(candidates)
+    }
+
+    /// Remove the given shim(s) if they exist
+    ///
+    /// This function will also remove any '.exe' shims,
+    /// and removes extraneous extensions from the name of the latest shim
+    ///
+    /// # Errors
+    /// - Removing or renaming any of the shims fails
+    pub fn remove(&self, ctx: &impl ScoopContext) -> Result<()> {
+        let candidates = self.list_candidates(ctx)?;
+
+        for candidate in candidates {
+            candidate.run_action()?;
         }
 
         Ok(())
@@ -193,6 +218,47 @@ impl Display for ShimExtension {
             ShimExtension::Cmd => Display::fmt(".cmd", f),
             ShimExtension::Ps1 => Display::fmt(".ps1", f),
             ShimExtension::Exe => Display::fmt(".exe", f),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+/// A candidate for shim removal or renaming
+///
+/// This contains the path to remove, or the old path and new path in the case of renaming
+pub enum RemovalCandidate {
+    /// Remove the given path
+    Remove(PathBuf),
+    /// Rename the old path to the new path
+    Rename {
+        /// Old shim path
+        old: PathBuf,
+        /// New shim path
+        new: PathBuf,
+    },
+}
+
+impl RemovalCandidate {
+    #[must_use]
+    /// Create a new remove candidate
+    pub fn new_remove(path: PathBuf) -> Self {
+        Self::Remove(path)
+    }
+
+    #[must_use]
+    /// Create a new rename candidate
+    pub fn new_rename(old: PathBuf, new: PathBuf) -> Self {
+        Self::Rename { old, new }
+    }
+
+    /// Run the action for this candidate
+    ///
+    /// # Errors
+    /// - Error removing or renaming the shim
+    pub fn run_action(&self) -> std::io::Result<()> {
+        match self {
+            RemovalCandidate::Remove(path) => std::fs::remove_file(path),
+            RemovalCandidate::Rename { old, new } => std::fs::rename(old, new),
         }
     }
 }
