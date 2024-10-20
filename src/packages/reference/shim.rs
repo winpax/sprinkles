@@ -67,14 +67,14 @@ impl<'c, C: ScoopContext> ShimReference<'c, C> {
     /// # Errors
     /// Checking the existence of the shim fails. See [`std::fs::exists`] for more details)
     pub fn exists(&self) -> Result<bool, Error> {
-        self.path(self.ctx)
-            .try_exists()
-            .map_err(Error::CheckingExistence)
+        self.path().try_exists().map_err(Error::CheckingExistence)
     }
 
+    #[must_use]
     /// Get the full path to the shim
-    pub fn path(&self, ctx: &impl ScoopContext) -> PathBuf {
-        ctx.shims_path()
+    pub fn path(&self) -> PathBuf {
+        self.ctx
+            .shims_path()
             .join(format!("{}.{}", self.name, self.extension.as_str()))
     }
 
@@ -82,7 +82,7 @@ impl<'c, C: ScoopContext> ShimReference<'c, C> {
     ///
     /// # Errors
     /// Removing the shim fails. See [`std::fs::remove_file`] for more details
-    pub fn remove(&self, ctx: &impl ScoopContext) -> Result<(), Error> {
-        std::fs::remove_file(self.path(ctx)).map_err(Error::RemovingShim)
+    pub fn remove(&self) -> Result<(), Error> {
+        std::fs::remove_file(self.path()).map_err(Error::RemovingShim)
     }
 }
