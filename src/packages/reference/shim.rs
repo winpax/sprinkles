@@ -49,18 +49,21 @@ impl Display for ShimExtension {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// A reference to a package's shim locally on disk
-pub struct ShimReference {
+pub struct ShimReference<'c, C: ScoopContext> {
     name: String,
     extension: ShimExtension,
+    // Context is included here because the shim reference needs to reference a single shim
+    // If it wasn't specific to a context there would be ambiguity as to which context the shim belongs
+    ctx: &'c C,
 }
 
-impl ShimReference {
+impl<'c, C: ScoopContext> ShimReference<'c, C> {
     /// Check if the shim exists on disk
     ///
     /// # Errors
     /// - Checking the existence of the shim fails (see [`std::fs::exists`] for more details)
-    pub fn exists(&self, ctx: &impl ScoopContext) -> Result<bool, Error> {
-        Ok(self.path(ctx).try_exists()?)
+    pub fn exists(&self) -> Result<bool, Error> {
+        Ok(self.path(self.ctx).try_exists()?)
     }
 
     /// Get the full path to the shim
