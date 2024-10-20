@@ -70,6 +70,9 @@ impl ShimReference {
 
     /// Remove the given shim if it exists
     ///
+    /// This function will also remove any '.exe' shims,
+    /// and removes extraneous extensions from the name of the latest shim
+    ///
     /// # Errors
     /// - Removing the shim fails
     pub fn remove(&self, ctx: &impl ScoopContext) -> Result<()> {
