@@ -1,20 +1,8 @@
-//! Scoop shim helpers
-//!
-//! Note that these provide helpers for referencing existing shims.
-//!
-//! For creating and modifying shims see [`crate::shim`]
+//! Helpers for local shims
 
-use std::{
-    fmt::Display,
-    path::{Path, PathBuf},
-};
-
-use quork::prelude::ContainsTruth;
-use regex::Regex;
+use std::{fmt::Display, path::PathBuf};
 
 use crate::contexts::ScoopContext;
-
-use super::package;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -22,243 +10,62 @@ use super::package;
 pub enum Error {
     #[error("Error removing shim: {0}")]
     RemovingShim(#[from] std::io::Error),
-    #[error("Error renaming shim: {0}")]
-    RegexError(#[from] regex::Error),
 }
 
-/// Result for shimming errors
-pub type Result<T, E = Error> = std::result::Result<T, E>;
-
-#[derive(Debug, Clone, derive_more::Deref, derive_more::DerefMut)]
-/// A list of references to shims locally on disk
-pub struct ShimsReferences(Vec<ShimReference>);
-
-impl ShimsReferences {
-    /// Remove all shims if they exist
-    ///
-    /// # Errors
-    /// - Error removing shim
-    pub fn remove_all(&self, ctx: &impl ScoopContext) -> Result<()> {
-        for shim in &self.0 {
-            shim.remove(ctx)?;
-        }
-
-        Ok(())
-    }
-}
-
-// TODO: Refactor this
-// A shim reference should reference only a single shim
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-/// A reference to a package's shim locally on disk
-pub struct ShimReference {
-    name: String,
-    package: Option<package::Reference>,
-}
-
-impl ShimReference {
-    /// A list of all possible shim file path extensions
-    const SHIM_EXTENSIONS: [ShimExtension; 4] = [
-        ShimExtension::Empty,
-        ShimExtension::Shim,
-        ShimExtension::Cmd,
-        ShimExtension::Ps1,
-    ];
-
-    /// Check if the shim exists on disk
-    pub fn exists() {
-        unimplemented!()
-    }
-
-    /// Get a list of all shims that are candidates for removal or renaming
-    ///
-    /// # Errors
-    /// - Error listing shims
-    pub fn list_candidates(&self, ctx: &impl ScoopContext) -> Result<Vec<RemovalCandidate>> {
-        let mut candidates = vec![];
-
-        for extension in Self::SHIM_EXTENSIONS {
-            let path = self.path(ctx, extension);
-
-            let alt_path = self.alt_path(ctx, extension);
-
-            if let Some(alt_path) = alt_path {
-                if alt_path.exists() {
-                    candidates.push(RemovalCandidate::new_remove(alt_path));
-                    break;
-                }
-            } else if path.exists() {
-                candidates.push(RemovalCandidate::new_remove(path));
-
-                let old_shims = Self::ls_old_shims(ctx)?;
-
-                if old_shims.is_empty() && extension == ShimExtension::Shim {
-                    let path = self.path(ctx, ShimExtension::Exe);
-                    if path.exists() {
-                        candidates.push(RemovalCandidate::new_remove(path));
-                    }
-                } else {
-                    let latest_shim = unsafe {
-                        old_shims
-                            .into_iter()
-                            .filter_map(|shim| {
-                                let modified = shim.metadata().ok()?.modified().ok()?;
-                                Some((shim, modified))
-                            })
-                            .max_by_key(|(_, modified)| *modified)
-                            .map(|(shim, _)| shim)
-                            // Safety:
-                            // This unwrap_unchecked call is safe  because we know that the vector is not empty
-                            .unwrap_unchecked()
-                    };
-
-                    if let Some(new_name) = latest_shim.file_name().and_then(|name| name.to_str()) {
-                        let patched_name =
-                            Regex::new(r".[^.]*$")?.replace(new_name, "").to_string();
-                        candidates.push(RemovalCandidate::new_rename(
-                            latest_shim,
-                            PathBuf::from(patched_name),
-                        ));
-                    }
-                }
-            }
-        }
-
-        Ok(candidates)
-    }
-
-    /// Remove the given shim(s) if they exist
-    ///
-    /// This function will also remove any '.exe' shims,
-    /// and removes extraneous extensions from the name of the latest shim
-    ///
-    /// # Errors
-    /// - Removing or renaming any of the shims fails
-    pub fn remove(&self, ctx: &impl ScoopContext) -> Result<()> {
-        let candidates = self.list_candidates(ctx)?;
-
-        for candidate in candidates {
-            candidate.run_action()?;
-        }
-
-        Ok(())
-    }
-
-    fn ls_old_shims(ctx: &impl ScoopContext) -> Result<Vec<PathBuf>> {
-        let read_dir = std::fs::read_dir(ctx.shims_path())?;
-
-        let old_shims = read_dir.filter_map(|entry| {
-            let entry = entry.ok()?;
-            let path = entry.path();
-
-            // I don't understand at all what this code does.
-            // I have ported it almost verbatim from the original (https://github.com/ScoopInstaller/Scoop/blob/develop/lib/install.ps1#L209)
-            if path
-                .extension()
-                .and_then(|extension| {
-                    let disallowed_extensions: &[ShimExtension] = &Self::SHIM_EXTENSIONS[1..];
-
-                    for search_extension in disallowed_extensions {
-                        if *extension == *search_extension.to_string() {
-                            return None;
-                        }
-                    }
-
-                    Some(true)
-                })
-                .contains_truth()
-            {
-                Some(path)
-            } else {
-                None
-            }
-        });
-
-        Ok(old_shims.collect())
-    }
-
-    fn path(&self, ctx: &impl ScoopContext, extension: ShimExtension) -> PathBuf {
-        ctx.shims_path().join(format!("{}.{extension}", self.name))
-    }
-
-    fn alt_path(&self, ctx: &impl ScoopContext, extension: ShimExtension) -> Option<PathBuf> {
-        let path = self.path(ctx, extension);
-
-        self.package
-            .as_ref()
-            .and_then(package::Reference::name)
-            .map(|app_name| {
-                let mut alt_path = path;
-                alt_path.extend(Path::new(&app_name));
-                alt_path
-            })
-    }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, quork::macros::ListVariants)]
-/// All possible shim file path extensions
-enum ShimExtension {
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+/// Shim extension type
+pub enum ShimExtension {
     /// Empty (no extension)
     Empty,
     /// .shim extension
     Shim,
-    /// .cmd extension
-    Cmd,
     /// .ps1 extension
     Ps1,
+    /// .cmd extension
+    Cmd,
     /// .exe extension
     Exe,
 }
 
+impl ShimExtension {
+    #[must_use]
+    /// Get the extension as a string
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ShimExtension::Empty => "",
+            ShimExtension::Shim => ".shim",
+            ShimExtension::Ps1 => ".ps1",
+            ShimExtension::Cmd => ".cmd",
+            ShimExtension::Exe => ".exe",
+        }
+    }
+}
+
 impl Display for ShimExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ShimExtension::Empty => Ok(()),
-            ShimExtension::Shim => Display::fmt(".shim", f),
-            ShimExtension::Cmd => Display::fmt(".cmd", f),
-            ShimExtension::Ps1 => Display::fmt(".ps1", f),
-            ShimExtension::Exe => Display::fmt(".exe", f),
-        }
+        Display::fmt(self.as_str(), f)
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-/// A candidate for shim removal or renaming
-///
-/// This contains the path to remove, or the old path and new path in the case of renaming
-pub enum RemovalCandidate {
-    /// Remove the given path
-    Remove(PathBuf),
-    /// Rename the old path to the new path
-    Rename {
-        /// Old shim path
-        old: PathBuf,
-        /// New shim path
-        new: PathBuf,
-    },
+/// A reference to a package's shim locally on disk
+pub struct ShimReference {
+    name: String,
+    extension: ShimExtension,
 }
 
-impl RemovalCandidate {
-    #[must_use]
-    /// Create a new remove candidate
-    pub fn new_remove(path: PathBuf) -> Self {
-        Self::Remove(path)
-    }
-
-    #[must_use]
-    /// Create a new rename candidate
-    pub fn new_rename(old: PathBuf, new: PathBuf) -> Self {
-        Self::Rename { old, new }
-    }
-
-    /// Run the action for this candidate
+impl ShimReference {
+    /// Check if the shim exists on disk
     ///
     /// # Errors
-    /// - Error removing or renaming the shim
-    pub fn run_action(&self) -> std::io::Result<()> {
-        match self {
-            RemovalCandidate::Remove(path) => std::fs::remove_file(path),
-            RemovalCandidate::Rename { old, new } => std::fs::rename(old, new),
-        }
+    /// - Checking the existence of the shim fails (see [`std::fs::exists`] for more details)
+    pub fn exists(&self, ctx: &impl ScoopContext) -> Result<bool, Error> {
+        Ok(self.path(ctx).try_exists()?)
+    }
+
+    /// Get the full path to the shim
+    pub fn path(&self, ctx: &impl ScoopContext) -> PathBuf {
+        ctx.shims_path()
+            .join(format!("{}.{}", self.name, self.extension.as_str()))
     }
 }
