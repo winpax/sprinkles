@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `ShimHandle` struct for handling shims
+- `ShimExtension` enum for determining the extension of a shim
+- `ShimReference` struct for handling shim references
+
 ## [0.16.0]
 
 ### Breaking Changes
