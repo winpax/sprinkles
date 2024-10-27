@@ -751,6 +751,7 @@ impl Manifest {
         tree.changes()
             .map_err(GitoxideError::from)?
             .for_each_to_obtain_tree(&parent_tree, |change| {
+                // Check if the changed file's location starts with the manifest name
                 if change
                     .location()
                     .to_string()
@@ -815,9 +816,11 @@ impl Manifest {
                         .changes()
                         .map_err(git::Error::from)?
                         .for_each_to_obtain_tree(&other_tree, |change| {
-                            debug!("{change:?}");
-                            debug!("Filename: {}", change.location().to_string());
-
+                            debug!(
+                                "Checking change: {:?} at location: {}",
+                                change,
+                                change.location()
+                            );
                             if change
                                 .location()
                                 .to_string()
