@@ -66,6 +66,34 @@ pub struct ShimReference<'a, C: ScoopContext> {
 impl<'a, C: ScoopContext> Copy for ShimReference<'a, C> {}
 
 impl<'a, C: ScoopContext> ShimReference<'a, C> {
+    #[must_use]
+    /// Get the extension this shim has
+    pub fn extension(&self) -> ShimExtension {
+        self.extension
+    }
+
+    #[must_use]
+    /// Check if the shim is a binary
+    pub fn is_binary(&self) -> bool {
+        matches!(self.extension, ShimExtension::Exe)
+    }
+
+    #[must_use]
+    /// Check if the shim is a text file
+    pub fn is_text(&self) -> bool {
+        !self.is_binary()
+    }
+
+    #[must_use]
+    /// Check if the shim is a spec file
+    ///
+    /// This is a `.shim` file that specifies how to execute the program
+    ///
+    /// This is the most common type of shim, but is used in conjunction with a [`ShimExtension::Exe`] file
+    pub fn is_spec(&self) -> bool {
+        matches!(self.extension, ShimExtension::Shim)
+    }
+
     /// Check if the shim exists on disk
     ///
     /// # Errors
