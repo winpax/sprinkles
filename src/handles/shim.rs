@@ -12,6 +12,9 @@ pub enum Error {
     OpeningShim(std::io::Error),
     #[error("Error parsing shim spec: {0}")]
     ParsingSpec(scoop_shim::Error),
+
+    #[error("Could not update shim spec. ShimHandle does not handle a spec file")]
+    NonSpecUpdate,
 }
 
 /// Shim result type
@@ -69,5 +72,22 @@ impl<'a, C: ScoopContext> ShimHandle<'a, C> {
         let spec = scoop_shim::from_reader(&mut file).map_err(Error::ParsingSpec);
 
         Some(spec)
+    }
+
+    /// Update the shim spec
+    ///
+    /// # Errors
+    /// - Opening/reading from the spec file fails
+    /// - Writing to the spec file fails
+    pub fn update_spec(&self, ctx: &C, spec: &scoop_shim::Shim) -> Result<(), Error> {
+        if !self.shim.is_spec() {
+            return Err(Error::NonSpecUpdate);
+        }
+
+        let mut file = self.open(ctx)?;
+
+        scoop_shim::to_writer(spec, &mut file).map_err(Error::ParsingSpec)?;
+
+        Ok(())
     }
 }

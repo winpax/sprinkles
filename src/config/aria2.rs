@@ -6,7 +6,7 @@ use serde_with::skip_serializing_none;
 use super::Skip;
 
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[allow(clippy::struct_excessive_bools)]
 /// Scoop's Aria2 configuration
 pub struct Config {

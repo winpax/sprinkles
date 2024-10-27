@@ -24,7 +24,7 @@ pub enum Error {
     SystemProxyDisabled,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// A proxy struct
 pub struct Proxy {
     username: Option<String>,
