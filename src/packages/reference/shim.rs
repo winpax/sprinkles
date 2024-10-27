@@ -2,7 +2,7 @@
 
 use std::{fmt::Display, marker::PhantomData, path::PathBuf};
 
-use crate::contexts::ScoopContext;
+use crate::{contexts::ScoopContext, handles::shim::ShimHandle};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -51,7 +51,7 @@ impl Display for ShimExtension {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// A reference to a package's shim locally on disk
 pub struct ShimReference<'a, C: ScoopContext> {
     name: &'a str,
@@ -60,6 +60,10 @@ pub struct ShimReference<'a, C: ScoopContext> {
     // If it wasn't specific to a context there would be ambiguity as to which context the shim belongs
     ctx: PhantomData<C>,
 }
+
+// Manual implementation allows it to be copied even though
+// `ScoopContext` is not `Copy`
+impl<'a, C: ScoopContext> Copy for ShimReference<'a, C> {}
 
 impl<'a, C: ScoopContext> ShimReference<'a, C> {
     /// Check if the shim exists on disk
@@ -79,11 +83,12 @@ impl<'a, C: ScoopContext> ShimReference<'a, C> {
             .join(format!("{}.{}", self.name, self.extension.as_str()))
     }
 
-    /// Remove the shim if it exists
-    ///
-    /// # Errors
-    /// Removing the shim fails. See [`std::fs::remove_file`] for more details
-    pub fn remove(&self, ctx: &C) -> Result<(), Error> {
-        std::fs::remove_file(self.path(ctx)).map_err(Error::RemovingShim)
+    /// Open the shim handle if it exists
+    pub fn open_handle(self, ctx: &C) -> Option<ShimHandle<'a, C>> {
+        if self.exists(ctx).ok()? {
+            Some(ShimHandle::new(self))
+        } else {
+            None
+        }
     }
 }
