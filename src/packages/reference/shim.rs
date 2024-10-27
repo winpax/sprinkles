@@ -1,6 +1,6 @@
 //! Helpers for local shims
 
-use std::{fmt::Display, path::PathBuf};
+use std::{fmt::Display, marker::PhantomData, path::PathBuf};
 
 use crate::contexts::ScoopContext;
 
@@ -51,30 +51,31 @@ impl Display for ShimExtension {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 /// A reference to a package's shim locally on disk
-pub struct ShimReference<'c, C: ScoopContext> {
-    name: String,
+pub struct ShimReference<'a, C: ScoopContext> {
+    name: &'a str,
     extension: ShimExtension,
     // Context is included here because the shim reference needs to reference a single shim
     // If it wasn't specific to a context there would be ambiguity as to which context the shim belongs
-    ctx: &'c C,
+    ctx: PhantomData<C>,
 }
 
-impl<'c, C: ScoopContext> ShimReference<'c, C> {
+impl<'a, C: ScoopContext> ShimReference<'a, C> {
     /// Check if the shim exists on disk
     ///
     /// # Errors
     /// Checking the existence of the shim fails. See [`std::fs::exists`] for more details)
-    pub fn exists(&self) -> Result<bool, Error> {
-        self.path().try_exists().map_err(Error::CheckingExistence)
+    pub fn exists(&self, ctx: &C) -> Result<bool, Error> {
+        self.path(ctx)
+            .try_exists()
+            .map_err(Error::CheckingExistence)
     }
 
     #[must_use]
     /// Get the full path to the shim
-    pub fn path(&self) -> PathBuf {
-        self.ctx
-            .shims_path()
+    pub fn path(&self, ctx: &C) -> PathBuf {
+        ctx.shims_path()
             .join(format!("{}.{}", self.name, self.extension.as_str()))
     }
 
@@ -82,7 +83,7 @@ impl<'c, C: ScoopContext> ShimReference<'c, C> {
     ///
     /// # Errors
     /// Removing the shim fails. See [`std::fs::remove_file`] for more details
-    pub fn remove(&self) -> Result<(), Error> {
-        std::fs::remove_file(self.path()).map_err(Error::RemovingShim)
+    pub fn remove(&self, ctx: &C) -> Result<(), Error> {
+        std::fs::remove_file(self.path(ctx)).map_err(Error::RemovingShim)
     }
 }

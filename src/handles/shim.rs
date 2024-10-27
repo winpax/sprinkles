@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::{contexts::ScoopContext, packages::reference::shim::ShimReference};
+
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
 /// Shim errors
@@ -54,16 +56,15 @@ impl std::ops::BitAnd for DeleteFlags {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 /// A shim handle
-pub struct ShimHandle {
-    executable: PathBuf,
-    shim: PathBuf,
+pub struct ShimHandle<'c, C: ScoopContext> {
+    shim: ShimReference<'c, C>,
 }
 
-impl ShimHandle {
+impl<'c, C: ScoopContext> ShimHandle<'c, C> {
     #[must_use]
     /// Create a new shim handle
-    pub fn new(executable: PathBuf, shim: PathBuf) -> Self {
-        Self { executable, shim }
+    pub fn new(shim: ShimReference<'c, C>) -> Self {
+        Self { shim }
     }
 
     #[must_use]
@@ -82,12 +83,8 @@ impl ShimHandle {
     /// Get the shim path
     ///
     /// This will return the shim path if it exists, or [`None`] if it does not
-    pub fn shim(&self) -> Option<&Path> {
-        if self.shim.exists() {
-            Some(&self.shim)
-        } else {
-            None
-        }
+    pub fn shim(&self) -> ShimReference<'c, C> {
+        self.shim
     }
 
     /// Delete the shim and executable
