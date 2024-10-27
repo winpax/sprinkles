@@ -5,7 +5,9 @@
 use std::{path::Path, time::SystemTimeError};
 
 use chrono::{DateTime, FixedOffset};
-use gix::{object::tree::diff::Action, traverse::commit::simple::Sorting};
+use gix::{
+    object::tree::diff::Action, revision::walk::Sorting, traverse::commit::simple::CommitTimeOrder,
+};
 #[cfg(feature = "rayon")]
 use rayon::prelude::*;
 use regex::Regex;
@@ -748,10 +750,10 @@ impl Manifest {
 
         tree.changes()
             .map_err(GitoxideError::from)?
-            .track_filename()
             .for_each_to_obtain_tree(&parent_tree, |change| {
+                // Check if the changed file's location starts with the manifest name
                 if change
-                    .location
+                    .location()
                     .to_string()
                     .starts_with(unsafe { self.name() })
                 {
@@ -786,7 +788,7 @@ impl Manifest {
 
         let revwalk = gitoxide
             .rev_walk([latest_commit.id])
-            .sorting(Sorting::ByCommitTimeNewestFirst);
+            .sorting(Sorting::ByCommitTime(CommitTimeOrder::NewestFirst));
 
         let updated_commit = revwalk
             .all()
@@ -813,13 +815,14 @@ impl Manifest {
                         .map_err(git::Error::from)?
                         .changes()
                         .map_err(git::Error::from)?
-                        .track_filename()
                         .for_each_to_obtain_tree(&other_tree, |change| {
-                            debug!("{change:?}");
-                            debug!("Filename: {}", change.location.to_string());
-
+                            debug!(
+                                "Checking change: {:?} at location: {}",
+                                change,
+                                change.location()
+                            );
                             if change
-                                .location
+                                .location()
                                 .to_string()
                                 .starts_with(unsafe { self.name() })
                             {

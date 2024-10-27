@@ -60,10 +60,9 @@ impl FromStr for Reference {
             return Ok(Self::Url(url));
         }
 
-        if let Ok(path) = PathBuf::from_str(s) {
-            if path.exists() {
-                return Ok(Self::File(path));
-            }
+        let path = PathBuf::from(s);
+        if path.exists() {
+            return Ok(Self::File(path));
         }
 
         let parts = s.split('/').collect_vec();

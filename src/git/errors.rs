@@ -36,6 +36,10 @@ pub enum GitoxideError {
     GitoxidePrepareFetch(#[from] gix::remote::fetch::prepare::Error),
     #[error("Gitoxide error: {0}")]
     GitoxideFetch(#[from] gix::remote::fetch::Error),
+    #[error("Gitoxide error: {0}")]
+    GitoxideRevwalk(#[from] gix::revision::walk::iter::Error),
+    #[error("Gitoxide error: {0}")]
+    GitoxideDiffOptionsInit(#[from] gix::diff::options::init::Error),
 }
 
 impl<T> From<T> for super::Error
