@@ -31,4 +31,10 @@ impl<'a, C: ScoopContext> ShimHandle<'a, C> {
     pub fn remove(&self, ctx: &C) -> Result<()> {
         std::fs::remove_file(self.shim.path(ctx)).map_err(Error::RemovingShim)
     }
+
+    #[must_use]
+    /// Get the reference that this [`ShimHandle`] was created from
+    pub fn reference(&self) -> &ShimReference<'a, C> {
+        &self.shim
+    }
 }
