@@ -9,7 +9,8 @@ use std::{
 };
 
 use gix::{
-    bstr::BStr, remote::ref_map, traverse::commit::simple::Sorting, Commit, ObjectId, Repository,
+    bstr::BStr, remote::ref_map, revision::walk::Sorting,
+    traverse::commit::simple::CommitTimeOrder, Commit, ObjectId, Repository,
 };
 
 use crate::{buckets::Bucket, contexts::ScoopContext};
@@ -311,7 +312,7 @@ impl Repo {
 
         let revwalk = repo
             .rev_walk([post_pull_commit.id])
-            .sorting(Sorting::ByCommitTimeNewestFirst);
+            .sorting(Sorting::ByCommitTime(CommitTimeOrder::NewestFirst));
 
         let mut changelog = Vec::new();
         for commit in revwalk.all()? {
