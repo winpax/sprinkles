@@ -53,6 +53,9 @@ impl Display for ShimExtension {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// A reference to a package's shim locally on disk
+///
+/// Note this is simply a reference to a shim.
+/// To do any operations on the shim (i.e reading or writing), use a [`ShimHandle`] (See [`ShimReference::open_handle`]).
 pub struct ShimReference<'a, C: ScoopContext> {
     name: &'a str,
     extension: ShimExtension,
