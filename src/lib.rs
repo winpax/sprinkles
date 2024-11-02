@@ -11,7 +11,7 @@
 
 // Ensure supported environment
 #[cfg(all(not(docsrs), not(windows)))]
-compile_error!("Only windows is supported");
+compile_error!("Only Windows is supported at the moment.\nSee https://github.com/winpax/sprinkles/issues/111 for more information.");
 
 use std::{fmt, str::FromStr};
 
