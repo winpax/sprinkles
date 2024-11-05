@@ -28,8 +28,12 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install cargo-msrv
-        run: cargo install cargo-msrv --locked --version 0.16.2
+      #   - name: Install cargo-msrv
+      #     run: cargo install cargo-msrv --locked --version 0.16.2
 
       - name: Verify MSRV
-        run: cargo msrv verify --all-features --target ${{ matrix.architecture }}-pc-windows-msvc
+        uses: addnab/docker-run-action@v3
+        with:
+          image: foresterre/cargo-msrv:latest
+          options: -v ${{ github.workspace }}:/app
+          run: cargo-msrv msrv verify --all-features --target ${{ matrix.architecture }}-pc-windows-msvc
