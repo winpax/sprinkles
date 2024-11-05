@@ -99,7 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For older version's changelogs, see the [releases](https://github.com/winpax/sprinkles/releases) page.
 
-[Unreleased]: https://github.com/winpax/sfsu/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/winpax/sprinkles/compare/v0.16.0...HEAD
 [0.16.0]: https://github.com/winpax/sprinkles/releases/tag/v0.16.0
 [0.15.2]: https://github.com/winpax/sprinkles/releases/tag/v0.15.2
 [0.15.1]: https://github.com/winpax/sprinkles/releases/tag/v0.15.1
