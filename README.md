@@ -10,8 +10,9 @@
 
 View the latest documentation [at docs.rs](https://docs.rs/sprinkles-rs), or on [Github Pages](https://winpax.github.io/sprinkles/).
 
-**Please note this library is currently in an early stage of development, and is not recommended for use in production.
-There are likely to be breaking changes in the future, and there is no guarantee that the API will remain stable until v1.0.**
+> [!WARNING]
+> This library is currently unstable, and is not recommended for use in production.
+> There will be breaking changes in the future, and the API may change.
 
 Sprinkles is a library for interacting with [Scoop](https://scoop.sh/), the Windows package manager.
 
