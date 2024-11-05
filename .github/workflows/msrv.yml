@@ -29,7 +29,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install cargo-msrv
-        run: cargo install cargo-msrv --locked --version 0.16.2
+        run: cargo install cargo-msrv --locked --version 0.16.2 --no-default-features
 
       - name: Verify MSRV
         run: cargo-msrv verify --all-features --target ${{ matrix.architecture }}-pc-windows-msvc
