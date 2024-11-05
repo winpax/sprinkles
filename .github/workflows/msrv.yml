@@ -22,14 +22,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2.7.5
+      - uses: Swatinem/rust-cache@v2
       - uses: extractions/setup-just@v2
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install cargo-msrv
-        run: cargo install cargo-msrv --locked --version 0.16.2 --no-default-features
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-msrv
+          version: 0.16.2
+          locked: true
+          args: --no-default-features
+        # run: cargo install cargo-msrv --locked --version 0.16.2 --no-default-features
 
       - name: Verify MSRV
-        run: cargo-msrv verify --all-features --target ${{ matrix.architecture }}-pc-windows-msvc
+        run: cargo msrv verify --all-features --target ${{ matrix.architecture }}-pc-windows-msvc
