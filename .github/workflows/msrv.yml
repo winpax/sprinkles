@@ -38,4 +38,4 @@ jobs:
         # run: cargo install cargo-msrv --locked --version 0.16.2 --no-default-features
 
       - name: Verify MSRV
-        run: cargo msrv verify --all-features --target ${{ matrix.architecture }}-pc-windows-msvc
+        run: cargo msrv verify --all-features --target ${{ matrix.architecture }}-pc-windows-msvc --output-format minimal
