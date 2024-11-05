@@ -62,8 +62,12 @@ dd if=/dev/urandom of=benches/large-file.bin bs=1M count=512
 
 ## Supported Platforms
 
-I will maintain support for the MSRV mentioned in Cargo.toml, although it may change across a major version.
-
 Windows is the only supported platform at the moment, and this will likely not change, given that Scoop is only available on Windows.
+
+## Minimum Supported Rust Version
+
+The MSRV may change in the future, but will only ever be increased over the course of a major version.
+
+The MSRV is checked for the target `x86_64-pc-windows-msvc`.
 
 **Made with 💗 by Juliette Cordor**
