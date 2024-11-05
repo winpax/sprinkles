@@ -1,0 +1,35 @@
+name: Build & Test
+
+on:
+  pull_request:
+    branches:
+      - "trunk"
+
+  push:
+    branches:
+      - "trunk"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-msrv:
+    name: Check MSRV
+    strategy:
+      matrix:
+        architecture: [i686, x86_64, aarch64]
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2.7.5
+      - uses: extractions/setup-just@v2
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-msrv
+        run: cargo install cargo-msrv --locked --version 0.16.2
+
+      - name: Verify MSRV
+        run: cargo msrv verify --all-features --target ${{ matrix.architecture }}-pc-windows-msvc

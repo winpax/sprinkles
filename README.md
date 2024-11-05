@@ -68,6 +68,6 @@ Windows is the only supported platform at the moment, and this will likely not c
 
 The MSRV may change in the future, but will only ever be increased over the course of a major version.
 
-The MSRV is checked for the target `x86_64-pc-windows-msvc`.
+The MSRV is set for the target `x86_64-pc-windows-msvc`, and is checked for all supported platforms in the CI.
 
 **Made with 💗 by Juliette Cordor**
