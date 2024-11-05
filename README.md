@@ -8,7 +8,7 @@
 [![Crates.io License](https://img.shields.io/crates/l/sprinkles-rs)](https://crates.io/crates/sprinkles-rs)
 [![Crates.io MSRV](https://img.shields.io/crates/msrv/sprinkles-rs)](https://crates.io/crates/sprinkles-rs)
 
-View the latest documentation [at docs.rs](https://docs.rs/sprinkles-rs), or on [Github Pages](https://winpax.github.io/sprinkles/).
+View the latest documentation on [Github Pages](https://winpax.github.io/sprinkles/) ([the docs.rs](https://docs.rs/sprinkles-rs) builds are currently failing).
 
 > [!WARNING]
 > This library is currently unstable, and is not recommended for use in production.
