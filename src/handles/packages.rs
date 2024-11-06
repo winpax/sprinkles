@@ -254,15 +254,17 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
     #[must_use]
     /// Check if the package handle owns a running process
     pub fn running(&self) -> bool {
-        use crate::system::process;
-
-        let process_dir = self.version_dir();
-
         #[cfg(not(windows))]
-        unimplemented!("Not implemented on non-windows platforms");
+        windows_only!();
 
         #[cfg(windows)]
-        unsafe { process::Process::BaseDir(process_dir).find_running() }.unwrap_or(false)
+        {
+            use crate::system::process;
+
+            let process_dir = self.version_dir();
+
+            unsafe { process::Process::BaseDir(process_dir).find_running() }.unwrap_or(false)
+        }
     }
 }
 

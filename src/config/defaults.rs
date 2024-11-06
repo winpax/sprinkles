@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Deserializer};
 
-use crate::system::paths::WindowsPath;
+use crate::system::paths::Paths;
 
 // pub fn default_scoop_repo() -> String {
 //     "https://github.com/ScoopInstaller/Scoop".into()
@@ -33,7 +33,7 @@ where
 ///
 /// This should be handled manually by implementations, when running as admin
 pub fn default_scoop_global_path() -> PathBuf {
-    WindowsPath::CommonAppData
+    Paths::CommonAppData
         .into_path()
         .unwrap_or_else(|| "C:\\ProgramData".into())
         .join("scoop")

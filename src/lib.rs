@@ -13,6 +13,14 @@
 #[cfg(all(not(docsrs), not(windows), not(feature = "unstable_linux")))]
 compile_error!("Only Windows is supported at the moment.\nSee https://github.com/winpax/sprinkles/issues/111 for more information.");
 
+#[cfg(not(windows))]
+#[allow(clippy::diverging_sub_expression)]
+macro_rules! windows_only {
+    () => {
+        unimplemented!("Not implemented on non-windows platforms")
+    };
+}
+
 use std::{fmt, str::FromStr};
 
 use quork::traits::list::ListVariants;
