@@ -4,6 +4,8 @@ use cfg_if::cfg_if;
 
 pub trait Common {
     fn symlink_dir(original: impl AsRef<Path>, link: impl AsRef<Path>) -> std::io::Result<()>;
+
+    fn symlink_file(original: impl AsRef<Path>, link: impl AsRef<Path>) -> std::io::Result<()>;
 }
 
 cfg_if! {
