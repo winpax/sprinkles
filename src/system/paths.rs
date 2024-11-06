@@ -63,6 +63,16 @@ impl Paths {
 impl Paths {
     #[allow(clippy::unused_self)]
     pub fn into_path(self) -> Option<PathBuf> {
-        windows_only!()
+        use std::env;
+
+        match self {
+            Paths::CommonAppData => Some(PathBuf::from("/usr/share")),
+            Paths::AppData => env::var_os("XDG_DATA_HOME").map(PathBuf::from).or_else(|| {
+                env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/share"))
+            }),
+            Paths::LocalAppData => env::var_os("XDG_CACHE_HOME")
+                .map(PathBuf::from)
+                .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".cache"))),
+        }
     }
 }
