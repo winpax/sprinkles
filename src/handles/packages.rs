@@ -8,6 +8,7 @@ use crate::{
         reference::{self, manifest, package},
         CreateManifest, InstallManifest, Manifest,
     },
+    system::common::{Common, System},
 };
 
 use super::version::VersionHandle;
@@ -210,13 +211,10 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
 
         self.unlink_current()?;
 
-        #[cfg(windows)]
-        {
-            let current_path = self.path.join("current");
-            let version_dir = self.version_dir();
+        let current_path = self.path.join("current");
+        let version_dir = self.version_dir();
 
-            std::os::windows::fs::symlink_dir(version_dir, current_path)?;
-        }
+        System::symlink_dir(version_dir, current_path)?;
 
         Ok(())
     }
