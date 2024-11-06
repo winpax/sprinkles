@@ -2,6 +2,7 @@ use std::path::Path;
 
 use cfg_if::cfg_if;
 
+#[allow(dead_code)]
 pub trait Common {
     fn symlink_dir(original: impl AsRef<Path>, link: impl AsRef<Path>) -> std::io::Result<()>;
 
