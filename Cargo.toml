@@ -58,6 +58,7 @@ manifest-hashes = [
 ]
 parking_lot = ["tokio/parking_lot"]
 rayon = ["dep:rayon", "blake3/rayon", "indicatif/rayon"]
+unstable_linux = []
 
 [[bench]]
 harness = false

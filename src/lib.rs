@@ -10,7 +10,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 // Ensure supported environment
-#[cfg(all(not(docsrs), not(windows)))]
+#[cfg(all(not(docsrs), not(windows), not(feature = "unstable_linux")))]
 compile_error!("Only Windows is supported at the moment.\nSee https://github.com/winpax/sprinkles/issues/111 for more information.");
 
 use std::{fmt, str::FromStr};
