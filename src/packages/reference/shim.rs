@@ -2,7 +2,7 @@
 
 use std::{fmt::Display, marker::PhantomData, path::PathBuf};
 
-use crate::{contexts::ScoopContext, handles::shim::ShimHandle};
+use crate::{contexts::ScoopContext, handles::shim::WeakShimHandle};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -115,9 +115,9 @@ impl<'a, C: ScoopContext> ShimReference<'a, C> {
     }
 
     /// Open the shim handle if it exists
-    pub fn open_handle<'c>(self, ctx: &'c C) -> Option<ShimHandle<'a, 'c, C>> {
+    pub fn open_handle<'c>(self, ctx: &'c C) -> Option<WeakShimHandle<'a, 'c, C>> {
         if self.exists(ctx).ok()? {
-            Some(ShimHandle::new(self, ctx))
+            Some(WeakShimHandle::new(self, ctx))
         } else {
             None
         }

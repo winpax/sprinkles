@@ -23,15 +23,19 @@ pub enum Error {
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[must_use]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// A shim handle
 /// providing access to a shim stored locally on disk.
-pub struct ShimHandle<'a, 'c, C: ScoopContext> {
+pub struct WeakShimHandle<'a, 'c, C: ScoopContext> {
     pub(self) shim: ShimReference<'a, C>,
     pub(self) ctx: &'c C,
 }
 
-impl<'a, 'c, C: ScoopContext> ShimHandle<'a, 'c, C> {
+// Manual implementation allows it to be copied even though
+// `ScoopContext` is not `Copy`
+impl<'a, 'c, C: ScoopContext> Copy for WeakShimHandle<'a, 'c, C> {}
+
+impl<'a, 'c, C: ScoopContext> WeakShimHandle<'a, 'c, C> {
     #[inline]
     pub(crate) fn new(shim: ShimReference<'a, C>, ctx: &'c C) -> Self {
         Self { shim, ctx }
@@ -66,42 +70,6 @@ impl<'a, 'c, C: ScoopContext> ShimHandle<'a, 'c, C> {
             return None;
         }
 
-        Some(spec::ShimSpecHandle::new(self))
-    }
-
-    /// Parse the spec file into a [`scoop_shim::Shim`]
-    ///
-    /// # Errors
-    /// Parsing the spec file fails.
-    /// Opening/reading from the spec file fails.
-    ///
-    /// See [`scoop_shim::Error`] for more details
-    pub fn parse_spec(&self) -> Option<Result<scoop_shim::Shim>> {
-        if !self.shim.is_spec() {
-            return None;
-        }
-
-        let mut file = self.open().ok()?;
-
-        let spec = scoop_shim::from_reader(&mut file).map_err(Error::ParsingSpec);
-
-        Some(spec)
-    }
-
-    /// Save the shim spec to the shim file
-    ///
-    /// # Errors
-    /// - Opening/reading from the spec file fails
-    /// - Writing to the spec file fails
-    pub fn save_spec(&self, spec: &scoop_shim::Shim) -> Result<(), Error> {
-        if !self.shim.is_spec() {
-            return Err(Error::NonSpecUpdate);
-        }
-
-        let mut file = self.open()?;
-
-        scoop_shim::to_writer(spec, &mut file).map_err(Error::ParsingSpec)?;
-
-        Ok(())
+        spec::ShimSpecHandle::new(self).ok()
     }
 }
