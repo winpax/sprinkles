@@ -1,5 +1,7 @@
 //! Shim handle helpers for interacting with shims stored locally on disk
 
+pub mod spec;
+
 use crate::{contexts::ScoopContext, packages::reference::shim::ShimReference};
 
 #[derive(Debug, thiserror::Error)]
@@ -30,6 +32,7 @@ pub struct ShimHandle<'a, 'c, C: ScoopContext> {
 }
 
 impl<'a, 'c, C: ScoopContext> ShimHandle<'a, 'c, C> {
+    #[inline]
     pub(crate) fn new(shim: ShimReference<'a, C>, ctx: &'c C) -> Self {
         Self { shim, ctx }
     }
@@ -54,6 +57,16 @@ impl<'a, 'c, C: ScoopContext> ShimHandle<'a, 'c, C> {
     /// Opening the file fails. See [`std::fs::File::open`] for more details
     fn open(&self) -> Result<std::fs::File> {
         std::fs::File::open(self.shim.path(self.ctx)).map_err(Error::OpeningShim)
+    }
+
+    #[must_use]
+    /// Open the spec shim handle if this handle references a spec shim
+    pub fn open_spec(self) -> Option<spec::ShimSpecHandle<'a, 'c, C>> {
+        if !self.shim.is_spec() {
+            return None;
+        }
+
+        Some(spec::ShimSpecHandle::new(self))
     }
 
     /// Parse the spec file into a [`scoop_shim::Shim`]
