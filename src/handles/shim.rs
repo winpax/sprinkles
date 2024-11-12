@@ -74,12 +74,12 @@ impl<'a, C: ScoopContext> ShimHandle<'a, C> {
         Some(spec)
     }
 
-    /// Update the shim spec
+    /// Save the shim spec to the shim file
     ///
     /// # Errors
     /// - Opening/reading from the spec file fails
     /// - Writing to the spec file fails
-    pub fn update_spec(&self, ctx: &C, spec: &scoop_shim::Shim) -> Result<(), Error> {
+    pub fn save_spec(&self, ctx: &C, spec: &scoop_shim::Shim) -> Result<(), Error> {
         if !self.shim.is_spec() {
             return Err(Error::NonSpecUpdate);
         }
