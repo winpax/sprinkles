@@ -24,21 +24,22 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 #[derive(Debug, PartialEq, Eq)]
 /// A shim handle
 /// providing access to a shim stored locally on disk.
-pub struct ShimHandle<'a, C: ScoopContext> {
+pub struct ShimHandle<'a, 'c, C: ScoopContext> {
     pub(self) shim: ShimReference<'a, C>,
+    pub(self) ctx: &'c C,
 }
 
-impl<'a, C: ScoopContext> ShimHandle<'a, C> {
-    pub(crate) fn new(shim: ShimReference<'a, C>) -> Self {
-        Self { shim }
+impl<'a, 'c, C: ScoopContext> ShimHandle<'a, 'c, C> {
+    pub(crate) fn new(shim: ShimReference<'a, C>, ctx: &'c C) -> Self {
+        Self { shim, ctx }
     }
 
     /// Remove the shim if it exists
     ///
     /// # Errors
     /// Removing the shim fails. See [`std::fs::remove_file`] for more details
-    pub fn remove(&self, ctx: &C) -> Result<()> {
-        std::fs::remove_file(self.shim.path(ctx)).map_err(Error::RemovingShim)
+    pub fn remove(&self) -> Result<()> {
+        std::fs::remove_file(self.shim.path(self.ctx)).map_err(Error::RemovingShim)
     }
 
     #[must_use]
@@ -51,8 +52,8 @@ impl<'a, C: ScoopContext> ShimHandle<'a, C> {
     ///
     /// # Errors
     /// Opening the file fails. See [`std::fs::File::open`] for more details
-    pub fn open(&self, ctx: &C) -> Result<std::fs::File> {
-        std::fs::File::open(self.shim.path(ctx)).map_err(Error::OpeningShim)
+    fn open(&self) -> Result<std::fs::File> {
+        std::fs::File::open(self.shim.path(self.ctx)).map_err(Error::OpeningShim)
     }
 
     /// Parse the spec file into a [`scoop_shim::Shim`]
@@ -62,12 +63,12 @@ impl<'a, C: ScoopContext> ShimHandle<'a, C> {
     /// Opening/reading from the spec file fails.
     ///
     /// See [`scoop_shim::Error`] for more details
-    pub fn parse_spec(&self, ctx: &C) -> Option<Result<scoop_shim::Shim>> {
+    pub fn parse_spec(&self) -> Option<Result<scoop_shim::Shim>> {
         if !self.shim.is_spec() {
             return None;
         }
 
-        let mut file = self.open(ctx).ok()?;
+        let mut file = self.open().ok()?;
 
         let spec = scoop_shim::from_reader(&mut file).map_err(Error::ParsingSpec);
 
@@ -79,12 +80,12 @@ impl<'a, C: ScoopContext> ShimHandle<'a, C> {
     /// # Errors
     /// - Opening/reading from the spec file fails
     /// - Writing to the spec file fails
-    pub fn save_spec(&self, ctx: &C, spec: &scoop_shim::Shim) -> Result<(), Error> {
+    pub fn save_spec(&self, spec: &scoop_shim::Shim) -> Result<(), Error> {
         if !self.shim.is_spec() {
             return Err(Error::NonSpecUpdate);
         }
 
-        let mut file = self.open(ctx)?;
+        let mut file = self.open()?;
 
         scoop_shim::to_writer(spec, &mut file).map_err(Error::ParsingSpec)?;
 

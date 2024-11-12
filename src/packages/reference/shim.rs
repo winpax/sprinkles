@@ -115,9 +115,9 @@ impl<'a, C: ScoopContext> ShimReference<'a, C> {
     }
 
     /// Open the shim handle if it exists
-    pub fn open_handle(self, ctx: &C) -> Option<ShimHandle<'a, C>> {
+    pub fn open_handle<'c>(self, ctx: &'c C) -> Option<ShimHandle<'a, 'c, C>> {
         if self.exists(ctx).ok()? {
-            Some(ShimHandle::new(self))
+            Some(ShimHandle::new(self, ctx))
         } else {
             None
         }
