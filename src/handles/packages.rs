@@ -8,6 +8,7 @@ use crate::{
         reference::{self, manifest, package},
         CreateManifest, InstallManifest, Manifest,
     },
+    system::common::{Common, System},
 };
 
 use super::version::VersionHandle;
@@ -210,13 +211,10 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
 
         self.unlink_current()?;
 
-        #[cfg(windows)]
-        {
-            let current_path = self.path.join("current");
-            let version_dir = self.version_dir();
+        let current_path = self.path.join("current");
+        let version_dir = self.version_dir();
 
-            std::os::windows::fs::symlink_dir(version_dir, current_path)?;
-        }
+        System::symlink_dir(version_dir, current_path)?;
 
         Ok(())
     }
@@ -254,15 +252,17 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
     #[must_use]
     /// Check if the package handle owns a running process
     pub fn running(&self) -> bool {
-        use crate::system::process;
-
-        let process_dir = self.version_dir();
-
         #[cfg(not(windows))]
-        unimplemented!("Not implemented on non-windows platforms");
+        windows_only!();
 
         #[cfg(windows)]
-        unsafe { process::Process::BaseDir(process_dir).find_running() }.unwrap_or(false)
+        {
+            use crate::system::process;
+
+            let process_dir = self.version_dir();
+
+            unsafe { process::Process::BaseDir(process_dir).find_running() }.unwrap_or(false)
+        }
     }
 }
 

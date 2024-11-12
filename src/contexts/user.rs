@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::{config, git, system::paths::WindowsPath};
+use crate::{config, git, system::paths::Paths};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
@@ -111,7 +111,7 @@ impl super::ScoopContext for User {
         let logs_path = self.apps_path().join("sfsu").join("current").join("logs");
 
         #[cfg(debug_assertions)]
-        let logs_path: PathBuf = WindowsPath::LocalAppData
+        let logs_path: PathBuf = Paths::LocalAppData
             .into_path()
             .or_else(|| std::env::var("LocalAppData").ok().map(Into::into))
             .expect("either windows defined local app data or env var `LocalAppData`")

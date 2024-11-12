@@ -17,8 +17,8 @@ keywords = ["api", "scoop", "windows", "package", "manager"]
 license = "MIT OR Apache-2.0"
 name = "sprinkles-rs"
 repository = "https://github.com/winpax/sprinkles"
-rust-version = "1.75.0"
-version = "0.16.0"
+rust-version = "1.80.1"
+version = "0.17.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -58,6 +58,7 @@ manifest-hashes = [
 ]
 parking_lot = ["tokio/parking_lot"]
 rayon = ["dep:rayon", "blake3/rayon", "indicatif/rayon"]
+unstable_linux = []
 
 [[bench]]
 harness = false
@@ -92,7 +93,7 @@ itertools = "0.13"
 log = "0.4"
 md-5 = "0.10"
 phf = { version = "0.11", default-features = false }
-quick-xml = { version = "0.36", optional = true, features = ["serialize"] }
+quick-xml = { version = "0.37", optional = true, features = ["serialize"] }
 quork = "0.7"
 rayon = { version = "1.10", optional = true }
 regex = "1.10"
@@ -100,19 +101,19 @@ scoop-shim = "0.1"
 semver = { version = "1.0", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
-serde_json_path = { version = "0.6", optional = true }
+serde_json_path = { version = "0.7", optional = true }
 serde_with = "3.8"
 sha1 = { version = "0.10", optional = true }
 sha2 = { version = "0.10", optional = true }
 strum = { version = "0.26", features = ["derive"] }
 sxd-document = { version = "0.3", optional = true }
 sxd-xpath = { version = "0.4", optional = true }
-thiserror = "1.0"
+thiserror = "2.0"
 tokio = { version = "1.37", features = ["process"], optional = true }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 url = { version = "2.5", features = ["serde"], optional = true }
 urlencoding = { version = "2.1", optional = true }
-which = "6.0"
+which = "7.0"
 windows = { version = "0.58", features = [
     "Win32_Storage_FileSystem",
     "Win32_UI_Shell",
@@ -139,7 +140,7 @@ reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"
-criterion = { version = "0.5.1", features = ["html_reports", "tokio"] }
+criterion = { version = "0.5", features = ["html_reports", "tokio"] }
 rayon = "1.10"
 tokio = { version = "1.37", features = [
     "rt",

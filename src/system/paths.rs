@@ -4,21 +4,30 @@ use std::path::PathBuf;
 #[non_exhaustive]
 #[allow(clippy::enum_variant_names, dead_code)]
 /// This is a non-exhaustive list CSIDLs for Windows defined paths
-pub enum WindowsPath {
+pub enum Paths {
+    /// System wide application data
+    ///
+    /// `CommonAppData` on Windows
     CommonAppData,
+    /// Persistent application data for the current user
+    ///
+    /// `AppData` on Windows
     AppData,
+    /// Non-persistent application data for the current user
+    ///
+    /// `LocalAppData` on Windows
     LocalAppData,
 }
 
 #[cfg(windows)]
-impl WindowsPath {
-    pub fn as_csidl(self) -> u32 {
+impl Paths {
+    pub(crate) fn as_csidl(self) -> u32 {
         use windows::Win32::UI::Shell::{CSIDL_APPDATA, CSIDL_COMMON_APPDATA, CSIDL_LOCAL_APPDATA};
 
         match self {
-            WindowsPath::CommonAppData => CSIDL_COMMON_APPDATA,
-            WindowsPath::AppData => CSIDL_APPDATA,
-            WindowsPath::LocalAppData => CSIDL_LOCAL_APPDATA,
+            Paths::CommonAppData => CSIDL_COMMON_APPDATA,
+            Paths::AppData => CSIDL_APPDATA,
+            Paths::LocalAppData => CSIDL_LOCAL_APPDATA,
         }
     }
 
@@ -46,6 +55,24 @@ impl WindowsPath {
             Some(PathBuf::from(trimmed))
         } else {
             None
+        }
+    }
+}
+
+#[cfg(not(windows))]
+impl Paths {
+    #[allow(clippy::unused_self)]
+    pub fn into_path(self) -> Option<PathBuf> {
+        use std::env;
+
+        match self {
+            Paths::CommonAppData => Some(PathBuf::from("/usr/share")),
+            Paths::AppData => env::var_os("XDG_DATA_HOME").map(PathBuf::from).or_else(|| {
+                env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/share"))
+            }),
+            Paths::LocalAppData => env::var_os("XDG_CACHE_HOME")
+                .map(PathBuf::from)
+                .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".cache"))),
         }
     }
 }

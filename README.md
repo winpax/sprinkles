@@ -8,10 +8,11 @@
 [![Crates.io License](https://img.shields.io/crates/l/sprinkles-rs)](https://crates.io/crates/sprinkles-rs)
 [![Crates.io MSRV](https://img.shields.io/crates/msrv/sprinkles-rs)](https://crates.io/crates/sprinkles-rs)
 
-View the latest documentation [at docs.rs](https://docs.rs/sprinkles-rs), or on [Github Pages](https://winpax.github.io/sprinkles/).
+View the latest documentation on [Github Pages](https://winpax.github.io/sprinkles/) (the [docs.rs](https://docs.rs/sprinkles-rs) builds are currently failing).
 
-**Please note this library is currently in an early stage of development, and is not recommended for use in production.
-There are likely to be breaking changes in the future, and there is no guarantee that the API will remain stable until v1.0.**
+> [!WARNING]
+> This library is currently unstable, and is not recommended for use in production.
+> There will be breaking changes in the future, and the API may change.
 
 Sprinkles is a library for interacting with [Scoop](https://scoop.sh/), the Windows package manager.
 
@@ -61,8 +62,12 @@ dd if=/dev/urandom of=benches/large-file.bin bs=1M count=512
 
 ## Supported Platforms
 
-I will maintain support for the MSRV mentioned in Cargo.toml, although it may change across a major version.
-
 Windows is the only supported platform at the moment, and this will likely not change, given that Scoop is only available on Windows.
+
+## Minimum Supported Rust Version
+
+The MSRV may change in the future, but will only ever be increased over the course of a major version.
+
+The MSRV is set for the target `x86_64-pc-windows-msvc`, and is checked for all supported platforms in the CI.
 
 **Made with 💗 by Juliette Cordor**

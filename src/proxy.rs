@@ -98,7 +98,7 @@ impl FromStr for Proxy {
         #[cfg_attr(not(windows), allow(unreachable_code, unused_variables))]
         let host = if host == "default" {
             #[cfg(windows)]
-            let (address, port) = {
+            {
                 use std::net::SocketAddr;
 
                 let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
@@ -119,12 +119,10 @@ impl FromStr for Proxy {
                     (socket.ip(), socket.port())
                 };
 
-                (host, port)
-            };
+                format!("{host}:{port}")
+            }
             #[cfg(not(windows))]
-            let (address, port): (std::net::IpAddr, u16) = { unimplemented!() };
-
-            format!("{address}:{port}")
+            windows_only!()
         } else {
             host.to_string()
         };
