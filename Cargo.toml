@@ -87,7 +87,7 @@ gix = { version = "0.67", features = [
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.45"
+gix-object = "0.46"
 indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.13"
 log = "0.4"
