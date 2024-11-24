@@ -374,7 +374,7 @@ impl Hash {
             let cache_handles = Handle::open_manifest(ctx.cache_path(), manifest, arch)?;
 
             let downloaders = cache_handles.into_iter().map(|handle| async move {
-                DownloadHandle::new::<AsyncClient>(handle, None).await
+                DownloadHandle::new::<AsyncClient>(handle, None, None).await
             });
             let downloaders = futures::future::try_join_all(downloaders).await?;
 

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0]
+
+### Changed
+
+- `leaf` function now returns a `&str` instead of a `String`
+- Added optional name parameter to `DownloadHandle::new`
+
 ## [0.17.0]
 
 ### Fixed
@@ -115,7 +122,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For older version's changelogs, see the [releases](https://github.com/winpax/sprinkles/releases) page.
 
-[Unreleased]: https://github.com/winpax/sprinkles/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/winpax/sprinkles/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/winpax/sprinkles/releases/tag/v0.18.0
 [0.17.0]: https://github.com/winpax/sprinkles/releases/tag/v0.17.0
 [0.16.0]: https://github.com/winpax/sprinkles/releases/tag/v0.16.0
 [0.15.2]: https://github.com/winpax/sprinkles/releases/tag/v0.15.2
