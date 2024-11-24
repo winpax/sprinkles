@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.18.0]
 
+### Added
+
+- Better support for compiling on non-windows platforms
+
 ### Changed
 
 - `leaf` function now returns a `&str` instead of a `String`
