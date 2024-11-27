@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Method to `PackageHandle` to get local version
+
 ## [0.18.0]
 
 ### Added
