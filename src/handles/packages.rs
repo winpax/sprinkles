@@ -168,7 +168,7 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
     /// Get the package's local version
     ///
     /// # Errors
-    /// - See more at [`PackageHandle::local_version`]
+    /// - See more at [`PackageHandle::local_manifest`]
     pub fn local_version(&self) -> Result<Version> {
         self.local_manifest().map(|manifest| manifest.version)
     }
