@@ -1,6 +1,11 @@
 //! A package reference with an optional version
 
-use std::{fmt, path::PathBuf, str::FromStr};
+use std::{
+    ffi::OsStr,
+    fmt,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use itertools::Itertools;
 
@@ -77,7 +82,15 @@ impl Reference {
                 Some(name.to_string())
             }
             manifest::Reference::File(path) => {
-                Some(path.with_extension("").file_name()?.to_str()?.to_string())
+                let valid_path = if path.file_name() == Some(OsStr::new("manifest.json")) {
+                    resolve_name_path(path)
+                } else {
+                    Some(path.clone())
+                };
+
+                valid_path.and_then(|path| {
+                    Some(path.with_extension("").file_name()?.to_str()?.to_string())
+                })
             }
             #[cfg(feature = "manifest-hashes")]
             manifest::Reference::Url(url) => {
@@ -294,6 +307,36 @@ impl Reference {
     }
 }
 
+fn resolve_name_path(path: &Path) -> Option<PathBuf> {
+    fn verify_filename(path: &Path) -> bool {
+        if let Some(file_name) = path.file_name() {
+            match file_name.to_str() {
+                Some("current") => false,
+                Some(name) if name.chars().all(|c| c.is_ascii_alphanumeric()) => true,
+                _ => false,
+            }
+        } else {
+            false
+        }
+    }
+
+    let mut path = path.to_path_buf();
+
+    let valid_path = loop {
+        path = if let Some(path) = path.parent() {
+            path.to_path_buf()
+        } else {
+            break None;
+        };
+
+        if verify_filename(&path) {
+            break Some(path);
+        }
+    };
+
+    valid_path
+}
+
 impl From<manifest::Reference> for Reference {
     fn from(manifest: manifest::Reference) -> Self {
         Self::from_ref(manifest)
@@ -329,5 +372,26 @@ impl FromStr for Reference {
             }),
             _ => Err(Error::InvalidVersion),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[rstest::rstest]
+    #[case("manifest.json", None)]
+    #[case("current/manifest.json", None)]
+    #[case("1.8.0/manifest.json", None)]
+    #[case("sfsu/manifest.json", Some("sfsu"))]
+    #[case("example/sfsu", Some("sfsu"))]
+    #[case("sfsu/current/manifest.json", Some("sfsu"))]
+    #[case("sfsu/1.8.0/manifest.json", Some("sfsu"))]
+    #[case("example/sfsu.json", Some("sfsu"))]
+    fn test_file_reference_name(#[case] path: PathBuf, #[case] expected: Option<&str>) {
+        let expected = expected.map(std::string::ToString::to_string);
+        let reference = Reference::from(manifest::Reference::File(path));
+
+        assert_eq!(reference.name(), expected);
     }
 }
