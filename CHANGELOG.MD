@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking Changes
 
 - Updated gix to 0.68.x and gix-object to 0.46.x
+- Updated `package::Reference` name resolution to support `manifest.json` file paths
 
 ## [0.18.0]
 
