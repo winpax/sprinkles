@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Method to `PackageHandle` to get local version
 
+### Breaking Changes
+
+- Updated gix to 0.68.x and gix-object to 0.46.x
+
 ## [0.18.0]
 
 ### Added
