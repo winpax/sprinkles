@@ -54,6 +54,7 @@ impl super::ScoopContext for User {
 
     const APP_NAME: &'static str = "scoop";
     const CONTEXT_NAME: &'static str = "user";
+    const ELEVATED: bool = false;
 
     /// Load the Scoop configuration
     ///

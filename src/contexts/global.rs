@@ -58,6 +58,7 @@ impl ScoopContext for Global {
 
     const APP_NAME: &'static str = User::APP_NAME;
     const CONTEXT_NAME: &'static str = "global";
+    const ELEVATED: bool = true;
 
     fn config(&self) -> &config::Scoop {
         self.user_context.config()
