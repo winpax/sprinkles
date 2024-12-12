@@ -78,6 +78,6 @@ impl TryFrom<PathBuf> for VersionHandle {
     type Error = Error;
 
     fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
-        value.try_into()
+        TryFrom::<&Path>::try_from(&value)
     }
 }
