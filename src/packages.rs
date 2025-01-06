@@ -1041,13 +1041,15 @@ mod tests {
                 if autoupdate_config.url.is_some() {
                     found_literally_any_url = true;
                 }
-            }
 
-            assert!(
-                found_literally_any_url,
-                "URL is missing in package: {}",
-                unsafe { manifest.name() }
-            );
+                // This has to be inside this if statement
+                // because otherwise the check will happen for manifests without autoupdate configs
+                assert!(
+                    found_literally_any_url,
+                    "URL is missing in package: {}",
+                    unsafe { manifest.name() }
+                );
+            }
         });
 
         Ok(())
