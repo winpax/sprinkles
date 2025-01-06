@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking Changes
 
 - Update MSRV
+- `HashMode::from_manifest` now checks for sourceforge/fosshub hash modes after generic hash modes
+  - This allows manifest authors to specify a different form of hash extraction
+    that takes precedent over sourceforge/fosshub extraction
+
+### Added
+
+- Implemented `get` method for `AutoupdateArchitecture` to get the config for a given architecture
+- Implemented `Index` trait for `AutoupdateArchitecture` to get the config for a given architecture
 
 ## [0.19.1]
 

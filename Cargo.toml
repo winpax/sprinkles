@@ -139,6 +139,7 @@ reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"
+async-std = { version = "1.13", features = ["attributes"] }
 criterion = { version = "0.5", features = ["html_reports", "tokio"] }
 rayon = "1.10"
 rstest = "0.24.0"

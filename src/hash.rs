@@ -255,20 +255,6 @@ impl HashMode {
     /// # Panics
     /// - Invalid regexes
     pub fn from_manifest(manifest: &Manifest, arch: Architecture) -> Option<Self> {
-        let install_config = manifest
-            .architecture
-            .merge_default(manifest.install_config.clone(), arch);
-
-        if let Some(StringArray::Single(url)) = install_config.urls {
-            if Self::fosshub_regex().is_match(&url) {
-                return Some(Self::Fosshub);
-            }
-
-            if Self::sourceforge_regex().is_match(&url) {
-                return Some(Self::Sourceforge);
-            }
-        }
-
         let autoupdate_config = manifest
             .autoupdate
             .as_ref()
@@ -278,7 +264,25 @@ impl HashMode {
                 arch,
             );
 
-        Self::from_autoupdate_config(&autoupdate_config)
+        if let Some(mode) = Self::from_autoupdate_config(&autoupdate_config) {
+            Some(mode)
+        } else {
+            let install_config = manifest
+                .architecture
+                .merge_default(manifest.install_config.clone(), arch);
+
+            if let Some(StringArray::Single(url)) = install_config.urls {
+                if Self::fosshub_regex().is_match(&url) {
+                    return Some(Self::Fosshub);
+                }
+
+                if Self::sourceforge_regex().is_match(&url) {
+                    return Some(Self::Sourceforge);
+                }
+            }
+
+            None
+        }
     }
 
     #[must_use]
@@ -754,110 +758,41 @@ mod tests {
                 .hash
                 .unwrap();
 
-            assert_eq!(actual_hash, SingleOrArray::from_vec_or_default(hash));
+            assert_eq!(
+                actual_hash,
+                SingleOrArray::from_vec_or_default(hash),
+                "manifest hash (left) did not match derived hash (right)"
+            );
 
             Ok(())
         }
     }
 
+    #[rstest::rstest]
     #[tokio::test]
-    #[ignore = "Duplicate of `test_googlechrome`"]
-    async fn test_handlers_implemented() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/googlechrome")?;
+    async fn test_hashes(
+        #[values(
+            "extras/googlechrome",
+            "extras/springboot",
+            // TODO: Re-enable test when the manifest is fixed
+            // "extras/keepass",
+            "extras/winscp",
+            "extras/hwinfo",
+            "extras/firefox",
+            "extras/sfsu",
+            "extras/vcredist-aio",
+            // "extras/ungoogled-chromium",
+            // "main/imagemagick"
+        )]
+        package: &str,
+    ) -> anyhow::Result<()> {
+        let package = reference::package::Reference::from_str(package)?;
 
         let handler = TestHandler::new(package);
 
         handler.test().await?;
 
         Ok(())
-    }
-
-    #[tokio::test]
-    #[ignore = "Broken (not my fault, the chrome xml file does not include the hash for the current version)"]
-    async fn test_googlechrome() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/googlechrome")?;
-
-        let handler = TestHandler::new(package);
-
-        handler.test().await?;
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_springboot() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/springboot")?;
-        let handler = TestHandler::new(package);
-        handler.test().await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_sfsu() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/sfsu")?;
-
-        let handler = TestHandler::new(package);
-
-        handler.test().await?;
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    #[ignore = "Broken (not my fault, v0.83.0 does not include the hash for the current version)"]
-    async fn test_finding_vcredistaio_hashes() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/vcredist-aio")?;
-
-        let handler = TestHandler::new(package);
-
-        handler.test().await?;
-
-        Ok(())
-    }
-
-    // #[tokio::test]
-    // async fn test_finding_imagemagick_hashes() -> anyhow::Result<()> {
-    //     let package = reference::Package::from_str("main/imagemagick")?;
-    //     let handler = TestHandler::new(package);
-    //     handler.test().await?;
-    //     Ok(())
-    // }
-
-    #[tokio::test]
-    async fn test_keepass() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/keepass")?;
-
-        let handler = TestHandler::new(package);
-
-        handler.test().await?;
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_hwinfo() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/hwinfo")?;
-
-        let handler = TestHandler::new(package);
-
-        handler.test().await?;
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    #[ignore = "sfsu does not yet support custom matches"]
-    async fn test_ungoogled_chromium() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/ungoogled-chromium")?;
-        let handler = TestHandler::new(package);
-        handler.test().await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_firefox() -> anyhow::Result<()> {
-        let package = reference::package::Reference::from_str("extras/firefox")?;
-        TestHandler::new(package).test().await
     }
 
     #[tokio::test]

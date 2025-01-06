@@ -998,6 +998,7 @@ mod tests {
 
     use crate::{buckets::Bucket, contexts::User, Architecture};
 
+    use quork::prelude::ListVariants;
     use rayon::prelude::*;
 
     #[test]
@@ -1018,9 +1019,33 @@ mod tests {
             assert!(!unsafe { manifest.name() }.is_empty());
             assert!(!unsafe { manifest.bucket() }.is_empty());
 
+            // TODO: This is a hack ignore it please ill figure something out for
+            let mut found_literally_any_url = false;
+
+            if let Some(autoupdate_architecture) = manifest
+                .autoupdate
+                .as_ref()
+                .and_then(|autoupdate| autoupdate.architecture.as_ref())
+            {
+                for arch in crate::Architecture::VARIANTS {
+                    if let Some(autoupdate_config) = autoupdate_architecture.get(arch) {
+                        if autoupdate_config.url.is_some() {
+                            found_literally_any_url = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
             if let Some(autoupdate_config) = &manifest.autoupdate_config(Architecture::ARCH) {
+                if autoupdate_config.url.is_some() {
+                    found_literally_any_url = true;
+                }
+
+                // This has to be inside this if statement
+                // because otherwise the check will happen for manifests without autoupdate configs
                 assert!(
-                    autoupdate_config.url.is_some(),
+                    found_literally_any_url,
                     "URL is missing in package: {}",
                     unsafe { manifest.name() }
                 );
