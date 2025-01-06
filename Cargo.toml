@@ -141,7 +141,7 @@ reqwest = { version = "0.12", default-features = false }
 anyhow = "1.0"
 criterion = { version = "0.5", features = ["html_reports", "tokio"] }
 rayon = "1.10"
-rstest = "0.23.0"
+rstest = "0.24.0"
 tokio = { version = "1.37", features = [
     "rt",
     "rt-multi-thread",
