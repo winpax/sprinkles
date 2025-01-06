@@ -19,7 +19,7 @@ jobs:
           lfs: true
 
       - name: Install and setup Scoop
-        uses: winpax/scoop-setup@v1
+        uses: winpax/scoop-setup@v1.0.0
         with:
           buckets: extras java
 
