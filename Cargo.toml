@@ -124,7 +124,7 @@ windows = { version = "0.58", features = [
 winreg = "0.52"
 
 [target.'cfg(not(docsrs))'.dependencies]
-git2 = "0.19"
+git2 = "0.20"
 reqwest = { version = "0.12", features = [
     "blocking",
     "brotli",
@@ -134,7 +134,7 @@ reqwest = { version = "0.12", features = [
 ] }
 
 [target.'cfg(docsrs)'.dependencies]
-git2 = { version = "0.19", default-features = false }
+git2 = { version = "0.20", default-features = false }
 reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
