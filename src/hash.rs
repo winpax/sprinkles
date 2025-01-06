@@ -255,20 +255,6 @@ impl HashMode {
     /// # Panics
     /// - Invalid regexes
     pub fn from_manifest(manifest: &Manifest, arch: Architecture) -> Option<Self> {
-        let install_config = manifest
-            .architecture
-            .merge_default(manifest.install_config.clone(), arch);
-
-        if let Some(StringArray::Single(url)) = install_config.urls {
-            if Self::fosshub_regex().is_match(&url) {
-                return Some(Self::Fosshub);
-            }
-
-            if Self::sourceforge_regex().is_match(&url) {
-                return Some(Self::Sourceforge);
-            }
-        }
-
         let autoupdate_config = manifest
             .autoupdate
             .as_ref()
@@ -278,7 +264,25 @@ impl HashMode {
                 arch,
             );
 
-        Self::from_autoupdate_config(&autoupdate_config)
+        if let Some(mode) = Self::from_autoupdate_config(&autoupdate_config) {
+            Some(mode)
+        } else {
+            let install_config = manifest
+                .architecture
+                .merge_default(manifest.install_config.clone(), arch);
+
+            if let Some(StringArray::Single(url)) = install_config.urls {
+                if Self::fosshub_regex().is_match(&url) {
+                    return Some(Self::Fosshub);
+                }
+
+                if Self::sourceforge_regex().is_match(&url) {
+                    return Some(Self::Sourceforge);
+                }
+            }
+
+            None
+        }
     }
 
     #[must_use]
@@ -772,6 +776,7 @@ mod tests {
             "extras/springboot",
             // TODO: Re-enable test when the manifest is fixed
             // "extras/keepass",
+            "extras/winscp",
             "extras/hwinfo",
             "extras/firefox",
             "extras/sfsu",
