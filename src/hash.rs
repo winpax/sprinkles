@@ -770,7 +770,8 @@ mod tests {
         #[values(
             "extras/googlechrome",
             "extras/springboot",
-            "extras/keepass",
+            // TODO: Re-enable test when the manifest is fixed
+            // "extras/keepass",
             "extras/hwinfo",
             "extras/firefox",
             "extras/sfsu",
