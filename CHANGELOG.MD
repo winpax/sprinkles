@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.20.0]
 
 ### Breaking Changes
 
@@ -158,7 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For older version's changelogs, see the [releases](https://github.com/winpax/sprinkles/releases) page.
 
-[Unreleased]: https://github.com/winpax/sprinkles/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/winpax/sprinkles/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/winpax/sprinkles/releases/tag/v0.20.0
 [0.19.1]: https://github.com/winpax/sprinkles/releases/tag/v0.19.1
 [0.19.0]: https://github.com/winpax/sprinkles/releases/tag/v0.19.0
 [0.18.0]: https://github.com/winpax/sprinkles/releases/tag/v0.18.0
