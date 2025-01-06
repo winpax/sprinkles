@@ -258,6 +258,32 @@ impl AutoupdateArchitecture {
             Architecture::X86 => self.x86.as_ref(),
         }
     }
+
+    #[must_use]
+    pub fn get_mut(&mut self, arch: Architecture) -> Option<&mut AutoupdateConfig> {
+        match arch {
+            Architecture::Arm64 => self.arm64.as_mut(),
+            Architecture::X64 => self.x64.as_mut(),
+            Architecture::X86 => self.x86.as_mut(),
+        }
+    }
+
+    #[must_use]
+    /// Get the best architecture config
+    ///
+    /// [`Architecture::Arm64`] will always return the [`AutoupdateConfig`] for [`Architecture::Arm64`]
+    ///
+    /// [`Architecture::X64`] will return the [`AutoupdateConfig`] for [`Architecture::X64`] if it exists, otherwise it will return the [`AutoupdateConfig`] for [`Architecture::X86`]
+    ///
+    /// [`Architecture::X86`] will always return the [`AutoupdateConfig`] for [`Architecture::X86`]
+    pub fn get_best(&self, arch: Architecture) -> Option<&AutoupdateConfig> {
+        match arch {
+            Architecture::X64 => self
+                .get(Architecture::X64)
+                .or_else(|| self.get(Architecture::X86)),
+            _ => self.get(arch),
+        }
+    }
 }
 
 impl Index<Architecture> for AutoupdateArchitecture {
