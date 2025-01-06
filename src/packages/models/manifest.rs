@@ -7,7 +7,7 @@
 
 mod ser_de;
 
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashMap, fmt::Display, ops::Index};
 
 use itertools::Itertools as _;
 use serde::{Deserialize, Serialize};
@@ -247,6 +247,26 @@ pub struct AutoupdateArchitecture {
     #[serde(rename = "64bit")]
     pub x64: Option<AutoupdateConfig>,
     pub arm64: Option<AutoupdateConfig>,
+}
+
+impl AutoupdateArchitecture {
+    #[must_use]
+    pub fn get(&self, arch: Architecture) -> Option<&AutoupdateConfig> {
+        match arch {
+            Architecture::Arm64 => self.arm64.as_ref(),
+            Architecture::X64 => self.x64.as_ref(),
+            Architecture::X86 => self.x86.as_ref(),
+        }
+    }
+}
+
+impl Index<Architecture> for AutoupdateArchitecture {
+    type Output = AutoupdateConfig;
+
+    fn index(&self, index: Architecture) -> &Self::Output {
+        self.get(index)
+            .expect("autoupdate config missing for architecture")
+    }
 }
 
 // TODO: Merge fields from AutoupdateConfig into and various Architectures
