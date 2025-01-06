@@ -761,17 +761,21 @@ mod tests {
     }
 
     #[rstest::rstest]
-    #[case::googlechrome("extras/googlechrome")]
-    #[case::springboot("extras/springboot")]
-    #[case::keepass("extras/keepass")]
-    #[case::hwinfo("extras/hwinfo")]
-    #[case::firefox("extras/firefox")]
-    #[case::sfsu("extras/sfsu")]
-    #[case::vcredistaio("extras/vcredist-aio")]
-    // #[case::ungoogled_chromium("extras/ungoogled-chromium")]
-    // #[case::imagemagick("main/imagemagick")]
     #[tokio::test]
-    async fn test_hashes(#[case] package: &str) -> anyhow::Result<()> {
+    async fn test_hashes(
+        #[values(
+            "extras/googlechrome",
+            "extras/springboot",
+            "extras/keepass",
+            "extras/hwinfo",
+            "extras/firefox",
+            "extras/sfsu",
+            "extras/vcredist-aio",
+            // "extras/ungoogled-chromium",
+            // "main/imagemagick"
+        )]
+        package: &str,
+    ) -> anyhow::Result<()> {
         let package = reference::package::Reference::from_str(package)?;
 
         let handler = TestHandler::new(package);
