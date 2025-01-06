@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implemented `get` method for `AutoupdateArchitecture` to get the config for a given architecture
 - Implemented `Index` trait for `AutoupdateArchitecture` to get the config for a given architecture
+- Implemented `get_mut` method for `AutoupdateArchitecture` to get a mutable reference to the config for a given architecture
+- Implemented `get_best` method for `AutoupdateArchitecture` to get the best available config for a given architecture
 
 ## [0.19.1]
 
