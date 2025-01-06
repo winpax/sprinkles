@@ -1,4 +1,4 @@
-name: Deploy Rust docs to GitHub Pages branch
+name: Deploy Rust docs to GitHub Pages
 
 on:
   push:
@@ -19,22 +19,24 @@ concurrency:
 
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2.7.7
-
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
       - name: Generate docs
         run: cargo doc --all-features --no-deps
-
       - name: Generate pages adapter
         run: echo '<meta http-equiv="refresh" content="0; url=sprinkles">' > target/doc/index.html
-
-      - name: Clone gh-pages branch
-        uses: GuillaumeFalourd/clone-github-repo-action@v2.3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          depth: 1
-          branch: "gh-pages"
-          owner: "iam-sameera"
-          repository: "b"
+          path: "./target/doc"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
