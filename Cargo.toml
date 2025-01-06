@@ -17,7 +17,7 @@ keywords = ["api", "scoop", "windows", "package", "manager"]
 license = "MIT OR Apache-2.0"
 name = "sprinkles-rs"
 repository = "https://github.com/winpax/sprinkles"
-rust-version = "1.80.1"
+rust-version = "1.81"
 version = "0.19.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
