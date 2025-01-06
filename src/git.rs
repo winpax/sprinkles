@@ -204,12 +204,11 @@ impl Repo {
             .ok_or(Error::MissingRemote("origin".to_string()))?;
 
         let connection = remote.connect(gix::remote::Direction::Fetch)?;
-        let refs = connection
-            .ref_map(gix::progress::Discard, ref_map::Options::default())?
-            .remote_refs;
+        let (refs, _) = connection.ref_map(gix::progress::Discard, ref_map::Options::default())?;
+        let remote_refs = refs.remote_refs;
 
         let current_branch = self.current_branch()?;
-        let head = refs
+        let head = remote_refs
             .iter()
             .find_map(|head| {
                 let (name, oid, peeled) = head.unpack();
