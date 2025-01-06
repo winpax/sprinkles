@@ -31,10 +31,22 @@ jobs:
       - name: Generate pages adapter
         run: echo '<meta http-equiv="refresh" content="0; url=sprinkles">' > target/doc/index.html
 
-      - name: Clone gh-pages branch
-        uses: GuillaumeFalourd/clone-github-repo-action@v2.3
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
         with:
-          depth: 1
-          branch: "gh-pages"
-          owner: "iam-sameera"
-          repository: "b"
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Copy docs to gh-pages
+        shell: pwsh
+        run: |
+          [System.IO.File]::Copy("./target/doc/*", "${{ github.workspace }}/gh-pages", $true)
+
+      - name: Commit and push
+        run: |
+          cd ${{ github.workspace }}/gh-pages
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Deploy to GitHub Pages"
+          git push origin gh-pages
