@@ -754,7 +754,11 @@ mod tests {
                 .hash
                 .unwrap();
 
-            assert_eq!(actual_hash, SingleOrArray::from_vec_or_default(hash));
+            assert_eq!(
+                actual_hash,
+                SingleOrArray::from_vec_or_default(hash),
+                "manifest hash (left) did not match derived hash (right)"
+            );
 
             Ok(())
         }
