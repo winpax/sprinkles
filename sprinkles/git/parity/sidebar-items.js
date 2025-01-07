@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Commit","Signature","Time"],"struct":["SignatureDisplay"]};

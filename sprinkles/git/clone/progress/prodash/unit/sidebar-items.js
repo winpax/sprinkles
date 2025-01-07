@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Kind"],"fn":["dynamic","dynamic_and_mode","label","label_and_mode"],"mod":["display","human"],"struct":["Bytes","Human","Range","Unit"],"trait":["DisplayValue"]};

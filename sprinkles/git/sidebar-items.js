@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["which"],"mod":["clone","errors","implementations","options","parity"],"struct":["Repo"],"type":["Result"]};
