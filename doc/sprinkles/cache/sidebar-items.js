@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["CacheFile","DownloadFileName","DownloadHandle","DownloadResult","Handle"]};

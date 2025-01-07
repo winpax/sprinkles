@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Architecture"],"mod":["buckets","cache","config","contexts","git","handles","hash","packages","progress","proxy","scripts","shell","version"]};

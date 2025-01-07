@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AnyContext","Error"],"struct":["EmptyConfig","Global","User"],"trait":["ScoopContext"],"type":["Result"]};

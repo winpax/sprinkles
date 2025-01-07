@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["MessageLevel"],"struct":["Message","MessageCopyState","MessageRingBuffer"]};

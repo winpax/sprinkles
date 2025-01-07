@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["aria2","branch","repo","shim"],"struct":["Scoop"]};
