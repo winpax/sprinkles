@@ -39,7 +39,10 @@ jobs:
       - name: Copy docs to gh-pages
         shell: pwsh
         run: |
-          Get-ChildItem -Path ./target/doc -Recurse | Copy-Item -Destination "${{ github.workspace }}/gh-pages" -Force
+          Copy-Item -Path "./target/doc" -Destination "${{ github.workspace }}/gh-pages" -Recurse -Force
+
+      - name: Disable jekyll processing
+        run: New-Item "${{ github.workspace }}/gh-pages/.nojekyll" -Force -ItemType File
 
       - name: Commit and push
         run: |
