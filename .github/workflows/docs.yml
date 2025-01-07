@@ -40,7 +40,7 @@ jobs:
       - name: Copy docs to gh-pages
         shell: pwsh
         run: |
-          [System.IO.File]::Copy("./target/doc/*", "${{ github.workspace }}/gh-pages", $true)
+          Get-ChildItem -Path ./target/doc -Recurse | Copy-Item -Destination "${{ github.workspace }}/gh-pages" -Force
 
       - name: Commit and push
         run: |
