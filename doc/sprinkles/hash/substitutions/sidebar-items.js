@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SubstituteBuilder"],"struct":["SubstitutionMap"],"trait":["Substitute"]};
