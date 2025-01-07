@@ -23,9 +23,6 @@ jobs:
         with:
           buckets: extras java
 
-      - name: Cleanup Scoop install
-        run: rm install.ps1
-
       - name: Run tests
         run: cargo test --verbose
       - name: Publish to crates.io
