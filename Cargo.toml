@@ -121,7 +121,7 @@ windows = { version = "0.58", features = [
 ] }
 
 [target.'cfg(windows)'.dependencies]
-winreg = "0.52"
+winreg = "0.55"
 
 [target.'cfg(not(docsrs))'.dependencies]
 git2 = "0.20"
