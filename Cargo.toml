@@ -12,6 +12,7 @@ include = [
     "LICENSE-MIT",
     "README.md",
     "benches/**/*",
+    "tests/**/*",
 ]
 keywords = ["api", "scoop", "windows", "package", "manager"]
 license = "MIT OR Apache-2.0"
