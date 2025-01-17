@@ -12,6 +12,7 @@ include = [
     "LICENSE-MIT",
     "README.md",
     "benches/**/*",
+    "tests/**/*",
 ]
 keywords = ["api", "scoop", "windows", "package", "manager"]
 license = "MIT OR Apache-2.0"
@@ -108,12 +109,12 @@ strum = { version = "0.26", features = ["derive"] }
 sxd-document = { version = "0.3", optional = true }
 sxd-xpath = { version = "0.4", optional = true }
 thiserror = "2.0"
-tokio = { version = "1.37", features = ["process"], optional = true }
+tokio = { version = "1.43", features = ["process"], optional = true }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 url = { version = "2.5", features = ["serde"], optional = true }
 urlencoding = { version = "2.1", optional = true }
 which = "7.0"
-windows = { version = "0.58", features = [
+windows = { version = "0.59", features = [
     "Win32_Storage_FileSystem",
     "Win32_UI_Shell",
     "Win32_System_Diagnostics",
@@ -142,7 +143,7 @@ anyhow = "1.0"
 async-std = { version = "1.13", features = ["attributes"] }
 criterion = { version = "0.5", features = ["html_reports", "tokio"] }
 rayon = "1.10"
-rstest = "0.24.0"
+rstest = "0.24"
 tokio = { version = "1.37", features = [
     "rt",
     "rt-multi-thread",
