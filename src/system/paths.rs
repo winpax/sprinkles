@@ -42,8 +42,7 @@ impl Paths {
         let mut buf = [0u16; MAX_PATH as usize];
         let success = unsafe {
             #[allow(clippy::cast_possible_wrap)]
-            SHGetSpecialFolderPathW(HWND::default(), &mut buf, self.as_csidl() as i32, true)
-                .as_bool()
+            SHGetSpecialFolderPathW(None, &mut buf, self.as_csidl() as i32, true).as_bool()
         };
 
         if success {
