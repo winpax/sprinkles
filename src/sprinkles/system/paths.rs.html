@@ -75,8 +75,7 @@
 <a href="#74" id="74">74</a>
 <a href="#75" id="75">75</a>
 <a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::path::PathBuf;
+<a href="#77" id="77">77</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::path::PathBuf;
 
 <span class="attr">#[derive(Debug, Copy, Clone)]
 #[non_exhaustive]
@@ -120,8 +119,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>buf = [<span class="number">0u16</span>; MAX_PATH <span class="kw">as </span>usize];
         <span class="kw">let </span>success = <span class="kw">unsafe </span>{
             <span class="attr">#[allow(clippy::cast_possible_wrap)]
-            </span>SHGetSpecialFolderPathW(HWND::default(), <span class="kw-2">&amp;mut </span>buf, <span class="self">self</span>.as_csidl() <span class="kw">as </span>i32, <span class="bool-val">true</span>)
-                .as_bool()
+            </span>SHGetSpecialFolderPathW(<span class="prelude-val">None</span>, <span class="kw-2">&amp;mut </span>buf, <span class="self">self</span>.as_csidl() <span class="kw">as </span>i32, <span class="bool-val">true</span>).as_bool()
         };
 
         <span class="kw">if </span>success {
