@@ -83,7 +83,7 @@ directories = "6.0"
 dunce = "1.0"
 futures = "0.3"
 getset = { version = "0.1", optional = true }
-gix = { version = "0.69", features = [
+gix = { version = "0.70", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
