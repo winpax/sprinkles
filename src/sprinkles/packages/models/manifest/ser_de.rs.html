@@ -56,7 +56,8 @@
 <a href="#55" id="55">55</a>
 <a href="#56" id="56">56</a>
 <a href="#57" id="57">57</a>
-<a href="#58" id="58">58</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::str::FromStr;
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::str::FromStr;
 
 <span class="kw">use </span>serde::{
     de::{Error, Unexpected},
@@ -83,7 +84,8 @@
 
     </span><span class="kw">let </span>value = serde_json::Value::deserialize(data)<span class="question-mark">?</span>;
 
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(real_value) = value.as_str() {
+    <span class="attr">#[allow(if_let_rescope)]
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(real_value) = value.as_str() {
         <span class="kw">if </span>real_value.is_empty() {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }

@@ -699,10 +699,10 @@
                 <span class="kw">break</span>;
             }
 
-            <span class="kw">if let </span><span class="prelude-val">Ok</span>(msg) = commit.message() {
-                <span class="kw">let </span>summary = msg.summary();
-                changelog.push(summary.to_string());
-            }
+            <span class="kw">let </span><span class="prelude-val">Ok</span>(msg) = commit.message() <span class="kw">else </span>{ <span class="kw">continue </span>};
+
+            <span class="kw">let </span>summary = msg.summary();
+            changelog.push(summary.to_string());
         }
 
         <span class="prelude-val">Ok</span>(changelog)

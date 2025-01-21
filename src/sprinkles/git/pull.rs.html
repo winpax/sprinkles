@@ -177,7 +177,8 @@
 <a href="#176" id="176">176</a>
 <a href="#177" id="177">177</a>
 <a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a></pre></div><pre class="rust"><code><span class="doccomment">//! Pulls remote data into a local branch.
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a></pre></div><pre class="rust"><code><span class="doccomment">//! Pulls remote data into a local branch.
 //!
 //! This module is a modification of the git2 "pull" example, as mentioned in the license comment below.
 
@@ -301,7 +302,8 @@
     </span><span class="kw">if </span>analysis.<span class="number">0</span>.is_fast_forward() {
         <span class="comment">// do a fast forward
         </span><span class="kw">let </span>refname = <span class="macro">format!</span>(<span class="string">"refs/heads/{remote_branch}"</span>);
-        <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>r) = repo.find_reference(<span class="kw-2">&amp;</span>refname) {
+        <span class="attr">#[allow(if_let_rescope)]
+        </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>r) = repo.find_reference(<span class="kw-2">&amp;</span>refname) {
             fast_forward(repo, <span class="kw-2">&amp;mut </span>r, fetch_commit)<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
             <span class="comment">// The branch doesn't exist so just set the reference to the

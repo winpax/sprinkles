@@ -36,7 +36,9 @@
 <a href="#35" id="35">35</a>
 <a href="#36" id="36">36</a>
 <a href="#37" id="37">37</a>
-<a href="#38" id="38">38</a></pre></div><pre class="rust"><code><span class="attr">#![allow(
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a></pre></div><pre class="rust"><code><span class="attr">#![allow(
     clippy::single_component_path_imports,
     edition_2024_expr_fragment_specifier
 )]
@@ -45,14 +47,16 @@
 </span><span class="kw">mod </span>hackros {
     <span class="macro">macro_rules!</span> let_chain {
     (<span class="kw">let </span><span class="macro-nonterminal">$dis</span>:ident(<span class="macro-nonterminal">$pat</span>:ident) = <span class="macro-nonterminal">$expr</span>:expr; $(<span class="kw">let </span><span class="macro-nonterminal">$dis2</span>:ident(<span class="macro-nonterminal">$pat2</span>:ident) = <span class="macro-nonterminal">$expr2</span>:expr ;)+ <span class="macro-nonterminal">$then</span>:expr $(; <span class="kw">else </span><span class="macro-nonterminal">$</span><span class="kw">else</span>:<span class="macro-nonterminal">expr</span>)<span class="question-mark">?</span>) =&gt; {{
-        <span class="kw">if let </span><span class="macro-nonterminal">$dis</span>(<span class="macro-nonterminal">$pat</span>) = <span class="macro-nonterminal">$expr </span>{
+        <span class="attr">#[allow(if_let_rescope)]
+        </span><span class="kw">if let </span><span class="macro-nonterminal">$dis</span>(<span class="macro-nonterminal">$pat</span>) = <span class="macro-nonterminal">$expr </span>{
             <span class="macro">let_chain!</span>($(<span class="kw">let </span><span class="macro-nonterminal">$dis2</span>(<span class="macro-nonterminal">$pat2</span>) = <span class="macro-nonterminal">$expr2 </span>;)+ <span class="macro-nonterminal">$then </span>$(; <span class="kw">else </span><span class="macro-nonterminal">$</span><span class="kw">else</span>)<span class="question-mark">?</span>)
         }
         $(<span class="kw">else </span>{ <span class="macro-nonterminal">$</span><span class="kw">else </span>})<span class="question-mark">?
     </span>}};
 
     (<span class="kw">let </span><span class="macro-nonterminal">$dis</span>:ident(<span class="macro-nonterminal">$pat</span>:ident) = <span class="macro-nonterminal">$expr</span>:expr; <span class="macro-nonterminal">$then</span>:expr $(; <span class="kw">else </span><span class="macro-nonterminal">$</span><span class="kw">else</span>:<span class="macro-nonterminal">expr</span>)<span class="question-mark">?</span>) =&gt; {{
-        <span class="kw">if let </span><span class="macro-nonterminal">$dis</span>(<span class="macro-nonterminal">$pat</span>) = <span class="macro-nonterminal">$expr </span>{
+        <span class="attr">#[allow(if_let_rescope)]
+        </span><span class="kw">if let </span><span class="macro-nonterminal">$dis</span>(<span class="macro-nonterminal">$pat</span>) = <span class="macro-nonterminal">$expr </span>{
             <span class="macro-nonterminal">$then
         </span>}
         $(<span class="kw">else </span>{ <span class="macro-nonterminal">$</span><span class="kw">else </span>})<span class="question-mark">?

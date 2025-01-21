@@ -403,8 +403,7 @@
 <a href="#402" id="402">402</a>
 <a href="#403" id="403">403</a>
 <a href="#404" id="404">404</a>
-<a href="#405" id="405">405</a>
-<a href="#406" id="406">406</a></pre></div><pre class="rust"><code><span class="doccomment">//! Scoop bucket helpers
+<a href="#405" id="405">405</a></pre></div><pre class="rust"><code><span class="doccomment">//! Scoop bucket helpers
 
 </span><span class="kw">use </span>std::{
     borrow::Cow,
@@ -489,10 +488,9 @@
         ctx: <span class="kw-2">&amp;</span><span class="kw">impl </span>ScoopContext,
         name: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Path&gt;&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="self">Self</span>&gt;&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(name) = name {
-            <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[Bucket::from_name(ctx, name)<span class="question-mark">?</span>])
-        } <span class="kw">else </span>{
-            Bucket::list_all(ctx)
+        <span class="kw">match </span>name {
+            <span class="prelude-val">Some</span>(name) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[Bucket::from_name(ctx, name)<span class="question-mark">?</span>]),
+            <span class="kw">_ </span>=&gt; Bucket::list_all(ctx),
         }
     }
 

@@ -141,7 +141,8 @@
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
-<a href="#143" id="143">143</a></pre></div><pre class="rust"><code><span class="doccomment">//! Implement gitoxide traits for indicatif progress bars
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a></pre></div><pre class="rust"><code><span class="doccomment">//! Implement gitoxide traits for indicatif progress bars
 
 </span><span class="kw">use </span>std::sync::atomic::Ordering;
 
@@ -156,7 +157,8 @@
         <span class="kw">let </span>max = max.unwrap_or_default() <span class="kw">as </span>u64;
         <span class="self">self</span>.bar.set_length(max);
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(unit) = unit {
+        <span class="attr">#[allow(if_let_rescope)]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(unit) = unit {
             <span class="self">self</span>.set_unit(unit);
         }
     }

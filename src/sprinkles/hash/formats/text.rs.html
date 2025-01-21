@@ -275,9 +275,7 @@
 <a href="#274" id="274">274</a>
 <a href="#275" id="275">275</a>
 <a href="#276" id="276">276</a>
-<a href="#277" id="277">277</a>
-<a href="#278" id="278">278</a>
-<a href="#279" id="279">279</a></pre></div><pre class="rust"><code><span class="kw">use </span>itertools::Itertools <span class="kw">as _</span>;
+<a href="#277" id="277">277</a></pre></div><pre class="rust"><code><span class="kw">use </span>itertools::Itertools <span class="kw">as _</span>;
 <span class="kw">use </span>quork::traits::list::ListVariants;
 <span class="kw">use </span>regex::Regex;
 <span class="kw">use </span>strum::Display;
@@ -468,20 +466,18 @@
             .get_manifest(<span class="string">"vcredist-aio"</span>)
             .unwrap();
 
-        <span class="kw">let </span>(text_url, regex) =
-            <span class="kw">if let </span>HashExtractionOrArrayOfHashExtractions::HashExtraction(extraction) =
-                manifest.autoupdate.unwrap().default_config.hash.unwrap()
-            {
-                (
-                    extraction
-                        .url
-                        .unwrap()
-                        .replace(<span class="string">"$version"</span>, manifest.version.as_str()),
-                    extraction.regex.unwrap(),
-                )
-            } <span class="kw">else </span>{
+        <span class="kw">let </span>(text_url, regex) = <span class="kw">match </span>manifest.autoupdate.unwrap().default_config.hash.unwrap() {
+            HashExtractionOrArrayOfHashExtractions::HashExtraction(extraction) =&gt; (
+                extraction
+                    .url
+                    .unwrap()
+                    .replace(<span class="string">"$version"</span>, manifest.version.as_str()),
+                extraction.regex.unwrap(),
+            ),
+            HashExtractionOrArrayOfHashExtractions::Url(<span class="kw">_</span>) =&gt; {
                 <span class="macro">panic!</span>(<span class="string">"No hash extraction found"</span>);
-            };
+            }
+        };
 
         <span class="kw">let </span>text_file: String = Client::blocking()
             .get(text_url)

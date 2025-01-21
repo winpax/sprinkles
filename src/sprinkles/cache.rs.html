@@ -504,7 +504,9 @@
 <a href="#503" id="503">503</a>
 <a href="#504" id="504">504</a>
 <a href="#505" id="505">505</a>
-<a href="#506" id="506">506</a></pre></div><pre class="rust"><code><span class="doccomment">//! Cache helpers
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a></pre></div><pre class="rust"><code><span class="doccomment">//! Cache helpers
 
 </span><span class="kw">use </span>std::{
     fmt::Display,
@@ -832,7 +834,8 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ cache, resp, pb })
     }
 
-    <span class="kw">async fn </span>handle_buf&lt;D: Digest&gt;(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;, Error&gt; {
+    <span class="attr">#[allow(tail_expr_drop_order)]
+    </span><span class="kw">async fn </span>handle_buf&lt;D: Digest&gt;(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;, Error&gt; {
         <span class="kw">use </span>tokio::{fs::File, io::AsyncWriteExt};
         <span class="kw">use </span>tokio_util::codec::{BytesCodec, FramedRead};
 
@@ -896,7 +899,8 @@
 
             <span class="kw">let </span>chunk_length = chunk.len();
 
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(pb) = <span class="kw-2">&amp;</span><span class="self">self</span>.pb {
+            <span class="attr">#[allow(if_let_rescope)]
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(pb) = <span class="self">self</span>.pb.as_ref() {
                 pb.inc(chunk_length <span class="kw">as </span>u64);
             }
         }

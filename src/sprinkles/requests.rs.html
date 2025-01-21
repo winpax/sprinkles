@@ -135,9 +135,7 @@
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a></pre></div><pre class="rust"><code><span class="attr">#![doc(hidden)]
+<a href="#137" id="137">137</a></pre></div><pre class="rust"><code><span class="attr">#![doc(hidden)]
 
 </span><span class="doccomment">//! HTTP request helpers and defaults
 //!
@@ -223,10 +221,9 @@
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>client = reqwest::blocking::Client::builder().default_headers(default_headers());
 
-        <span class="kw">let </span>client = <span class="kw">if let </span><span class="prelude-val">Some</span>(proxy) = config::Scoop::load().expect(<span class="string">"scoop config"</span>).proxy {
-            client.proxy(proxy.try_into().expect(<span class="string">"valid reqwest proxy"</span>))
-        } <span class="kw">else </span>{
-            client
+        <span class="kw">let </span>client = <span class="kw">match </span>config::Scoop::load().expect(<span class="string">"scoop config"</span>).proxy {
+            <span class="prelude-val">Some</span>(proxy) =&gt; client.proxy(proxy.try_into().expect(<span class="string">"valid reqwest proxy"</span>)),
+            <span class="kw">_ </span>=&gt; client,
         };
 
         <span class="self">Self</span>(client.build().unwrap())
@@ -247,10 +244,9 @@
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>client = reqwest::Client::builder().default_headers(default_headers());
 
-        <span class="kw">let </span>client = <span class="kw">if let </span><span class="prelude-val">Some</span>(proxy) = config::Scoop::load().expect(<span class="string">"scoop config"</span>).proxy {
-            client.proxy(proxy.try_into().expect(<span class="string">"valid reqwest proxy"</span>))
-        } <span class="kw">else </span>{
-            client
+        <span class="kw">let </span>client = <span class="kw">match </span>config::Scoop::load().expect(<span class="string">"scoop config"</span>).proxy {
+            <span class="prelude-val">Some</span>(proxy) =&gt; client.proxy(proxy.try_into().expect(<span class="string">"valid reqwest proxy"</span>)),
+            <span class="prelude-val">None </span>=&gt; client,
         };
 
         <span class="self">Self</span>(client.build().unwrap())

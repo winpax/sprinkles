@@ -272,7 +272,7 @@
     </span>String(<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>String),
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; SubstituteBuilder&lt;<span class="lifetime">'a</span>&gt; {
+<span class="kw">impl </span>SubstituteBuilder&lt;<span class="lifetime">'_</span>&gt; {
     <span class="doccomment">/// Substitute the builder with the substitution map
     </span><span class="kw">pub fn </span>substitute(<span class="self">self</span>, params: <span class="kw-2">&amp;</span>SubstitutionMap, regex_escape: bool) {
         <span class="kw">match </span><span class="self">self </span>{

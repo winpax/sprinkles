@@ -1112,25 +1112,25 @@
             );
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(mode) = <span class="self">Self</span>::from_autoupdate_config(<span class="kw-2">&amp;</span>autoupdate_config) {
-            <span class="prelude-val">Some</span>(mode)
-        } <span class="kw">else </span>{
-            <span class="kw">let </span>install_config = manifest
-                .architecture
-                .merge_default(manifest.install_config.clone(), arch);
+            <span class="kw">return </span><span class="prelude-val">Some</span>(mode);
+        }
 
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(StringArray::Single(url)) = install_config.urls {
-                <span class="kw">if </span><span class="self">Self</span>::fosshub_regex().is_match(<span class="kw-2">&amp;</span>url) {
-                    <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="self">Self</span>::Fosshub);
-                }
+        <span class="kw">let </span>install_config = manifest
+            .architecture
+            .merge_default(manifest.install_config.clone(), arch);
 
-                <span class="kw">if </span><span class="self">Self</span>::sourceforge_regex().is_match(<span class="kw-2">&amp;</span>url) {
-                    <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="self">Self</span>::Sourceforge);
-                }
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(StringArray::Single(url)) = install_config.urls {
+            <span class="kw">if </span><span class="self">Self</span>::fosshub_regex().is_match(<span class="kw-2">&amp;</span>url) {
+                <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="self">Self</span>::Fosshub);
             }
 
-            <span class="prelude-val">None
-        </span>}
-    }
+            <span class="kw">if </span><span class="self">Self</span>::sourceforge_regex().is_match(<span class="kw-2">&amp;</span>url) {
+                <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="self">Self</span>::Sourceforge);
+            }
+        }
+
+        <span class="prelude-val">None
+    </span>}
 
     <span class="attr">#[must_use]
     #[deprecated(note = <span class="string">"Does not handle Sourceforge or Fosshub. Use `from_manifest` instead."</span>)]
