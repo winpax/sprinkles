@@ -13,6 +13,7 @@ impl gix::progress::Progress for super::ProgressBar {
         let max = max.unwrap_or_default() as u64;
         self.bar.set_length(max);
 
+        #[allow(if_let_rescope)]
         if let Some(unit) = unit {
             self.set_unit(unit);
         }

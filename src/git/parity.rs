@@ -49,7 +49,7 @@ pub struct SignatureDisplay<'a> {
     show_emails: bool,
 }
 
-impl<'a> SignatureDisplay<'a> {
+impl SignatureDisplay<'_> {
     /// Show the email address of the signature
     pub fn show_emails(mut self) -> Self {
         self.show_emails = true;
@@ -57,7 +57,7 @@ impl<'a> SignatureDisplay<'a> {
     }
 }
 
-impl<'a> Display for SignatureDisplay<'a> {
+impl Display for SignatureDisplay<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let name = match self.sig {
             Signature::Git2(sig) => sig.name().map(std::string::ToString::to_string),

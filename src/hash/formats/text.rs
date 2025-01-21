@@ -189,20 +189,18 @@ mod tests {
             .get_manifest("vcredist-aio")
             .unwrap();
 
-        let (text_url, regex) =
-            if let HashExtractionOrArrayOfHashExtractions::HashExtraction(extraction) =
-                manifest.autoupdate.unwrap().default_config.hash.unwrap()
-            {
-                (
-                    extraction
-                        .url
-                        .unwrap()
-                        .replace("$version", manifest.version.as_str()),
-                    extraction.regex.unwrap(),
-                )
-            } else {
+        let (text_url, regex) = match manifest.autoupdate.unwrap().default_config.hash.unwrap() {
+            HashExtractionOrArrayOfHashExtractions::HashExtraction(extraction) => (
+                extraction
+                    .url
+                    .unwrap()
+                    .replace("$version", manifest.version.as_str()),
+                extraction.regex.unwrap(),
+            ),
+            HashExtractionOrArrayOfHashExtractions::Url(_) => {
                 panic!("No hash extraction found");
-            };
+            }
+        };
 
         let text_file: String = Client::blocking()
             .get(text_url)

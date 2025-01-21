@@ -79,7 +79,7 @@ pub enum SubstituteBuilder<'a> {
     String(&'a mut String),
 }
 
-impl<'a> SubstituteBuilder<'a> {
+impl SubstituteBuilder<'_> {
     /// Substitute the builder with the substitution map
     pub fn substitute(self, params: &SubstitutionMap, regex_escape: bool) {
         match self {

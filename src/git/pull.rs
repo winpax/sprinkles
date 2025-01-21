@@ -122,6 +122,7 @@ fn do_merge<'a>(
     if analysis.0.is_fast_forward() {
         // do a fast forward
         let refname = format!("refs/heads/{remote_branch}");
+        #[allow(if_let_rescope)]
         if let Ok(mut r) = repo.find_reference(&refname) {
             fast_forward(repo, &mut r, fetch_commit)?;
         } else {

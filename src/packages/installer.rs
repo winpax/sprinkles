@@ -87,7 +87,7 @@ impl<'ctx, C: ScoopContext> InstallerHost<'ctx, C> {
     }
 }
 
-impl<'a, C: ScoopContext> Substitute for InstallerHost<'a, C> {
+impl<C: ScoopContext> Substitute for InstallerHost<'_, C> {
     /// Substitute the installer's args, if there are any
     fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
         if let Some(ref mut args) = self.installer.args {
