@@ -44,7 +44,6 @@ default = ["manifest-hashes", "rayon"]
 manifest-hashes = [
     "base64",
     "digest",
-    "getset",
     "quick-xml",
     "serde_json_path",
     "sha1",
