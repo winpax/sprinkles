@@ -9,7 +9,6 @@ use std::{
 };
 
 #[cfg(feature = "manifest-hashes")]
-use getset::Getters;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
@@ -171,8 +170,7 @@ pub enum Error {
 }
 
 #[cfg(feature = "manifest-hashes")]
-#[derive(Debug, Clone, Getters)]
-#[get = "pub"]
+#[derive(Debug, Clone)]
 /// A structured version
 pub struct ParsedVersion {
     /// Major version
@@ -193,6 +191,36 @@ impl ParsedVersion {
     /// Get the version as a simple [`Version`] string
     pub fn to_unparsed(&self) -> Version {
         Version(self.to_string())
+    }
+
+    #[must_use]
+    /// Major version
+    pub fn major(&self) -> u64 {
+        self.major
+    }
+
+    #[must_use]
+    /// Minor version
+    pub fn minor(&self) -> Option<u64> {
+        self.minor
+    }
+
+    #[must_use]
+    /// Patch version
+    pub fn patch(&self) -> Option<u64> {
+        self.patch
+    }
+
+    #[must_use]
+    /// Build version
+    pub fn build(&self) -> Option<&str> {
+        self.build.as_deref()
+    }
+
+    #[must_use]
+    /// Pre-release version
+    pub fn pre_release(&self) -> Option<&str> {
+        self.pre_release.as_deref()
     }
 }
 
