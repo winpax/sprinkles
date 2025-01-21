@@ -1,1 +1,2 @@
+text eol=lf
 tests/fixtures/* filter=lfs diff=lfs merge=lfs -text
