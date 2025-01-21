@@ -117,10 +117,10 @@ impl Version {
                 map.insert("$patchVersion".into(), patch.to_string());
             }
             if let Some(build) = parsed.build() {
-                map.insert("$buildVersion".into(), build.clone());
+                map.insert("$buildVersion".into(), build.to_string());
             }
             if let Some(pre_release) = parsed.pre_release() {
-                map.insert("$preReleaseVersion".into(), pre_release.clone());
+                map.insert("$preReleaseVersion".into(), pre_release.to_string());
             }
         }
 
