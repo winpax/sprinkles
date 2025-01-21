@@ -326,6 +326,7 @@ impl DownloadHandle {
         Ok(Self { cache, resp, pb })
     }
 
+    #[allow(tail_expr_drop_order)]
     async fn handle_buf<D: Digest>(self) -> Result<Vec<u8>, Error> {
         use tokio::{fs::File, io::AsyncWriteExt};
         use tokio_util::codec::{BytesCodec, FramedRead};
@@ -390,7 +391,8 @@ impl DownloadHandle {
 
             let chunk_length = chunk.len();
 
-            if let Some(pb) = &self.pb {
+            #[allow(if_let_rescope)]
+            if let Some(pb) = self.pb.as_ref() {
                 pb.inc(chunk_length as u64);
             }
         }

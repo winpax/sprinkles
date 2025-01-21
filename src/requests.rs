@@ -84,10 +84,9 @@ impl Default for BlockingClient {
     fn default() -> Self {
         let client = reqwest::blocking::Client::builder().default_headers(default_headers());
 
-        let client = if let Some(proxy) = config::Scoop::load().expect("scoop config").proxy {
-            client.proxy(proxy.try_into().expect("valid reqwest proxy"))
-        } else {
-            client
+        let client = match config::Scoop::load().expect("scoop config").proxy {
+            Some(proxy) => client.proxy(proxy.try_into().expect("valid reqwest proxy")),
+            _ => client,
         };
 
         Self(client.build().unwrap())
@@ -108,10 +107,9 @@ impl Default for AsyncClient {
     fn default() -> Self {
         let client = reqwest::Client::builder().default_headers(default_headers());
 
-        let client = if let Some(proxy) = config::Scoop::load().expect("scoop config").proxy {
-            client.proxy(proxy.try_into().expect("valid reqwest proxy"))
-        } else {
-            client
+        let client = match config::Scoop::load().expect("scoop config").proxy {
+            Some(proxy) => client.proxy(proxy.try_into().expect("valid reqwest proxy")),
+            None => client,
         };
 
         Self(client.build().unwrap())

@@ -44,7 +44,6 @@ default = ["manifest-hashes", "rayon"]
 manifest-hashes = [
     "base64",
     "digest",
-    "getset",
     "quick-xml",
     "serde_json_path",
     "sha1",
@@ -82,13 +81,12 @@ digest = { version = "0.10", features = ["std"], optional = true }
 directories = "6.0"
 dunce = "1.0"
 futures = "0.3"
-getset = { version = "0.1", optional = true }
-gix = { version = "0.69", features = [
+gix = { version = "0.70", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.46"
+gix-object = "0.47"
 indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.14"
 log = "0.4"

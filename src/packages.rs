@@ -896,10 +896,11 @@ pub fn is_installed(
         .join(manifest_name)
         .join("current/install.json");
 
-    if let Some(bucket) = bucket {
-        matches!(InstallManifest::from_path(install_path), Ok(manifest) if manifest.get_source() == bucket.as_ref())
-    } else {
-        install_path.exists()
+    match bucket {
+        Some(bucket) => {
+            matches!(InstallManifest::from_path(install_path), Ok(manifest) if manifest.get_source() == bucket.as_ref())
+        }
+        _ => install_path.exists(),
     }
 }
 
@@ -1037,6 +1038,7 @@ mod tests {
                 }
             }
 
+            #[allow(if_let_rescope)]
             if let Some(autoupdate_config) = &manifest.autoupdate_config(Architecture::ARCH) {
                 if autoupdate_config.url.is_some() {
                     found_literally_any_url = true;

@@ -34,10 +34,7 @@ impl Paths {
     pub fn into_path(self) -> Option<PathBuf> {
         use std::{ffi::OsString, os::windows::ffi::OsStringExt};
 
-        use windows::Win32::{
-            Foundation::{HWND, MAX_PATH},
-            UI::Shell::SHGetSpecialFolderPathW,
-        };
+        use windows::Win32::{Foundation::MAX_PATH, UI::Shell::SHGetSpecialFolderPathW};
 
         let mut buf = [0u16; MAX_PATH as usize];
         let success = unsafe {
