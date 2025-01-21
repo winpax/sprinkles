@@ -265,24 +265,24 @@ impl HashMode {
             );
 
         if let Some(mode) = Self::from_autoupdate_config(&autoupdate_config) {
-            Some(mode)
-        } else {
-            let install_config = manifest
-                .architecture
-                .merge_default(manifest.install_config.clone(), arch);
+            return Some(mode);
+        }
 
-            if let Some(StringArray::Single(url)) = install_config.urls {
-                if Self::fosshub_regex().is_match(&url) {
-                    return Some(Self::Fosshub);
-                }
+        let install_config = manifest
+            .architecture
+            .merge_default(manifest.install_config.clone(), arch);
 
-                if Self::sourceforge_regex().is_match(&url) {
-                    return Some(Self::Sourceforge);
-                }
+        if let Some(StringArray::Single(url)) = install_config.urls {
+            if Self::fosshub_regex().is_match(&url) {
+                return Some(Self::Fosshub);
             }
 
-            None
+            if Self::sourceforge_regex().is_match(&url) {
+                return Some(Self::Sourceforge);
+            }
         }
+
+        None
     }
 
     #[must_use]

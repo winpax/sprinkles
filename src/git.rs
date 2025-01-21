@@ -326,10 +326,10 @@ impl Repo {
                 break;
             }
 
-            if let Ok(msg) = commit.message() {
-                let summary = msg.summary();
-                changelog.push(summary.to_string());
-            }
+            let Ok(msg) = commit.message() else { continue };
+
+            let summary = msg.summary();
+            changelog.push(summary.to_string());
         }
 
         Ok(changelog)

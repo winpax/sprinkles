@@ -7,6 +7,7 @@
 mod hackros {
     macro_rules! let_chain {
     (let $dis:ident($pat:ident) = $expr:expr; $(let $dis2:ident($pat2:ident) = $expr2:expr ;)+ $then:expr $(; else $else:expr)?) => {{
+        #[allow(if_let_rescope)]
         if let $dis($pat) = $expr {
             let_chain!($(let $dis2($pat2) = $expr2 ;)+ $then $(; else $else)?)
         }
@@ -14,6 +15,7 @@ mod hackros {
     }};
 
     (let $dis:ident($pat:ident) = $expr:expr; $then:expr $(; else $else:expr)?) => {{
+        #[allow(if_let_rescope)]
         if let $dis($pat) = $expr {
             $then
         }
