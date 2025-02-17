@@ -33,7 +33,7 @@ pub struct WeakShimHandle<'a, 'c, C: ScoopContext> {
 
 // Manual implementation allows it to be copied even though
 // `ScoopContext` is not `Copy`
-impl<'a, 'c, C: ScoopContext> Copy for WeakShimHandle<'a, 'c, C> {}
+impl<C: ScoopContext> Copy for WeakShimHandle<'_, '_, C> {}
 
 impl<'a, 'c, C: ScoopContext> WeakShimHandle<'a, 'c, C> {
     #[inline]
