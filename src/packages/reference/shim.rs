@@ -123,13 +123,13 @@ impl<'a, C: ScoopContext> ShimReference<'a, C> {
     #[must_use]
     /// Check if the shim is a binary
     pub fn is_binary(&self) -> bool {
-        matches!(self.extension, ShimExtension::EXE)
+        self.extension.is_binary()
     }
 
     #[must_use]
     /// Check if the shim is a text file
     pub fn is_text(&self) -> bool {
-        !self.is_binary()
+        self.extension.is_text()
     }
 
     #[must_use]
@@ -139,7 +139,7 @@ impl<'a, C: ScoopContext> ShimReference<'a, C> {
     ///
     /// This is the most common type of shim, but is used in conjunction with a [`ShimExtension::Exe`] file
     pub fn is_spec(&self) -> bool {
-        matches!(self.extension, ShimExtension::SHIM)
+        self.extension.is_spec()
     }
 
     /// Check if the shim exists on disk
