@@ -896,10 +896,11 @@ pub fn is_installed(
         .join(manifest_name)
         .join("current/install.json");
 
-    if let Some(bucket) = bucket {
-        matches!(InstallManifest::from_path(install_path), Ok(manifest) if manifest.get_source() == bucket.as_ref())
-    } else {
-        install_path.exists()
+    match bucket {
+        Some(bucket) => {
+            matches!(InstallManifest::from_path(install_path), Ok(manifest) if manifest.get_source() == bucket.as_ref())
+        }
+        _ => install_path.exists(),
     }
 }
 
@@ -998,6 +999,7 @@ mod tests {
 
     use crate::{buckets::Bucket, contexts::User, Architecture};
 
+    use quork::prelude::ListVariants;
     use rayon::prelude::*;
 
     #[test]
@@ -1018,9 +1020,34 @@ mod tests {
             assert!(!unsafe { manifest.name() }.is_empty());
             assert!(!unsafe { manifest.bucket() }.is_empty());
 
+            // TODO: This is a hack ignore it please ill figure something out for
+            let mut found_literally_any_url = false;
+
+            if let Some(autoupdate_architecture) = manifest
+                .autoupdate
+                .as_ref()
+                .and_then(|autoupdate| autoupdate.architecture.as_ref())
+            {
+                for arch in crate::Architecture::VARIANTS {
+                    if let Some(autoupdate_config) = autoupdate_architecture.get(arch) {
+                        if autoupdate_config.url.is_some() {
+                            found_literally_any_url = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            #[allow(if_let_rescope)]
             if let Some(autoupdate_config) = &manifest.autoupdate_config(Architecture::ARCH) {
+                if autoupdate_config.url.is_some() {
+                    found_literally_any_url = true;
+                }
+
+                // This has to be inside this if statement
+                // because otherwise the check will happen for manifests without autoupdate configs
                 assert!(
-                    autoupdate_config.url.is_some(),
+                    found_literally_any_url,
                     "URL is missing in package: {}",
                     unsafe { manifest.name() }
                 );

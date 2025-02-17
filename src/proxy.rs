@@ -65,7 +65,7 @@ impl TryFrom<Proxy> for reqwest::Proxy {
     }
 }
 
-impl<'a> From<Proxy> for git2::ProxyOptions<'a> {
+impl From<Proxy> for git2::ProxyOptions<'_> {
     fn from(value: Proxy) -> Self {
         let mut proxy = git2::ProxyOptions::new();
 

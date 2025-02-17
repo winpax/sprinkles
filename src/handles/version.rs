@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::hacks::let_chain;
+
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
 /// Version handle errors
@@ -47,13 +49,11 @@ impl VersionHandle {
 
 impl PartialOrd for VersionHandle {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        if let Ok(semver) = self.to_semver() {
-            if let Ok(other_semver) = other.to_semver() {
-                return semver.partial_cmp(&other_semver);
-            }
-        }
-
-        None
+        let_chain!(let Ok(semver) = self.to_semver(); let Ok(other_semver) = other.to_semver(); {
+            semver.partial_cmp(&other_semver)
+        }; else {
+            None
+        })
     }
 }
 
@@ -78,6 +78,6 @@ impl TryFrom<PathBuf> for VersionHandle {
     type Error = Error;
 
     fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
-        value.try_into()
+        TryFrom::<&Path>::try_from(&value)
     }
 }

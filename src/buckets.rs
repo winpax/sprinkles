@@ -83,10 +83,9 @@ impl Bucket {
         ctx: &impl ScoopContext,
         name: Option<impl AsRef<Path>>,
     ) -> Result<Vec<Self>> {
-        if let Some(name) = name {
-            Ok(vec![Bucket::from_name(ctx, name)?])
-        } else {
-            Bucket::list_all(ctx)
+        match name {
+            Some(name) => Ok(vec![Bucket::from_name(ctx, name)?]),
+            _ => Bucket::list_all(ctx),
         }
     }
 

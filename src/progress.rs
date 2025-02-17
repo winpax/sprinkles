@@ -90,7 +90,7 @@ struct MessageDisplay<'a> {
     prefix: bool,
 }
 
-impl<'a> Display for MessageDisplay<'a> {
+impl Display for MessageDisplay<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.message.position {
             MessagePosition::Prefix => {

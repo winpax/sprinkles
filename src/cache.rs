@@ -260,7 +260,7 @@ impl Handle {
         self,
         mp: Option<&MultiProgress>,
     ) -> Result<DownloadHandle, Error> {
-        DownloadHandle::new::<T>(self, mp).await
+        DownloadHandle::new::<T>(self, mp, None).await
     }
 }
 
@@ -285,6 +285,7 @@ impl DownloadHandle {
     pub async fn new<T: ClientLike<reqwest::Client>>(
         cache: Handle,
         mp: Option<&MultiProgress>,
+        name: Option<String>,
     ) -> Result<Self, Error> {
         let resp = T::new().client().get(&cache.url).send().await?;
 
@@ -297,19 +298,18 @@ impl DownloadHandle {
         let content_length = resp.content_length().unwrap_or_default();
 
         let pb = mp.map(|mp| {
-            let message = {
+            let message = name.unwrap_or_else(|| {
                 let_chain!(let Ok(parsed_url) = url::Url::parse(&cache.url); let Some(leaf) = parsed_url.leaf(); {
-                    leaf
+                    leaf.to_string()
                 }; else {
                     cache
                         .file_name
                         .to_string_lossy()
                         .split('_')
                         .next_back()
-                        .expect("non-empty file name")
-                        .to_string()
+                        .expect("non-empty file name").to_string()
                 })
-            };
+            });
 
             let pb = mp.add(
                 ProgressBar::new(content_length)
@@ -326,6 +326,7 @@ impl DownloadHandle {
         Ok(Self { cache, resp, pb })
     }
 
+    #[allow(tail_expr_drop_order)]
     async fn handle_buf<D: Digest>(self) -> Result<Vec<u8>, Error> {
         use tokio::{fs::File, io::AsyncWriteExt};
         use tokio_util::codec::{BytesCodec, FramedRead};
@@ -390,7 +391,8 @@ impl DownloadHandle {
 
             let chunk_length = chunk.len();
 
-            if let Some(pb) = &self.pb {
+            #[allow(if_let_rescope)]
+            if let Some(pb) = self.pb.as_ref() {
                 pb.inc(chunk_length as u64);
             }
         }

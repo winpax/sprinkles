@@ -12,13 +12,14 @@ include = [
     "LICENSE-MIT",
     "README.md",
     "benches/**/*",
+    "tests/**/*",
 ]
 keywords = ["api", "scoop", "windows", "package", "manager"]
 license = "MIT OR Apache-2.0"
 name = "sprinkles-rs"
 repository = "https://github.com/winpax/sprinkles"
-rust-version = "1.80.1"
-version = "0.17.0"
+rust-version = "1.81"
+version = "0.21.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -43,7 +44,6 @@ default = ["manifest-hashes", "rayon"]
 manifest-hashes = [
     "base64",
     "digest",
-    "getset",
     "quick-xml",
     "serde_json_path",
     "sha1",
@@ -67,7 +67,7 @@ name = "hashing"
 [dependencies]
 base64 = { version = "0.22", optional = true }
 blake3 = "1.5"
-bytes = "1.6"
+bytes = "1.10.0"
 cfg-if = "1.0"
 chrono = { version = "0.4", features = [
     "clock",
@@ -76,25 +76,24 @@ chrono = { version = "0.4", features = [
 ], default-features = false }
 clap = { version = "4.5", optional = true }
 const_format = "0.2"
-derive_more = { version = "1.0", features = ["deref", "deref_mut"] }
+derive_more = { version = "2.0", features = ["deref", "deref_mut"] }
 digest = { version = "0.10", features = ["std"], optional = true }
-directories = "5.0"
+directories = "6.0"
 dunce = "1.0"
 futures = "0.3"
-getset = { version = "0.1", optional = true }
-gix = { version = "0.67", features = [
+gix = { version = "0.70", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.45"
+gix-object = "0.47"
 indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
-itertools = "0.13"
+itertools = "0.14"
 log = "0.4"
 md-5 = "0.10"
 phf = { version = "0.11", default-features = false }
 quick-xml = { version = "0.37", optional = true, features = ["serialize"] }
-quork = "0.7"
+quork = "0.8"
 rayon = { version = "1.10", optional = true }
 regex = "1.10"
 scoop-shim = "0.1"
@@ -105,16 +104,16 @@ serde_json_path = { version = "0.7", optional = true }
 serde_with = "3.8"
 sha1 = { version = "0.10", optional = true }
 sha2 = { version = "0.10", optional = true }
-strum = { version = "0.26", features = ["derive"] }
+strum = { version = "0.27", features = ["derive"] }
 sxd-document = { version = "0.3", optional = true }
 sxd-xpath = { version = "0.4", optional = true }
 thiserror = "2.0"
-tokio = { version = "1.37", features = ["process"], optional = true }
+tokio = { version = "1.43", features = ["process"], optional = true }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 url = { version = "2.5", features = ["serde"], optional = true }
 urlencoding = { version = "2.1", optional = true }
 which = "7.0"
-windows = { version = "0.58", features = [
+windows = { version = "0.59", features = [
     "Win32_Storage_FileSystem",
     "Win32_UI_Shell",
     "Win32_System_Diagnostics",
@@ -122,10 +121,10 @@ windows = { version = "0.58", features = [
 ] }
 
 [target.'cfg(windows)'.dependencies]
-winreg = "0.52"
+winreg = "0.55"
 
 [target.'cfg(not(docsrs))'.dependencies]
-git2 = "0.19"
+git2 = "0.20"
 reqwest = { version = "0.12", features = [
     "blocking",
     "brotli",
@@ -135,13 +134,15 @@ reqwest = { version = "0.12", features = [
 ] }
 
 [target.'cfg(docsrs)'.dependencies]
-git2 = { version = "0.19", default-features = false }
+git2 = { version = "0.20", default-features = false }
 reqwest = { version = "0.12", default-features = false }
 
 [dev-dependencies]
 anyhow = "1.0"
+async-std = { version = "1.13", features = ["attributes"] }
 criterion = { version = "0.5", features = ["html_reports", "tokio"] }
 rayon = "1.10"
+rstest = "0.24"
 tokio = { version = "1.37", features = [
     "rt",
     "rt-multi-thread",

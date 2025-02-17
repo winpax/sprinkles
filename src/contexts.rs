@@ -86,6 +86,12 @@ pub trait ScoopContext: Clone + Send + Sync + 'static {
     /// This will default to the value of [`ScoopContext::APP_NAME`], but can be overridden.
     const CONTEXT_NAME: &'static str = Self::APP_NAME;
 
+    /// Whether the context requires elevation
+    ///
+    /// This should be `true` if the context requires elevation to run (i.e a global context)
+    /// and `false` if it does not (i.e a user context).
+    const ELEVATED: bool;
+
     /// Get a reference to the context's configuration
     fn config(&self) -> &Self::Config;
 
@@ -261,6 +267,8 @@ impl ScoopContext for AnyContext {
 
     const APP_NAME: &'static str = User::APP_NAME;
     const CONTEXT_NAME: &'static str = "Unknown context";
+    // TODO: Work out if there is a way to get this from the context
+    const ELEVATED: bool = false;
 
     fn config(&self) -> &config::Scoop {
         match self {

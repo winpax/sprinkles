@@ -18,7 +18,7 @@ pub trait UrlExt {
 
     fn strip_filename(&mut self);
 
-    fn leaf(&self) -> Option<String>;
+    fn leaf(&self) -> Option<&str>;
 
     #[allow(dead_code)]
     fn substitute(&mut self, submap: &SubstitutionMap);
@@ -34,14 +34,14 @@ impl UrlExt for Url {
         let version_regex = Regex::new(r"^[v.\d]+$").expect("valid version regex");
 
         if let Some(query_filename) = query_regex
-            .captures(&leaf)
+            .captures(leaf)
             .and_then(|captures| captures.get(1).map(|capture| capture.as_str().to_string()))
         {
             return query_filename;
         }
 
-        if !leaf.contains('.') || version_regex.is_match(&leaf) {
-            return leaf;
+        if !leaf.contains('.') || version_regex.is_match(leaf) {
+            return leaf.to_string();
         }
 
         if !leaf.contains('.') {
@@ -50,7 +50,7 @@ impl UrlExt for Url {
             }
         }
 
-        leaf
+        leaf.to_string()
     }
 
     fn strip_fragment(&mut self) {
@@ -68,9 +68,8 @@ impl UrlExt for Url {
         });
     }
 
-    fn leaf(&self) -> Option<String> {
-        self.path_segments()
-            .and_then(|segments| segments.last().map(ToString::to_string))
+    fn leaf(&self) -> Option<&str> {
+        self.path_segments().and_then(std::iter::Iterator::last)
     }
 
     fn substitute(&mut self, submap: &SubstitutionMap) {

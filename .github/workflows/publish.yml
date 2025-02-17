@@ -19,12 +19,9 @@ jobs:
           lfs: true
 
       - name: Install and setup Scoop
-        uses: MinoruSekine/setup-scoop@v4
+        uses: winpax/scoop-setup@v1.0.0
         with:
           buckets: extras java
-
-      - name: Cleanup Scoop install
-        run: rm install.ps1
 
       - name: Run tests
         run: cargo test --verbose

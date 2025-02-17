@@ -25,6 +25,7 @@ pub(super) fn deserialize_hash<'de, D: Deserializer<'de>>(
 
     let value = serde_json::Value::deserialize(data)?;
 
+    #[allow(if_let_rescope)]
     if let Some(real_value) = value.as_str() {
         if real_value.is_empty() {
             return Ok(None);

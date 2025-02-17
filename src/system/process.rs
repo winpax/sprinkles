@@ -180,7 +180,6 @@ impl Process {
                 let compare = unsafe { match_process_path(&pe32, path) }.unwrap_or_default();
 
                 if !compare.is_empty() {
-                    dbg!(compare);
                     proc_running = true;
                     break;
                 }

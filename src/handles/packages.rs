@@ -9,6 +9,7 @@ use crate::{
         CreateManifest, InstallManifest, Manifest,
     },
     system::common::{Common, System},
+    version::Version,
 };
 
 use super::version::VersionHandle;
@@ -162,6 +163,14 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
         };
 
         self.path.join(version)
+    }
+
+    /// Get the package's local version
+    ///
+    /// # Errors
+    /// - See more at [`PackageHandle::local_manifest`]
+    pub fn local_version(&self) -> Result<Version> {
+        self.local_manifest().map(|manifest| manifest.version)
     }
 
     /// List all versions of the package
