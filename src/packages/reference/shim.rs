@@ -17,10 +17,8 @@ pub enum Error {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-/// Shim extension type
-pub enum ShimExtension {
-    /// Empty (no extension)
-    Empty,
+/// Known shim extensions
+pub enum KnownExtension {
     /// .shim extension
     Shim,
     /// .ps1 extension
@@ -31,16 +29,63 @@ pub enum ShimExtension {
     Exe,
 }
 
-impl ShimExtension {
+impl KnownExtension {
     #[must_use]
     /// Get the extension as a string
     pub const fn as_str(&self) -> &'static str {
         match self {
-            ShimExtension::Empty => "",
-            ShimExtension::Shim => ".shim",
-            ShimExtension::Ps1 => ".ps1",
-            ShimExtension::Cmd => ".cmd",
-            ShimExtension::Exe => ".exe",
+            KnownExtension::Shim => ".shim",
+            KnownExtension::Ps1 => ".ps1",
+            KnownExtension::Cmd => ".cmd",
+            KnownExtension::Exe => ".exe",
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+/// Shim extension type
+pub struct ShimExtension(Option<KnownExtension>);
+
+impl ShimExtension {
+    /// .exe extension
+    pub const EXE: Self = Self(Some(KnownExtension::Exe));
+    /// .ps1 extension
+    pub const PS1: Self = Self(Some(KnownExtension::Ps1));
+    /// .cmd extension
+    pub const CMD: Self = Self(Some(KnownExtension::Cmd));
+    /// .shim extension
+    pub const SHIM: Self = Self(Some(KnownExtension::Shim));
+    /// Empty extension
+    pub const EMPTY: Self = Self(None);
+
+    #[must_use]
+    /// Check if the shim is a binary
+    pub fn is_binary(&self) -> bool {
+        matches!(self.0, Some(KnownExtension::Exe))
+    }
+
+    #[must_use]
+    /// Check if the shim is a text file
+    pub fn is_text(&self) -> bool {
+        !self.is_binary()
+    }
+
+    #[must_use]
+    /// Check if the shim is a spec file
+    ///
+    /// This is a `.shim` file that specifies how to execute the program
+    ///
+    /// This is the most common type of shim, but is used in conjunction with a [`ShimExtension::Exe`] file
+    pub fn is_spec(&self) -> bool {
+        matches!(self.0, Some(KnownExtension::Shim))
+    }
+
+    #[must_use]
+    /// Get the extension as a string
+    pub const fn as_str(&self) -> &'static str {
+        match self.0 {
+            Some(known) => known.as_str(),
+            None => "",
         }
     }
 }
@@ -66,7 +111,7 @@ pub struct ShimReference<'a, C: ScoopContext> {
 
 // Manual implementation allows it to be copied even though
 // `ScoopContext` is not `Copy`
-impl<'a, C: ScoopContext> Copy for ShimReference<'a, C> {}
+impl<C: ScoopContext> Copy for ShimReference<'_, C> {}
 
 impl<'a, C: ScoopContext> ShimReference<'a, C> {
     #[must_use]
@@ -78,7 +123,7 @@ impl<'a, C: ScoopContext> ShimReference<'a, C> {
     #[must_use]
     /// Check if the shim is a binary
     pub fn is_binary(&self) -> bool {
-        matches!(self.extension, ShimExtension::Exe)
+        matches!(self.extension, ShimExtension::EXE)
     }
 
     #[must_use]
@@ -94,7 +139,7 @@ impl<'a, C: ScoopContext> ShimReference<'a, C> {
     ///
     /// This is the most common type of shim, but is used in conjunction with a [`ShimExtension::Exe`] file
     pub fn is_spec(&self) -> bool {
-        matches!(self.extension, ShimExtension::Shim)
+        matches!(self.extension, ShimExtension::SHIM)
     }
 
     /// Check if the shim exists on disk
