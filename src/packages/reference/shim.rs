@@ -204,7 +204,7 @@ impl<C: ScoopContext> ShimReference<C> {
     /// Get the full path to the shim
     pub fn path(&self, ctx: &C) -> PathBuf {
         ctx.shims_path()
-            .join(format!("{}.{}", self.name, self.extension.as_str()))
+            .join(format!("{}{}", self.name, self.extension.as_str()))
     }
 
     /// Open the shim handle if it exists
