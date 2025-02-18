@@ -13,14 +13,14 @@ use super::{Error, Result, WeakShimHandle};
 #[derive(Debug)]
 /// A shim handle
 /// providing access to a shim stored locally on disk.
-pub struct ShimSpecHandle<'a, 'c, C: ScoopContext> {
-    handle: WeakShimHandle<'a, 'c, C>,
+pub struct ShimSpecHandle<'c, C: ScoopContext> {
+    handle: WeakShimHandle<'c, C>,
     spec: scoop_shim::Shim,
 }
 
-impl<'a, 'c, C: ScoopContext> ShimSpecHandle<'a, 'c, C> {
+impl<'c, C: ScoopContext> ShimSpecHandle<'c, C> {
     #[inline]
-    pub(crate) fn new(handle: WeakShimHandle<'a, 'c, C>) -> Result<Self> {
+    pub(crate) fn new(handle: WeakShimHandle<'c, C>) -> Result<Self> {
         let spec = Self::parse_spec(&handle)?;
 
         Ok(Self { handle, spec })
@@ -31,18 +31,18 @@ impl<'a, 'c, C: ScoopContext> ShimSpecHandle<'a, 'c, C> {
     /// # Errors
     /// Removing the shim fails. See [`std::fs::remove_file`] for more details
     pub fn remove(&self) -> Result<()> {
-        std::fs::remove_file(self.shim.path(self.ctx)).map_err(Error::RemovingShim)
+        std::fs::remove_file(self.handle.shim.path(self.handle.ctx)).map_err(Error::RemovingShim)
     }
 
     #[must_use]
     /// Get the reference that this [`ShimHandle`] was created from
-    pub fn reference(&self) -> &ShimReference<'a, C> {
-        &self.shim
+    pub fn reference(&self) -> &ShimReference<C> {
+        self.handle.reference()
     }
 
     #[inline]
     /// Restore the weak handle with no information about the type of shim
-    pub fn weak_handle(self) -> super::WeakShimHandle<'a, 'c, C> {
+    pub fn weak_handle(self) -> super::WeakShimHandle<'c, C> {
         self.handle
     }
 
@@ -53,7 +53,7 @@ impl<'a, 'c, C: ScoopContext> ShimSpecHandle<'a, 'c, C> {
     /// Opening/reading from the spec file fails.
     ///
     /// See [`scoop_shim::Error`] for more details
-    fn parse_spec(handle: &WeakShimHandle<'a, 'c, C>) -> Result<scoop_shim::Shim> {
+    fn parse_spec(handle: &WeakShimHandle<'c, C>) -> Result<scoop_shim::Shim> {
         let mut file = handle.open()?;
 
         scoop_shim::from_reader(&mut file).map_err(Error::ParsingSpec)
@@ -65,11 +65,11 @@ impl<'a, 'c, C: ScoopContext> ShimSpecHandle<'a, 'c, C> {
     /// - Opening/reading from the spec file fails
     /// - Writing to the spec file fails
     pub fn save_spec(&self, spec: &scoop_shim::Shim) -> Result<(), Error> {
-        if !self.shim.is_spec() {
+        if !self.handle.shim.is_spec() {
             return Err(Error::NonSpecUpdate);
         }
 
-        let mut file = self.open()?;
+        let mut file = self.handle.open()?;
 
         scoop_shim::to_writer(spec, &mut file).map_err(Error::ParsingSpec)?;
 
@@ -89,8 +89,8 @@ impl<'a, 'c, C: ScoopContext> ShimSpecHandle<'a, 'c, C> {
     }
 }
 
-impl<'a, 'c, C: contexts::ScoopContext> Deref for ShimSpecHandle<'a, 'c, C> {
-    type Target = WeakShimHandle<'a, 'c, C>;
+impl<'c, C: contexts::ScoopContext> Deref for ShimSpecHandle<'c, C> {
+    type Target = WeakShimHandle<'c, C>;
 
     fn deref(&self) -> &Self::Target {
         &self.handle

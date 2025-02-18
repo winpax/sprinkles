@@ -1,6 +1,11 @@
 //! Helpers for local shims
 
-use std::{fmt::Display, marker::PhantomData, path::PathBuf};
+use std::{
+    fmt::Display,
+    marker::PhantomData,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use crate::{contexts::ScoopContext, handles::shim::WeakShimHandle};
 
@@ -14,6 +19,8 @@ pub enum Error {
     RemovingShim(std::io::Error),
     #[error("Error checking shim existence: {0}")]
     CheckingExistence(std::io::Error),
+    #[error("Invalid shim extension")]
+    InvalidExtension,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -39,6 +46,22 @@ impl KnownExtension {
             KnownExtension::Cmd => ".cmd",
             KnownExtension::Exe => ".exe",
         }
+    }
+}
+
+impl FromStr for KnownExtension {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let stripped = s.strip_prefix('.').unwrap_or(s);
+
+        Ok(match stripped {
+            "shim" => Self::Shim,
+            "ps1" => Self::Ps1,
+            "cmd" => Self::Cmd,
+            "exe" => Self::Exe,
+            _ => return Err(Error::InvalidExtension),
+        })
     }
 }
 
@@ -90,6 +113,17 @@ impl ShimExtension {
     }
 }
 
+impl FromStr for ShimExtension {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.is_empty() {
+            return Ok(Self(None));
+        }
+        Ok(Self(Some(KnownExtension::from_str(s)?)))
+    }
+}
+
 impl Display for ShimExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Display::fmt(self.as_str(), f)
@@ -101,19 +135,33 @@ impl Display for ShimExtension {
 ///
 /// Note this is simply a reference to a shim.
 /// To do any operations on the shim (i.e reading or writing), use a [`ShimHandle`] (See [`ShimReference::open_handle`]).
-pub struct ShimReference<'a, C: ScoopContext> {
-    name: &'a str,
+pub struct ShimReference<C: ScoopContext> {
+    name: String,
     extension: ShimExtension,
     // Context is included here because the shim reference needs to reference a single shim
     // If it wasn't specific to a context there would be ambiguity as to which context the shim belongs
     ctx: PhantomData<C>,
 }
 
-// Manual implementation allows it to be copied even though
-// `ScoopContext` is not `Copy`
-impl<C: ScoopContext> Copy for ShimReference<'_, C> {}
+impl<C: ScoopContext> ShimReference<C> {
+    #[must_use]
+    /// Create a new shim reference
+    ///
+    /// # Errors
+    /// - Invalid shim extension
+    pub fn new(path: impl AsRef<Path>) -> Option<Self> {
+        let path = path.as_ref();
+        let extension = path.extension()?.to_str()?;
+        let no_ext = path.with_extension("");
+        let name = no_ext.file_name()?.to_str()?.to_string();
 
-impl<'a, C: ScoopContext> ShimReference<'a, C> {
+        Some(Self {
+            name,
+            extension: extension.parse().ok()?,
+            ctx: PhantomData,
+        })
+    }
+
     #[must_use]
     /// Get the extension this shim has
     pub fn extension(&self) -> ShimExtension {
@@ -160,7 +208,7 @@ impl<'a, C: ScoopContext> ShimReference<'a, C> {
     }
 
     /// Open the shim handle if it exists
-    pub fn open_handle<'c>(self, ctx: &'c C) -> Option<WeakShimHandle<'a, 'c, C>> {
+    pub fn open_handle(self, ctx: &C) -> Option<WeakShimHandle<'_, C>> {
         if self.exists(ctx).ok()? {
             Some(WeakShimHandle::new(self, ctx))
         } else {

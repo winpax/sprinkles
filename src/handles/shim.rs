@@ -26,18 +26,14 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 #[derive(Debug, Clone, PartialEq, Eq)]
 /// A shim handle
 /// providing access to a shim stored locally on disk.
-pub struct WeakShimHandle<'a, 'c, C: ScoopContext> {
-    pub(self) shim: ShimReference<'a, C>,
+pub struct WeakShimHandle<'c, C: ScoopContext> {
+    pub(self) shim: ShimReference<C>,
     pub(self) ctx: &'c C,
 }
 
-// Manual implementation allows it to be copied even though
-// `ScoopContext` is not `Copy`
-impl<C: ScoopContext> Copy for WeakShimHandle<'_, '_, C> {}
-
-impl<'a, 'c, C: ScoopContext> WeakShimHandle<'a, 'c, C> {
+impl<'c, C: ScoopContext> WeakShimHandle<'c, C> {
     #[inline]
-    pub(crate) fn new(shim: ShimReference<'a, C>, ctx: &'c C) -> Self {
+    pub(crate) fn new(shim: ShimReference<C>, ctx: &'c C) -> Self {
         Self { shim, ctx }
     }
 
@@ -51,7 +47,7 @@ impl<'a, 'c, C: ScoopContext> WeakShimHandle<'a, 'c, C> {
 
     #[must_use]
     /// Get the reference that this [`ShimHandle`] was created from
-    pub fn reference(&self) -> &ShimReference<'a, C> {
+    pub fn reference(&self) -> &ShimReference<C> {
         &self.shim
     }
 
@@ -65,7 +61,7 @@ impl<'a, 'c, C: ScoopContext> WeakShimHandle<'a, 'c, C> {
 
     #[must_use]
     /// Open the spec shim handle if this handle references a spec shim
-    pub fn open_spec(self) -> Option<spec::ShimSpecHandle<'a, 'c, C>> {
+    pub fn open_spec(self) -> Option<spec::ShimSpecHandle<'c, C>> {
         if !self.shim.is_spec() {
             return None;
         }

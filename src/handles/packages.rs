@@ -2,14 +2,17 @@
 
 use std::{path::PathBuf, rc::Rc};
 
+use itertools::Itertools;
+
 use crate::{
     contexts::ScoopContext,
     packages::{
-        reference::{self, manifest, package},
+        reference::{self, manifest, package, shim::ShimReference},
         CreateManifest, InstallManifest, Manifest,
     },
     system::common::{Common, System},
     version::Version,
+    Architecture,
 };
 
 use super::version::VersionHandle;
@@ -26,6 +29,10 @@ pub enum Error {
     IOError(#[from] std::io::Error),
     #[error("Version handle error: {0}")]
     VersionHandle(#[from] super::version::Error),
+    #[error("Shim error: {0}")]
+    ShimError(#[from] super::shim::Error),
+    #[error("Shim error: {0}")]
+    ShimRefError(#[from] reference::shim::Error),
     #[error("Unsupported manifest reference. The manifest must be a local file")]
     UnsupportedManifestReference,
     #[error("Package not installed")]
@@ -272,6 +279,28 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
 
             unsafe { process::Process::BaseDir(process_dir).find_running() }.unwrap_or(false)
         }
+    }
+
+    /// List shims for the package
+    ///
+    /// # Errors
+    /// - Failed to parse local manifest
+    pub fn list_shims(&self, arch: Architecture) -> Result<Vec<ShimReference<C>>> {
+        let manifest = self.local_manifest()?;
+        let install_config = manifest.install_config(arch);
+
+        let shims = install_config
+            .bin
+            .map(|bins| {
+                let bins = bins.to_vec();
+
+                bins.into_iter()
+                    .filter_map(|bin| ShimReference::<C>::new(bin))
+                    .collect_vec()
+            })
+            .unwrap_or_default();
+
+        Ok(shims)
     }
 }
 
