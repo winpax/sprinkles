@@ -368,18 +368,13 @@ pub struct Suggest {}
 /// A single element, or an array, or an array of arrays
 pub enum NestedArray<T> {
     NestedArray(SingleOrArray<T>),
-    AliasArray(Vec<SingleOrArray<T>>),
+    AliasArray(Vec<Vec<T>>),
 }
 
 impl<T> NestedArray<T> {
     #[must_use]
     pub fn from_vec(vec: Vec<Vec<T>>) -> Self {
-        let output = vec
-            .into_iter()
-            .map(SingleOrArray::from_vec_or_default)
-            .collect();
-
-        Self::AliasArray(output)
+        Self::AliasArray(vec)
     }
 
     #[must_use]
@@ -391,9 +386,11 @@ impl<T> NestedArray<T> {
         match self {
             NestedArray::NestedArray(SingleOrArray::Single(v)) => vec![v.to_owned()],
             NestedArray::NestedArray(SingleOrArray::Array(v)) => v.to_owned(),
-            NestedArray::AliasArray(v) => {
-                v.iter().cloned().flat_map(SingleOrArray::to_vec).collect()
-            }
+            NestedArray::AliasArray(v) => v
+                .iter()
+                .cloned()
+                .flat_map(|v| SingleOrArray::Array(v).to_vec())
+                .collect(),
         }
     }
 }
@@ -405,14 +402,9 @@ impl<T: Display> Display for NestedArray<T> {
                 debug!("wtf bro");
                 v.fmt(f)
             }
-            NestedArray::AliasArray(alias_array) => alias_array
-                .iter()
-                .map(|alias| match alias {
-                    SingleOrArray::Single(v) => v,
-                    SingleOrArray::Array(v) => &v[1],
-                })
-                .format(", ")
-                .fmt(f),
+            NestedArray::AliasArray(alias_array) => {
+                alias_array.iter().map(|v| &v[1]).format(", ").fmt(f)
+            }
         }
     }
 }

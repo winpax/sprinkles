@@ -41,6 +41,7 @@ pub mod proxy;
 pub mod requests;
 pub mod scripts;
 pub mod shell;
+pub mod shim;
 pub mod version;
 
 mod env;

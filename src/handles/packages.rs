@@ -2,14 +2,18 @@
 
 use std::{path::PathBuf, rc::Rc};
 
+use itertools::Itertools;
+
 use crate::{
     contexts::ScoopContext,
     packages::{
-        reference::{self, manifest, package},
+        models::manifest::NestedArray,
+        reference::{self, manifest, package, shim::ShimReference},
         CreateManifest, InstallManifest, Manifest,
     },
     system::common::{Common, System},
     version::Version,
+    Architecture,
 };
 
 use super::version::VersionHandle;
@@ -26,6 +30,10 @@ pub enum Error {
     IOError(#[from] std::io::Error),
     #[error("Version handle error: {0}")]
     VersionHandle(#[from] super::version::Error),
+    #[error("Shim error: {0}")]
+    ShimError(#[from] super::shim::Error),
+    #[error("Shim error: {0}")]
+    ShimRefError(#[from] reference::shim::Error),
     #[error("Unsupported manifest reference. The manifest must be a local file")]
     UnsupportedManifestReference,
     #[error("Package not installed")]
@@ -272,6 +280,35 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
 
             unsafe { process::Process::BaseDir(process_dir).find_running() }.unwrap_or(false)
         }
+    }
+
+    /// List shims for the package
+    ///
+    /// # Errors
+    /// - Failed to parse local manifest
+    pub fn list_shims(&self, arch: Architecture) -> Result<Vec<ShimReference<C>>> {
+        let manifest = self.local_manifest()?;
+        let install_config = manifest.install_config(arch);
+
+        // TODO: Discover shims with other extensions
+
+        let shims = install_config
+            .bin
+            .map(|bins| match bins {
+                NestedArray::NestedArray(bins) => bins.to_vec(),
+                NestedArray::AliasArray(items) => {
+                    items.into_iter().map(|mut v| v.remove(1)).collect()
+                }
+            })
+            .map(|shims| {
+                shims
+                    .into_iter()
+                    .flat_map(|path| ShimReference::discover(path, self.ctx))
+                    .collect_vec()
+            })
+            .unwrap_or_default();
+
+        Ok(shims)
     }
 }
 

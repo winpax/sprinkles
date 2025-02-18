@@ -59,6 +59,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `leaf` function now returns a `&str` instead of a `String`
 - Added optional name parameter to `DownloadHandle::new`
 
+### Added
+
+- `ShimHandle` struct for handling shims
+- `ShimExtension` enum for determining the extension of a shim
+- `ShimReference` struct for handling shim references
+- Implemented `PartialEq` and `Eq` for `Global` and `User` contexts as well as `Config` and all sub-structs
+
 ## [0.17.0]
 
 ### Fixed

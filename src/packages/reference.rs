@@ -36,6 +36,7 @@ pub enum Error {
 
 pub mod manifest;
 pub mod package;
+pub mod shim;
 
 mod ser_de {
     use std::str::FromStr;

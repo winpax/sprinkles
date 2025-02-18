@@ -1,157 +1,71 @@
-//! Shim handles
+//! Shim handle helpers for interacting with shims stored locally on disk
 
-use std::path::{Path, PathBuf};
+pub mod spec;
+
+use crate::{contexts::ScoopContext, packages::reference::shim::ShimReference};
 
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
-/// Shim errors
+/// Shim handling errors
 pub enum Error {
-    #[error("Deleting shims: {0}")]
-    IOError(#[from] std::io::Error),
+    #[error("{0}")]
+    RemovingShim(std::io::Error),
+    #[error("{0}")]
+    OpeningShim(std::io::Error),
+    #[error("Error parsing shim spec: {0}")]
+    ParsingSpec(scoop_shim::Error),
+
+    #[error("Could not update shim spec. ShimHandle does not handle a spec file")]
+    NonSpecUpdate,
 }
 
 /// Shim result type
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-/// Flags for deleting shims
-pub struct DeleteFlags(u8);
-
-impl DeleteFlags {
-    /// Delete just the executable
-    pub const EXECUTABLE: Self = Self(0b10);
-    /// Delete just the shim
-    pub const SHIM: Self = Self(0b01);
-
-    #[must_use]
-    /// Check if we should delete the executable
-    pub fn is_executable(self) -> bool {
-        self & Self::EXECUTABLE == Self::EXECUTABLE
-    }
-
-    #[must_use]
-    /// Check if we should delete the shim
-    pub fn is_shim(self) -> bool {
-        self & Self::SHIM == Self::SHIM
-    }
-}
-
-impl std::ops::BitOr for DeleteFlags {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        Self(self.0 | rhs.0)
-    }
-}
-
-impl std::ops::BitAnd for DeleteFlags {
-    type Output = Self;
-
-    fn bitand(self, rhs: Self) -> Self::Output {
-        Self(self.0 & rhs.0)
-    }
-}
-
+#[must_use]
 #[derive(Debug, Clone, PartialEq, Eq)]
 /// A shim handle
-pub struct ShimHandle {
-    executable: PathBuf,
-    shim: PathBuf,
+/// providing access to a shim stored locally on disk.
+pub struct WeakShimHandle<'c, C: ScoopContext> {
+    pub(self) shim: ShimReference<C>,
+    pub(self) ctx: &'c C,
 }
 
-impl ShimHandle {
-    #[must_use]
-    /// Create a new shim handle
-    pub fn new(executable: PathBuf, shim: PathBuf) -> Self {
-        Self { executable, shim }
+impl<'c, C: ScoopContext> WeakShimHandle<'c, C> {
+    #[inline]
+    pub(crate) fn new(shim: ShimReference<C>, ctx: &'c C) -> Self {
+        Self { shim, ctx }
     }
 
-    #[must_use]
-    /// Get the executable path
-    ///
-    /// This will return the executable path if it exists, or [`None`] if it does not
-    pub fn executable(&self) -> Option<&Path> {
-        if self.executable.exists() {
-            Some(self.executable.as_path())
-        } else {
-            None
-        }
-    }
-
-    #[must_use]
-    /// Get the shim path
-    ///
-    /// This will return the shim path if it exists, or [`None`] if it does not
-    pub fn shim(&self) -> Option<&Path> {
-        if self.shim.exists() {
-            Some(&self.shim)
-        } else {
-            None
-        }
-    }
-
-    /// Delete the shim and executable
+    /// Remove the shim if it exists
     ///
     /// # Errors
-    /// - Deleting the shim failed
-    /// - Deleting the executable failed
-    pub fn delete_all(&self) -> Result<()> {
-        self.delete(DeleteFlags::EXECUTABLE | DeleteFlags::SHIM)
+    /// Removing the shim fails. See [`std::fs::remove_file`] for more details
+    pub fn remove(&self) -> Result<()> {
+        std::fs::remove_file(self.shim.path(self.ctx)).map_err(Error::RemovingShim)
     }
 
-    /// Delete the shim and/or the executable
-    ///
-    /// # Examples
-    /// ```no_run
-    /// # use std::path::PathBuf;
-    /// # use sprinkles::handles::shim::{ShimHandle, DeleteFlags};
-    /// # let shim = ShimHandle::new(PathBuf::from("executable.exe"), PathBuf::from("shim.exe"));
-    /// shim.delete(DeleteFlags::EXECUTABLE | DeleteFlags::SHIM);
-    /// ```
+    #[must_use]
+    /// Get the reference that this [`ShimHandle`] was created from
+    pub fn reference(&self) -> &ShimReference<C> {
+        &self.shim
+    }
+
+    /// Open the shim file
     ///
     /// # Errors
-    /// - Deleting the shim failed
-    /// - Deleting the executable failed
-    pub fn delete(&self, flags: DeleteFlags) -> Result<()> {
-        if flags.is_executable() {
-            if let Some(executable) = self.executable() {
-                std::fs::remove_file(executable)?;
-            }
-        }
-
-        if flags.is_shim() {
-            if let Some(shim) = self.shim() {
-                std::fs::remove_file(shim)?;
-            }
-        }
-
-        Ok(())
+    /// Opening the file fails. See [`std::fs::File::open`] for more details
+    fn open(&self) -> Result<std::fs::File> {
+        std::fs::File::open(self.shim.path(self.ctx)).map_err(Error::OpeningShim)
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    #[must_use]
+    /// Open the spec shim handle if this handle references a spec shim
+    pub fn open_spec(self) -> Option<spec::ShimSpecHandle<'c, C>> {
+        if !self.shim.is_spec() {
+            return None;
+        }
 
-    #[test]
-    fn test_delete_flags() {
-        assert_eq!(DeleteFlags::EXECUTABLE.0, 0b10);
-        assert_eq!(DeleteFlags::SHIM.0, 0b01);
-        assert_eq!((DeleteFlags::EXECUTABLE | DeleteFlags::SHIM).0, 0b11);
-
-        let flags = DeleteFlags::EXECUTABLE | DeleteFlags::SHIM;
-
-        assert!(flags.is_executable());
-        assert!(flags.is_shim());
-
-        let flags = DeleteFlags::EXECUTABLE;
-
-        assert!(flags.is_executable());
-        assert!(!flags.is_shim());
-
-        let flags = DeleteFlags::SHIM;
-
-        assert!(!flags.is_executable());
-        assert!(flags.is_shim());
+        spec::ShimSpecHandle::new(self).ok()
     }
 }

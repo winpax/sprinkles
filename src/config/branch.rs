@@ -4,7 +4,7 @@ use std::{convert::Infallible, fmt::Display, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
 /// Which Scoop branch to use
 pub enum ScoopBranch {
     #[default]
