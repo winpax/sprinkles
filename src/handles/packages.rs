@@ -289,6 +289,8 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
         let manifest = self.local_manifest()?;
         let install_config = manifest.install_config(arch);
 
+        // TODO: Discover shims with other extensions
+
         let shims = install_config
             .bin
             .map(|bins| {
