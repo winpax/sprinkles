@@ -7,6 +7,7 @@ use itertools::Itertools;
 use crate::{
     contexts::ScoopContext,
     packages::{
+        models::manifest::NestedArray,
         reference::{self, manifest, package, shim::ShimReference},
         CreateManifest, InstallManifest, Manifest,
     },
@@ -293,11 +294,16 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
 
         let shims = install_config
             .bin
-            .map(|bins| {
-                let bins = bins.to_vec();
-
-                bins.into_iter()
-                    .filter_map(|bin| ShimReference::<C>::new(bin))
+            .map(|bins| match bins {
+                NestedArray::NestedArray(bins) => bins.to_vec(),
+                NestedArray::AliasArray(items) => {
+                    items.into_iter().map(|mut v| v.remove(1)).collect()
+                }
+            })
+            .map(|shims| {
+                shims
+                    .into_iter()
+                    .filter_map(ShimReference::new)
                     .collect_vec()
             })
             .unwrap_or_default();
