@@ -303,7 +303,7 @@ impl<'a, C: ScoopContext> PackageHandle<'a, C> {
             .map(|shims| {
                 shims
                     .into_iter()
-                    .filter_map(ShimReference::new)
+                    .flat_map(|path| ShimReference::discover(path, self.ctx))
                     .collect_vec()
             })
             .unwrap_or_default();

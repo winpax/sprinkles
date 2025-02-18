@@ -7,6 +7,8 @@ use std::{
     str::FromStr,
 };
 
+use quork::prelude::{ContainsTruth, ListVariants};
+
 use crate::{contexts::ScoopContext, handles::shim::WeakShimHandle};
 
 #[derive(Debug, thiserror::Error)]
@@ -23,7 +25,7 @@ pub enum Error {
     InvalidExtension,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, ListVariants)]
 /// Known shim extensions
 pub enum KnownExtension {
     /// .shim extension
@@ -145,19 +147,29 @@ pub struct ShimReference<C: ScoopContext> {
 
 impl<C: ScoopContext> ShimReference<C> {
     #[must_use]
+    /// Discover all shims with each extension
+    pub fn discover(path: impl AsRef<Path>, ctx: &C) -> Vec<Self> {
+        let path = path.as_ref().with_extension("");
+
+        KnownExtension::VARIANTS
+            .into_iter()
+            .filter_map(|extension| {
+                let shim_ref = Self::new(&path, ShimExtension(Some(extension)))?;
+                shim_ref.exists(ctx).contains_truth().then_some(shim_ref)
+            })
+            .collect()
+    }
+
+    #[must_use]
     /// Create a new shim reference
-    ///
-    /// # Errors
-    /// - Invalid shim extension
-    pub fn new(path: impl AsRef<Path>) -> Option<Self> {
+    pub fn new(path: impl AsRef<Path>, extension: ShimExtension) -> Option<Self> {
         let path = path.as_ref();
-        let extension = path.extension()?.to_str()?;
         let no_ext = path.with_extension("");
         let name = no_ext.file_name()?.to_str()?.to_string();
 
         Some(Self {
             name,
-            extension: extension.parse().ok()?,
+            extension,
             ctx: PhantomData,
         })
     }
