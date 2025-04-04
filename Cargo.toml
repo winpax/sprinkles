@@ -81,12 +81,12 @@ digest = { version = "0.10", features = ["std"], optional = true }
 directories = "6.0"
 dunce = "1.0"
 futures = "0.3"
-gix = { version = "0.70", features = [
+gix = { version = "0.71", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.47"
+gix-object = "0.48"
 indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.14"
 log = "0.4"
