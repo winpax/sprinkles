@@ -81,7 +81,7 @@ digest = { version = "0.10", features = ["std"], optional = true }
 directories = "6.0"
 dunce = "1.0"
 futures = "0.3"
-gix = { version = "0.70", features = [
+gix = { version = "0.71", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
