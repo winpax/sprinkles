@@ -81,12 +81,12 @@ digest = { version = "0.10", features = ["std"], optional = true }
 directories = "6.0"
 dunce = "1.0"
 futures = "0.3"
-gix = { version = "0.70", features = [
+gix = { version = "0.71", features = [
     "blocking-http-transport-reqwest",
     "blocking-network-client",
     "worktree-mutation",
 ] }
-gix-object = "0.47"
+gix-object = "0.48"
 indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
 itertools = "0.14"
 log = "0.4"
@@ -107,7 +107,7 @@ strum = { version = "0.27", features = ["derive"] }
 sxd-document = { version = "0.3", optional = true }
 sxd-xpath = { version = "0.4", optional = true }
 thiserror = "2.0"
-tokio = { version = "1.43", features = ["process"], optional = true }
+tokio = { version = "1.44", features = ["process"], optional = true }
 tokio-util = { version = "0.7", features = ["codec"], optional = true }
 url = { version = "2.5", features = ["serde"], optional = true }
 urlencoding = { version = "2.1", optional = true }
@@ -142,7 +142,7 @@ async-std = { version = "1.13", features = ["attributes"] }
 criterion = { version = "0.5", features = ["html_reports", "tokio"] }
 rayon = "1.10"
 rstest = "0.25"
-tokio = { version = "1.37", features = [
+tokio = { version = "1.44", features = [
     "rt",
     "rt-multi-thread",
     "macros",
