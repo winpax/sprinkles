@@ -19,9 +19,11 @@ impl<'a> From<git2::Signature<'a>> for Signature {
     }
 }
 
-impl From<gix::actor::SignatureRef<'_>> for Signature {
-    fn from(signature: gix::actor::SignatureRef<'_>) -> Self {
-        Self::Gitoxide(signature.to_owned())
+impl TryFrom<gix::actor::SignatureRef<'_>> for Signature {
+    type Error = gix::date::parse::Error;
+
+    fn try_from(signature: gix::actor::SignatureRef<'_>) -> Result<Self, Self::Error> {
+        Ok(Self::Gitoxide(signature.to_owned()?))
     }
 }
 
@@ -142,7 +144,10 @@ impl Commit<'_> {
     pub fn author(&self) -> Option<Signature> {
         match self {
             Commit::Git2(commit) => Some(commit.author().into()),
-            Commit::Gitoxide(commit) => commit.author().ok().map(Into::into),
+            Commit::Gitoxide(commit) => commit
+                .author()
+                .ok()
+                .and_then(|author| author.try_into().ok()),
         }
     }
 }
