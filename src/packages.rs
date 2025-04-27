@@ -860,7 +860,9 @@ impl Manifest {
         .to_datetime()
         .ok_or(Error::InvalidTime)?;
 
-        let author_wrapped = Signature::from(updated_commit.author().map_err(git::Error::from)?);
+        let author_wrapped =
+            Signature::try_from(updated_commit.author().map_err(git::Error::from)?)
+                .map_err(git::Error::from)?;
 
         Ok((Some(date_time), Some(author_wrapped)))
     }
