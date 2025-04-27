@@ -140,14 +140,15 @@
 <a href=#140 id=140 data-nosnippet>140</a>        }
 <a href=#141 id=141 data-nosnippet>141</a>    }
 <a href=#142 id=142 data-nosnippet>142</a>
-<a href=#143 id=143 data-nosnippet>143</a>    <span class="doccomment">/// Get the author of the commit
-<a href=#144 id=144 data-nosnippet>144</a>    </span><span class="kw">pub fn </span>author(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Signature&gt; {
-<a href=#145 id=145 data-nosnippet>145</a>        <span class="kw">match </span><span class="self">self </span>{
-<a href=#146 id=146 data-nosnippet>146</a>            Commit::Git2(commit) =&gt; <span class="prelude-val">Some</span>(commit.author().into()),
-<a href=#147 id=147 data-nosnippet>147</a>            Commit::Gitoxide(commit) =&gt; commit
-<a href=#148 id=148 data-nosnippet>148</a>                .author()
-<a href=#149 id=149 data-nosnippet>149</a>                .ok()
-<a href=#150 id=150 data-nosnippet>150</a>                .and_then(|author| author.try_into().ok()),
-<a href=#151 id=151 data-nosnippet>151</a>        }
-<a href=#152 id=152 data-nosnippet>152</a>    }
-<a href=#153 id=153 data-nosnippet>153</a>}</code></pre></div></section></main></body></html>
+<a href=#143 id=143 data-nosnippet>143</a>    <span class="attr">#[must_use]
+<a href=#144 id=144 data-nosnippet>144</a>    </span><span class="doccomment">/// Get the author of the commit
+<a href=#145 id=145 data-nosnippet>145</a>    </span><span class="kw">pub fn </span>author(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Signature&gt; {
+<a href=#146 id=146 data-nosnippet>146</a>        <span class="kw">match </span><span class="self">self </span>{
+<a href=#147 id=147 data-nosnippet>147</a>            Commit::Git2(commit) =&gt; <span class="prelude-val">Some</span>(commit.author().into()),
+<a href=#148 id=148 data-nosnippet>148</a>            Commit::Gitoxide(commit) =&gt; commit
+<a href=#149 id=149 data-nosnippet>149</a>                .author()
+<a href=#150 id=150 data-nosnippet>150</a>                .ok()
+<a href=#151 id=151 data-nosnippet>151</a>                .and_then(|author| author.try_into().ok()),
+<a href=#152 id=152 data-nosnippet>152</a>        }
+<a href=#153 id=153 data-nosnippet>153</a>    }
+<a href=#154 id=154 data-nosnippet>154</a>}</code></pre></div></section></main></body></html>
