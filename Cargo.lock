@@ -3182,7 +3182,6 @@ dependencies = [
  "nix",
  "quork-proc",
  "thiserror",
- "windows",
  "windows-sys 0.59.0",
 ]
 
