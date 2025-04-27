@@ -148,7 +148,7 @@ impl super::ScoopContext for User {
 
         if current_branch != scoop_config_branch {
             scoop_repo.checkout(scoop_config_branch)?;
-            debug!("Switched to branch {}", scoop_config_branch);
+            debug!("Switched to branch {scoop_config_branch}");
             return Ok(true);
         }
 

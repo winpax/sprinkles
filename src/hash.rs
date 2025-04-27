@@ -49,9 +49,11 @@ pub fn decode_hex(hex: &str) -> Result<Vec<u8>, Error> {
 #[must_use]
 /// Encode bytes into a hex string
 pub fn encode_hex(bytes: &[u8]) -> String {
+    use std::fmt::Write;
+
     let mut result = String::new();
     for byte in bytes {
-        result.push_str(&format!("{byte:02x}"));
+        write!(result, "{byte:02x}").expect("write to string failed");
     }
     result
 }
@@ -512,7 +514,7 @@ impl Hash {
             return Ok(Hash { hash, hash_type });
         }
 
-        debug!("Hash mode: {:?}", hash_mode);
+        debug!("Hash mode: {hash_mode:?}");
 
         let hash = match hash_mode {
             HashMode::Extract(regex) => Hash::from_text(source.text().await?, &submap, regex),
@@ -556,7 +558,8 @@ impl Hash {
 
         let mut hash = String::new();
         for byte in hash_bytes {
-            hash += &format!("{byte:02x}");
+            use std::fmt::Write;
+            write!(hash, "{byte:02x}").expect("write to string failed");
         }
 
         Hash { hash, hash_type }

@@ -9,7 +9,7 @@ use crate::system::paths::Paths;
 // }
 
 pub fn default_scoop_root_path() -> PathBuf {
-    let mut path = PathBuf::from(dirs::home_dir().expect("home dir"));
+    let mut path = dirs::home_dir().expect("home dir");
     path.push("scoop");
     path
 }
