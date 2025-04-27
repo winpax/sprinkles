@@ -166,7 +166,7 @@ impl Repo {
             .to_string();
         let branch_name = reference
             .split('/')
-            .last()
+            .next_back()
             .map(String::from)
             .ok_or(Error::NoActiveBranch)?;
 

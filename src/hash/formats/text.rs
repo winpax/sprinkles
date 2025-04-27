@@ -121,9 +121,10 @@ pub fn parse_text(
                         if let Ok(decoded) = BASE64_STANDARD.decode(base64_hash.as_bytes()) {
                             let mut decoded_hash = String::new();
 
-                            decoded
-                                .into_iter()
-                                .for_each(|byte| decoded_hash += &format!("{byte:x}"));
+                            for byte in decoded {
+                                use std::fmt::Write;
+                                write!(decoded_hash, "{byte:x}").expect("write hex");
+                            }
 
                             decoded_hash
                         } else {

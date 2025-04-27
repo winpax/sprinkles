@@ -93,9 +93,13 @@ impl Reference {
                 })
             }
             #[cfg(feature = "manifest-hashes")]
-            manifest::Reference::Url(url) => {
-                Some(url.path_segments()?.last()?.split('.').next()?.to_string())
-            }
+            manifest::Reference::Url(url) => Some(
+                url.path_segments()?
+                    .next_back()?
+                    .split('.')
+                    .next()?
+                    .to_string(),
+            ),
         }
     }
 
@@ -219,10 +223,7 @@ impl Reference {
 
         buckets
             .into_iter()
-            .find_map(|bucket| match bucket.get_manifest(self.name()?) {
-                Ok(manifest) => Some(manifest),
-                Err(_) => None,
-            })
+            .find_map(|bucket| bucket.get_manifest(self.name()?).ok())
     }
 
     #[must_use]

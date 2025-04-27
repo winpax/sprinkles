@@ -140,6 +140,7 @@ impl Commit<'_> {
         }
     }
 
+    #[must_use]
     /// Get the author of the commit
     pub fn author(&self) -> Option<Signature> {
         match self {
