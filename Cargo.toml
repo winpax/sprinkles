@@ -87,7 +87,7 @@ gix = { version = "0.72", features = [
     "worktree-mutation",
 ] }
 gix-object = "0.49"
-indicatif = { version = "0.17", features = ["improved_unicode", "tokio"] }
+indicatif = { version = "0.18", features = ["improved_unicode", "tokio"] }
 itertools = "0.14"
 log = "0.4"
 md-5 = "0.10"
