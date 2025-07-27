@@ -144,7 +144,7 @@ anyhow = "1.0"
 async-std = { version = "1.13", features = ["attributes"] }
 criterion = { version = "0.5", features = ["html_reports", "tokio"] }
 rayon = "1.10"
-rstest = "0.25"
+rstest = "0.26"
 tokio = { version = "1.37", features = [
     "rt",
     "rt-multi-thread",
