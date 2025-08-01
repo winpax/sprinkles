@@ -76,7 +76,6 @@ impl super::ScoopContext for User {
         self.config().proxy.as_ref()
     }
 
-    #[must_use]
     /// Gets the user's scoop path, via either the default path or as provided by the SCOOP env variable
     ///
     /// Will ignore the global scoop path
@@ -88,7 +87,6 @@ impl super::ScoopContext for User {
         &self.path
     }
 
-    #[must_use]
     /// Gets the user's scoop cache path
     fn cache_path(&self) -> PathBuf {
         if let Some(cache_path) = crate::env::paths::scoop_cache() {

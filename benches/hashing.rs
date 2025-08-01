@@ -21,7 +21,9 @@ $url = "https://github.com/ScoopInstaller/Main/releases/download/v$version/scoop
 $hash = "e2a1c7dd49d547fdfe05fc45f0c9e276cb992bd94af151f0cf7d3e2ecfdc4233"
 "#;
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use std::hint::black_box;
+
+use criterion::{criterion_group, criterion_main, Criterion};
 
 use sha2::Digest;
 

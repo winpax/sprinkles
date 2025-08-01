@@ -45,7 +45,8 @@ fn get_known_buckets() -> Result<String, Box<dyn Error>> {
     let mut map = phf_codegen::Map::new();
 
     for (name, _) in buckets {
-        map.entry(name, &heck::AsShoutySnakeCase(name).to_string());
+        let value = heck::AsShoutySnakeCase(name);
+        map.entry(name, value.to_string());
     }
 
     output += &format!(
