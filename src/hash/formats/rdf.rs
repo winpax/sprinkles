@@ -55,7 +55,7 @@ pub fn parse_xml(input: impl AsRef<[u8]>, file_name: impl AsRef<str>) -> Result<
 
             Ok(Event::Text(e)) => {
                 if hash_tag.is_some() {
-                    hash = Some(e.unescape().unwrap().to_string());
+                    hash = Some(e.decode().unwrap().to_string());
                     break;
                 }
             }
