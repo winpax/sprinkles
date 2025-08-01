@@ -298,7 +298,6 @@ impl ScoopContext for AnyContext {
         }
     }
 
-    #[must_use]
     fn path(&self) -> &Path {
         match self {
             AnyContext::User(user) => user.path(),

@@ -918,7 +918,6 @@ pub trait MergeDefaults {
 impl MergeDefaults for Option<AutoupdateArchitecture> {
     type Default = AutoupdateConfig;
 
-    #[must_use]
     /// Merge the architecture specific autoupdate config with the arch agnostic one
     fn merge_default(&self, default: Self::Default, arch: Architecture) -> Self::Default {
         let Some(config) = self
@@ -944,7 +943,6 @@ impl MergeDefaults for Option<AutoupdateArchitecture> {
 impl MergeDefaults for Option<&ManifestArchitecture> {
     type Default = InstallConfig;
 
-    #[must_use]
     /// Merge the architecture specific autoupdate config with the arch agnostic one
     fn merge_default(&self, default: Self::Default, arch: Architecture) -> Self::Default {
         let Some(config) = self
@@ -977,7 +975,6 @@ impl MergeDefaults for Option<&ManifestArchitecture> {
 impl MergeDefaults for Option<ManifestArchitecture> {
     type Default = InstallConfig;
 
-    #[must_use]
     /// Merge the architecture specific autoupdate config with the arch agnostic one
     fn merge_default(&self, default: Self::Default, arch: Architecture) -> Self::Default {
         self.as_ref().merge_default(default, arch)
