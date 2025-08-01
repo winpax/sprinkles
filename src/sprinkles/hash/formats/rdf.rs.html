@@ -55,7 +55,7 @@
 <a href=#55 id=55 data-nosnippet>55</a>
 <a href=#56 id=56 data-nosnippet>56</a>            <span class="prelude-val">Ok</span>(Event::Text(e)) =&gt; {
 <a href=#57 id=57 data-nosnippet>57</a>                <span class="kw">if </span>hash_tag.is_some() {
-<a href=#58 id=58 data-nosnippet>58</a>                    hash = <span class="prelude-val">Some</span>(e.unescape().unwrap().to_string());
+<a href=#58 id=58 data-nosnippet>58</a>                    hash = <span class="prelude-val">Some</span>(e.decode().unwrap().to_string());
 <a href=#59 id=59 data-nosnippet>59</a>                    <span class="kw">break</span>;
 <a href=#60 id=60 data-nosnippet>60</a>                }
 <a href=#61 id=61 data-nosnippet>61</a>            }
