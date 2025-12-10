@@ -154,6 +154,6 @@ tokio = { version = "1.37", features = [
 
 [build-dependencies]
 heck = "0.5"
-phf_codegen = "0.12"
+phf_codegen = "0.13"
 reqwest = { version = "0.12", features = ["blocking", "json"] }
 serde_json = "1.0"
