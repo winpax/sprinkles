@@ -117,7 +117,7 @@ urlencoding = { version = "2.1", optional = true }
 which = "8.0"
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.61", features = [
+windows = { version = "0.62", features = [
     "Win32_Storage_FileSystem",
     "Win32_UI_Shell",
     "Win32_System_Diagnostics",
