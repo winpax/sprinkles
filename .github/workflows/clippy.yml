@@ -8,7 +8,7 @@ on:
 jobs:
   clippy:
     name: Clippy
-    runs-on: windows-latest
+    runs-on: blacksmith-4vcpu-windows-2025
     permissions:
       contents: read
       security-events: write
