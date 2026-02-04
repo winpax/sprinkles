@@ -148,7 +148,6 @@ mod macros {
     }
 }
 
-
 use self::models::manifest::{
     self, AutoupdateArchitecture, AutoupdateConfig, HashExtraction,
     HashExtractionOrArrayOfHashExtractions, ManifestArchitecture, NestedArray,
