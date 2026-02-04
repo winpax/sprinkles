@@ -699,8 +699,8 @@ mod tests {
             unreachable!()
         };
 
-        let url = x64_cfg.url.unwrap().to_string();
-        let xpath = x64_cfg.xpath.unwrap().to_string();
+        let url = x64_cfg.url.unwrap().clone();
+        let xpath = x64_cfg.xpath.unwrap().clone();
 
         let source = Client::blocking().get(url).send().unwrap().text().unwrap();
 

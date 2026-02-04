@@ -79,7 +79,7 @@ impl Reference {
     pub fn name(&self) -> Option<String> {
         match &self.manifest {
             manifest::Reference::Name(name) | manifest::Reference::BucketNamePair { name, .. } => {
-                Some(name.to_string())
+                Some(name.clone())
             }
             manifest::Reference::File(path) => {
                 let valid_path = if path.file_name() == Some(OsStr::new("manifest.json")) {

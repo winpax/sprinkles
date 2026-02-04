@@ -263,7 +263,7 @@ impl Repo {
     /// - Missing head
     /// - Missing latest commit
     pub fn latest_commit(&self) -> Result<Commit<'_>> {
-        Ok(self.gitoxide.head()?.peel_to_commit_in_place()?)
+        Ok(self.gitoxide.head()?.peel_to_commit()?)
     }
 
     /// Pull the latest changes from the remote repository

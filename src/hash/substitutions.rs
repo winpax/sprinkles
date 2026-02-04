@@ -136,8 +136,9 @@ impl<T: Substitute> Substitute for SingleOrArray<T> {
 
 impl<T: Substitute> Substitute for Vec<T> {
     fn substitute(&mut self, params: &SubstitutionMap, regex_escape: bool) {
-        self.iter_mut()
-            .for_each(|s| s.substitute(params, regex_escape));
+        for s in self.iter_mut() {
+            s.substitute(params, regex_escape);
+        }
     }
 }
 

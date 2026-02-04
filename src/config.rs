@@ -125,7 +125,7 @@ pub struct Scoop {
     /// Disable/Hold Scoop self-updates, until the specified date
     /// `scoop hold scoop` will set the value to one day later
     ///
-    /// Should be in the format 'YYYY-MM-DD', 'YYYY/MM/DD' or any other forms that accepted by '[System.DateTime]::Parse()'
+    /// Should be in the format 'YYYY-MM-DD', 'YYYY/MM/DD' or any other forms that accepted by '[System.DateTime]`::Parse()`'
     ///
     /// Ref: <https://docs.microsoft.com/dotnet/api/system.datetime.parse?view=netframework-4.5>
     pub hold_update_until: Option<String>,
@@ -187,7 +187,7 @@ impl Scoop {
     pub fn update_last_update_time(&mut self) {
         let date_time = chrono::Local::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, false);
 
-        self.last_update = Some(date_time.to_string());
+        self.last_update = Some(date_time.clone());
     }
 
     /// Save the modified scoop config

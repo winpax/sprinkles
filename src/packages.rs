@@ -148,9 +148,6 @@ mod macros {
     }
 }
 
-pub(crate) use arch_config;
-pub(crate) use arch_field;
-
 use self::models::manifest::{
     self, AutoupdateArchitecture, AutoupdateConfig, HashExtraction,
     HashExtractionOrArrayOfHashExtractions, ManifestArchitecture, NestedArray,
@@ -504,7 +501,7 @@ impl Manifest {
         {
             Some(NestedArray::NestedArray(StringArray::Single(ref binary))) => {
                 if regex.is_match(binary) {
-                    Some(vec![binary.to_string()])
+                    Some(vec![binary.clone()])
                 } else {
                     None
                 }
@@ -758,10 +755,10 @@ impl Manifest {
                     .starts_with(unsafe { self.name() })
                 {
                     changed = true;
-                    return Ok::<_, GitoxideError>(Action::Cancel);
+                    return Ok::<_, GitoxideError>(Action::Break(()));
                 }
 
-                Ok(Action::Continue)
+                Ok(Action::Continue(()))
             })
             .map_err(GitoxideError::from)?;
 
@@ -827,9 +824,9 @@ impl Manifest {
                                 .starts_with(unsafe { self.name() })
                             {
                                 matches = true;
-                                Ok::<_, Error>(Action::Cancel)
+                                Ok::<_, Error>(Action::Break(()))
                             } else {
-                                Ok(Action::Continue)
+                                Ok(Action::Continue(()))
                             }
                         })
                         .map_err(git::Error::from)?;
