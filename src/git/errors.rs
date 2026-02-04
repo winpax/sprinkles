@@ -41,7 +41,7 @@ pub enum GitoxideError {
     #[error("Gitoxide error: {0}")]
     GitoxideDiffOptionsInit(#[from] gix::diff::options::init::Error),
     #[error("Gitoxide error: {0}")]
-    GitoxideDateParse(#[from] gix::date::parse::Error),
+    GitoxideDateParse(#[from] gix::date::Error),
 }
 
 impl<T> From<T> for super::Error

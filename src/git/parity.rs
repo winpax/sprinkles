@@ -20,7 +20,7 @@ impl<'a> From<git2::Signature<'a>> for Signature {
 }
 
 impl TryFrom<gix::actor::SignatureRef<'_>> for Signature {
-    type Error = gix::date::parse::Error;
+    type Error = gix::date::Error;
 
     fn try_from(signature: gix::actor::SignatureRef<'_>) -> Result<Self, Self::Error> {
         Ok(Self::Gitoxide(signature.to_owned()?))
