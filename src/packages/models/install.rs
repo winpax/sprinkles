@@ -58,8 +58,8 @@ impl Manifest {
     /// Get the source of the manifest
     pub fn get_source(&self) -> String {
         match (&self.bucket, &self.url) {
-            (Some(bucket), None) => bucket.to_string(),
-            (None, Some(url)) => url.to_string(),
+            (Some(bucket), None) => bucket.clone(),
+            (None, Some(url)) => url.clone(),
             _ => "Unknown".to_string(),
         }
     }

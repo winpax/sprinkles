@@ -148,8 +148,6 @@ mod macros {
     }
 }
 
-pub(crate) use arch_config;
-pub(crate) use arch_field;
 
 use self::models::manifest::{
     self, AutoupdateArchitecture, AutoupdateConfig, HashExtraction,
@@ -504,7 +502,7 @@ impl Manifest {
         {
             Some(NestedArray::NestedArray(StringArray::Single(ref binary))) => {
                 if regex.is_match(binary) {
-                    Some(vec![binary.to_string()])
+                    Some(vec![binary.clone()])
                 } else {
                     None
                 }
