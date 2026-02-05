@@ -63,7 +63,7 @@ jobs:
       matrix:
         architecture: [i686, x86_64, aarch64]
     name: Build
-    runs-on: blacksmith-4vcpu-windows-2025
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v6
