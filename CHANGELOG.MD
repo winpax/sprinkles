@@ -9,11 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0]
+
+### Breaking Changes
+
+- Update dependencies & MSRV
+
 ## [0.22.0]
 
 ### Breaking changes
 
-- Update dependencies and MSRV
+- Update dependencies & MSRV
 
 ## [0.21.2]
 
@@ -186,7 +192,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For older version's changelogs, see the [releases](https://github.com/winpax/sprinkles/releases) page.
 
-[Unreleased]: https://github.com/winpax/sprinkles/compare/v0.22.0...HEAD
+[Unreleased]: https://github.com/winpax/sprinkles/compare/v0.23.0...HEAD
+[0.23.0]: https://github.com/winpax/sprinkles/releases/tag/v0.23.0
 [0.22.0]: https://github.com/winpax/sprinkles/releases/tag/v0.22.0
 [0.21.2]: https://github.com/winpax/sprinkles/releases/tag/v0.21.2
 [0.21.1]: https://github.com/winpax/sprinkles/releases/tag/v0.21.1
