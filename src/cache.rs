@@ -13,13 +13,12 @@ use reqwest::{Response, StatusCode};
 
 use crate::packages::downloading::Downloader;
 use crate::{
-    hacks::let_chain,
-    hash::{url_ext::UrlExt, Hash, HashType},
-    packages::{downloading::DownloadUrl, models::manifest::SingleOrArray, Manifest},
+    Architecture,
+    hash::{Hash, HashType, url_ext::UrlExt},
+    packages::{Manifest, downloading::DownloadUrl, models::manifest::SingleOrArray},
     progress,
     requests::ClientLike,
     version::Version,
-    Architecture,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -299,28 +298,29 @@ impl DownloadHandle {
 
         let pb = mp.map(|mp| {
             let message = name.unwrap_or_else(|| {
-                let_chain!(let Ok(parsed_url) = url::Url::parse(&cache.url); let Some(leaf) = parsed_url.leaf(); {
+                if let Ok(parsed_url) = url::Url::parse(&cache.url)
+                    && let Some(leaf) = parsed_url.leaf()
+                {
                     leaf.to_string()
-                }; else {
+                } else {
                     cache
                         .file_name
                         .to_string_lossy()
                         .split('_')
                         .next_back()
-                        .expect("non-empty file name").to_string()
-                })
+                        .expect("non-empty file name")
+                        .to_string()
+                }
             });
 
-            let pb = mp.add(
+            mp.add(
                 ProgressBar::new(content_length)
                     .with_style(progress::style(
                         Some(progress::ProgressOptions::Bytes),
                         Some(progress::Message::prefix().with_message(&message)),
                     ))
                     .with_finish(indicatif::ProgressFinish::WithMessage("Finished ✅".into())),
-            );
-
-            pb
+            )
         });
 
         Ok(Self { cache, resp, pb })
@@ -474,7 +474,10 @@ mod tests {
         let version = Version::new("1.13.3");
         let file = CacheFile::new("sfsu", &version, &url);
 
-        assert_eq!(file.filename_legacy(), "sfsu#1.13.3#https_github.com_jewlexx_sfsu_releases_download_v1.13.3_sfsu-x86_64.exe_sfsu.exe");
+        assert_eq!(
+            file.filename_legacy(),
+            "sfsu#1.13.3#https_github.com_jewlexx_sfsu_releases_download_v1.13.3_sfsu-x86_64.exe_sfsu.exe"
+        );
     }
 
     #[test]
@@ -503,6 +506,9 @@ mod tests {
         let version = Version::new("115.11.1");
         let file = CacheFile::new("thunderbird", &version, &url);
 
-        assert_eq!(file.filename_legacy(), "thunderbird#115.11.1#https_archive.mozilla.org_pub_thunderbird_releases_115.11.1_win64_en-US_Thunderbird_20Setup_20115.11.1.exe_dl.7z");
+        assert_eq!(
+            file.filename_legacy(),
+            "thunderbird#115.11.1#https_archive.mozilla.org_pub_thunderbird_releases_115.11.1_win64_en-US_Thunderbird_20Setup_20115.11.1.exe_dl.7z"
+        );
     }
 }

@@ -2,7 +2,7 @@
 authors = ["Juliette Cordor <me@cordor.dev>"]
 categories = ["api-bindings", "command-line-utilities", "config"]
 description = "A Rust based abstraction layer for Scoop"
-edition = "2021"
+edition = "2024"
 homepage = "https://github.com/winpax/sprinkles"
 include = [
     "src/**/*",

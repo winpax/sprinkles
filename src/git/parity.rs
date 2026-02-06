@@ -72,10 +72,10 @@ impl Display for SignatureDisplay<'_> {
             Signature::Gitoxide(sig) => Some(sig.email.to_string()),
         };
 
-        if self.show_emails {
-            if let Some(email) = email {
-                return write!(f, "{name} <{email}>");
-            }
+        if self.show_emails
+            && let Some(email) = email
+        {
+            return write!(f, "{name} <{email}>");
         }
 
         write!(f, "{name}")

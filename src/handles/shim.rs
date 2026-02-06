@@ -113,16 +113,16 @@ impl ShimHandle {
     /// - Deleting the shim failed
     /// - Deleting the executable failed
     pub fn delete(&self, flags: DeleteFlags) -> Result<()> {
-        if flags.is_executable() {
-            if let Some(executable) = self.executable() {
-                std::fs::remove_file(executable)?;
-            }
+        if flags.is_executable()
+            && let Some(executable) = self.executable()
+        {
+            std::fs::remove_file(executable)?;
         }
 
-        if flags.is_shim() {
-            if let Some(shim) = self.shim() {
-                std::fs::remove_file(shim)?;
-            }
+        if flags.is_shim()
+            && let Some(shim) = self.shim()
+        {
+            std::fs::remove_file(shim)?;
         }
 
         Ok(())

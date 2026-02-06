@@ -44,10 +44,10 @@ impl UrlExt for Url {
             return leaf.to_string();
         }
 
-        if !leaf.contains('.') {
-            if let Some(fragment) = self.fragment() {
-                return fragment.trim_matches('#').trim_matches('/').to_string();
-            }
+        if !leaf.contains('.')
+            && let Some(fragment) = self.fragment()
+        {
+            return fragment.trim_matches('#').trim_matches('/').to_string();
         }
 
         leaf.to_string()

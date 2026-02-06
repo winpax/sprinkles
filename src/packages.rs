@@ -15,16 +15,15 @@ use serde::Deserialize;
 use strum::Display;
 
 use crate::{
+    Architecture,
     buckets::{self, Bucket},
     contexts::ScoopContext,
     git::{
-        self,
+        self, Repo,
         errors::{self, GitoxideError},
         parity::Signature,
-        Repo,
     },
     hacks::let_chain,
-    Architecture,
 };
 
 #[cfg(feature = "manifest-hashes")]
@@ -51,7 +50,7 @@ use models::manifest::{InstallConfig, StringArray};
 mod macros {
     /// Get a field from a manifest based on the architecture
     macro_rules! arch_config {
-        ($field:ident.$arch:expr) => {
+        ($field:ident.$arch:expr_2021) => {
             match $arch {
                 $crate::Architecture::Arm64 => $field.arm64.as_ref(),
                 $crate::Architecture::X64 => $field.x64.as_ref(),
@@ -63,7 +62,7 @@ mod macros {
             arch_config!($field.$crate::Architecture::ARCH)
         };
 
-        ($field:ident.$arch:expr => clone) => {
+        ($field:ident.$arch:expr_2021 => clone) => {
             arch_config!($field.$arch).cloned()
         };
 
@@ -118,7 +117,7 @@ mod macros {
             arch_field!($crate::Architecture::ARCH => $self.$field as ref).cloned()
         };
 
-        ($arch:expr => $self:ident.$field:ident as cloned) => {
+        ($arch:expr_2021 => $self:ident.$field:ident as cloned) => {
             arch_field!($arch => $self.$field as ref).cloned()
         };
 
@@ -126,7 +125,7 @@ mod macros {
             arch_field!($crate::Architecture::ARCH => $self.$field as ref)
         };
 
-        ($arch:expr => $self:ident.$field:ident as ref) => {{
+        ($arch:expr_2021 => $self:ident.$field:ident as ref) => {{
             match $arch {
                 $crate::Architecture::Arm64 => $self.arm64.as_ref(),
                 $crate::Architecture::X64 => $self.x64.as_ref(),
@@ -138,7 +137,7 @@ mod macros {
             arch_field!($crate::Architecture::ARCH => $self.$field as mut)
         };
 
-        ($arch:expr => $self:ident.$field:ident as mut) => {{
+        ($arch:expr_2021 => $self:ident.$field:ident as mut) => {{
             match $arch {
                 $crate::Architecture::Arm64 => $self.arm64.as_mut(),
                 $crate::Architecture::X64 => $self.x64.as_mut(),
@@ -183,7 +182,9 @@ pub enum Error {
     DeltaNoPath,
     #[error("Cannot find git commit where package was updated")]
     NoUpdatedCommit,
-    #[error("Invalid time. (time went backwards or way way way too far forwards (hello future! whats it like?))")]
+    #[error(
+        "Invalid time. (time went backwards or way way way too far forwards (hello future! whats it like?))"
+    )]
     InvalidTime,
     #[error("Invalid timezone provided. (where are you?)")]
     InvalidTimeZone,
@@ -332,10 +333,11 @@ impl CreateManifest for Manifest {
             if name == "manifest" || name == "install" {
                 let mut path_buf = path.as_ref().to_path_buf();
 
-                if path_buf.pop() && path_buf.pop() {
-                    if let Some(name) = path_buf.file_name() {
-                        self.set_name(name.to_string_lossy());
-                    }
+                if path_buf.pop()
+                    && path_buf.pop()
+                    && let Some(name) = path_buf.file_name()
+                {
+                    self.set_name(name.to_string_lossy());
                 }
             }
 
@@ -993,7 +995,7 @@ impl HashExtractionOrArrayOfHashExtractions {
 mod tests {
     use std::error::Error;
 
-    use crate::{buckets::Bucket, contexts::User, Architecture};
+    use crate::{Architecture, buckets::Bucket, contexts::User};
 
     use quork::prelude::ListVariants;
     use rayon::prelude::*;
@@ -1025,11 +1027,11 @@ mod tests {
                 .and_then(|autoupdate| autoupdate.architecture.as_ref())
             {
                 for arch in crate::Architecture::VARIANTS {
-                    if let Some(autoupdate_config) = autoupdate_architecture.get(arch) {
-                        if autoupdate_config.url.is_some() {
-                            found_literally_any_url = true;
-                            break;
-                        }
+                    if let Some(autoupdate_config) = autoupdate_architecture.get(arch)
+                        && autoupdate_config.url.is_some()
+                    {
+                        found_literally_any_url = true;
+                        break;
                     }
                 }
             }

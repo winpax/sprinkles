@@ -18,7 +18,7 @@ use crate::{
     requests::Client,
 };
 
-use super::{manifest, Error};
+use super::{Error, manifest};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// A package reference with an optional version
@@ -323,7 +323,7 @@ fn resolve_name_path(path: &Path) -> Option<PathBuf> {
 
     let mut path = path.to_path_buf();
 
-    let valid_path = loop {
+    loop {
         path = if let Some(path) = path.parent() {
             path.to_path_buf()
         } else {
@@ -333,9 +333,7 @@ fn resolve_name_path(path: &Path) -> Option<PathBuf> {
         if verify_filename(&path) {
             break Some(path);
         }
-    };
-
-    valid_path
+    }
 }
 
 impl From<manifest::Reference> for Reference {
