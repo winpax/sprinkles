@@ -11,7 +11,9 @@
 
 // Ensure supported environment
 #[cfg(all(not(docsrs), not(windows), not(feature = "unstable_linux")))]
-compile_error!("Only Windows is supported at the moment.\nSee https://github.com/winpax/sprinkles/issues/111 for more information.");
+compile_error!(
+    "Only Windows is supported at the moment.\nSee https://github.com/winpax/sprinkles/issues/111 for more information."
+);
 
 #[cfg(not(windows))]
 #[allow(clippy::diverging_sub_expression)]
@@ -44,7 +46,6 @@ pub mod shell;
 pub mod version;
 
 mod env;
-mod hacks;
 mod system;
 
 #[macro_use]

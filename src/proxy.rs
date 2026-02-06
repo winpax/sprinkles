@@ -2,8 +2,6 @@
 
 use std::{net::AddrParseError, num::ParseIntError, str::FromStr};
 
-use crate::hacks::let_chain;
-
 #[derive(Debug, thiserror::Error)]
 #[allow(missing_docs)]
 /// Proxy errors
@@ -57,9 +55,13 @@ impl TryFrom<Proxy> for reqwest::Proxy {
     fn try_from(value: Proxy) -> Result<Self, Self::Error> {
         let proxy = reqwest::Proxy::all(format!("http://{}:{}", value.host, value.port))?;
 
-        let proxy = let_chain!(let Some(username) = value.username; let Some(password) = value.password; {
+        let proxy = if let Some(username) = value.username
+            && let Some(password) = value.password
+        {
             proxy.basic_auth(&username, &password)
-        }; else proxy);
+        } else {
+            proxy
+        };
 
         Ok(proxy)
     }

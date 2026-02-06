@@ -12,7 +12,6 @@ use itertools::Itertools;
 use crate::{
     buckets::Bucket,
     contexts::ScoopContext,
-    hacks::let_chain,
     handles::{self, packages::PackageHandle},
     packages::{CreateManifest, Manifest},
     requests::Client,
@@ -170,9 +169,11 @@ impl Reference {
         };
 
         #[cfg(feature = "manifest-hashes")]
-        let_chain!(let Ok(manifest) = manifest.as_mut(); let Some(version) = &self.version; {
-            manifest.set_version(ctx,version.clone()).await?;
-        });
+        if let Ok(manifest) = manifest.as_mut()
+            && let Some(version) = &self.version
+        {
+            manifest.set_version(ctx, version.clone()).await?;
+        }
 
         manifest
     }

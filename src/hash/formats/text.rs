@@ -117,21 +117,18 @@ pub fn parse_text(
                 .then(|| {
                     use base64::prelude::*;
 
-                    let decoded_hash =
-                        if let Ok(decoded) = BASE64_STANDARD.decode(base64_hash.as_bytes()) {
-                            let mut decoded_hash = String::new();
+                    if let Ok(decoded) = BASE64_STANDARD.decode(base64_hash.as_bytes()) {
+                        let mut decoded_hash = String::new();
 
-                            for byte in decoded {
-                                use std::fmt::Write;
-                                write!(decoded_hash, "{byte:x}").expect("write hex");
-                            }
+                        for byte in decoded {
+                            use std::fmt::Write;
+                            write!(decoded_hash, "{byte:x}").expect("write hex");
+                        }
 
-                            decoded_hash
-                        } else {
-                            hash.clone()
-                        };
-
-                    decoded_hash
+                        decoded_hash
+                    } else {
+                        hash.clone()
+                    }
                 })
             })
             .or_else(|| Some(hash.clone()))

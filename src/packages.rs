@@ -23,7 +23,6 @@ use crate::{
         errors::{self, GitoxideError},
         parity::Signature,
     },
-    hacks::let_chain,
 };
 
 #[cfg(feature = "manifest-hashes")]
@@ -570,11 +569,13 @@ impl Manifest {
         default_field: &mut Option<T>,
         value: Option<T>,
     ) {
-        let_chain!(let Some(arch_field) = arch_field; let Some(value) = value; {
+        if let Some(arch_field) = arch_field
+            && let Some(value) = value
+        {
             *arch_field = value;
-        }; else {
+        } else {
             *default_field = value;
-        });
+        }
         // if let Some(arch_field) = arch_field
         //     && let Some(value) = value
         // {
