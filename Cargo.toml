@@ -40,7 +40,7 @@ rustc-args = ["--cfg", "docsrs", "--cfg", "reqwest_unstable"]
 
 [features]
 beta = []
-default = ["manifest-hashes", "rayon"]
+default = ["manifest-hashes", "rayon", "unstable_linux"]
 manifest-hashes = [
     "base64",
     "digest",

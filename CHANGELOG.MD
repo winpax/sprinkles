@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking Changes
 
 - Update dependencies & MSRV
+- Enable unstable_linux feature by default
 
 ## [0.22.0]
 
