@@ -6,7 +6,7 @@ use crate::hash::substitutions::{Substitute, SubstitutionMap};
 use crate::hash::url_ext::UrlExt;
 use crate::packages::models::manifest::SingleOrArray;
 use crate::scripts::summary::Summary;
-use crate::{packages::models::manifest::Installer, Architecture};
+use crate::{Architecture, packages::models::manifest::Installer};
 use quork::prelude::ContainsTruth;
 use std::collections::HashMap;
 use std::path::PathBuf;

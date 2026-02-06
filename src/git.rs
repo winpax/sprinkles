@@ -9,8 +9,8 @@ use std::{
 };
 
 use gix::{
-    bstr::BStr, remote::ref_map, revision::walk::Sorting,
-    traverse::commit::simple::CommitTimeOrder, Commit, ObjectId, Repository,
+    Commit, ObjectId, Repository, bstr::BStr, remote::ref_map, revision::walk::Sorting,
+    traverse::commit::simple::CommitTimeOrder,
 };
 
 use crate::{buckets::Bucket, contexts::ScoopContext};

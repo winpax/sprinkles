@@ -36,7 +36,9 @@ pub enum Error {
     MissingInPath(#[from] which::Error),
     #[error("Git error: {0}")]
     GixCommit(#[from] gix::object::commit::Error),
-    #[error("Invalid time. (time went backwards or way way way too far forwards (hello future! whats it like?))")]
+    #[error(
+        "Invalid time. (time went backwards or way way way too far forwards (hello future! whats it like?))"
+    )]
     InvalidTime,
     #[error("Invalid timezone provided. (where are you?)")]
     InvalidTimeZone,

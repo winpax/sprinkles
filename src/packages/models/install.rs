@@ -3,9 +3,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    Architecture,
     contexts::ScoopContext,
     packages::{CreateManifest, Result},
-    Architecture,
 };
 
 #[allow(clippy::unsafe_derive_deserialize)]

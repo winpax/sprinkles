@@ -5,8 +5,8 @@ use std::{fmt::Display, io::BufRead, num::ParseIntError, str::FromStr};
 use formats::{json, text};
 use regex::Regex;
 use reqwest::{
-    header::{HeaderMap, HeaderValue},
     StatusCode,
+    header::{HeaderMap, HeaderValue},
 };
 use substitutions::SubstitutionMap;
 use url::Url;
@@ -14,19 +14,19 @@ use url::Url;
 use self::substitutions::Substitute;
 use crate::packages::downloading::Downloader;
 use crate::{
+    Architecture,
     cache::{self, DownloadHandle, Handle},
     contexts::ScoopContext,
     hash::url_ext::UrlExt,
     packages::{
+        Manifest, MergeDefaults,
         models::manifest::{
             AutoupdateConfig, HashExtractionOrArrayOfHashExtractions, HashMode as ManifestHashMode,
             StringArray,
         },
-        Manifest, MergeDefaults,
     },
     requests::{AsyncClient, Client},
     version::Version,
-    Architecture,
 };
 
 pub(crate) mod formats;
@@ -90,10 +90,12 @@ pub enum Error {
     HashMode,
     #[error("Missing hash extraction object")]
     MissingHashExtraction,
-    #[error("Hash extraction url where there should be a hash extraction object. This is a bug, please report it."
+    #[error(
+        "Hash extraction url where there should be a hash extraction object. This is a bug, please report it."
     )]
     HashExtractionUrl,
-    #[error("Missing part of hash extraction object, where it should exist. This is a bug, please report it."
+    #[error(
+        "Missing part of hash extraction object, where it should exist. This is a bug, please report it."
     )]
     MissingExtraction,
     #[error("Fosshub regex failed to match")]

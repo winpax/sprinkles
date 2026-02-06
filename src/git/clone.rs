@@ -23,10 +23,10 @@
 use std::{path::Path, sync::atomic::AtomicBool};
 
 use gix::{
+    Repository,
     clone::PrepareFetch,
     create::{self, Options as CreateOptions},
     open::Options as OpenOptions,
-    Repository,
 };
 
 pub use gix::progress;

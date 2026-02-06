@@ -5,8 +5,8 @@ use std::{path::PathBuf, rc::Rc};
 use crate::{
     contexts::ScoopContext,
     packages::{
-        reference::{self, manifest, package},
         CreateManifest, InstallManifest, Manifest,
+        reference::{self, manifest, package},
     },
     system::common::{Common, System},
     version::Version,

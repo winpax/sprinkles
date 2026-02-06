@@ -1,5 +1,5 @@
 use sxd_document::parser;
-use sxd_xpath::{evaluate_xpath, Value};
+use sxd_xpath::{Value, evaluate_xpath};
 
 use crate::hash::substitutions::{Substitute, SubstitutionMap};
 

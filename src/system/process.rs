@@ -10,8 +10,8 @@ use std::{
 use windows::Win32::{
     Foundation::{CloseHandle, INVALID_HANDLE_VALUE},
     System::Diagnostics::ToolHelp::{
-        CreateToolhelp32Snapshot, Module32FirstW, Module32NextW, Process32FirstW, Process32NextW,
-        MODULEENTRY32W, PROCESSENTRY32W, TH32CS_SNAPMODULE, TH32CS_SNAPPROCESS,
+        CreateToolhelp32Snapshot, MODULEENTRY32W, Module32FirstW, Module32NextW, PROCESSENTRY32W,
+        Process32FirstW, Process32NextW, TH32CS_SNAPMODULE, TH32CS_SNAPPROCESS,
     },
 };
 

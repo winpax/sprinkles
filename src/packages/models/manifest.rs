@@ -13,7 +13,7 @@ use itertools::Itertools as _;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 
-use crate::{scripts::PowershellScript, version::Version, Architecture};
+use crate::{Architecture, scripts::PowershellScript, version::Version};
 
 #[allow(clippy::unsafe_derive_deserialize)]
 #[skip_serializing_none]

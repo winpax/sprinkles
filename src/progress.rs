@@ -7,8 +7,8 @@ pub use indicatif;
 use std::{
     fmt::Display,
     sync::{
-        atomic::{AtomicUsize, Ordering},
         Arc,
+        atomic::{AtomicUsize, Ordering},
     },
 };
 

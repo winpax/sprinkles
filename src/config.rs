@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use serde_with::skip_serializing_none;
 
-use crate::{proxy::Proxy, Architecture};
+use crate::{Architecture, proxy::Proxy};
 
 pub mod aria2;
 pub mod branch;

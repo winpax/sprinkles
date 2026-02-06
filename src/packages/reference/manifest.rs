@@ -4,7 +4,7 @@ use std::{fmt, path::PathBuf, str::FromStr};
 
 use itertools::Itertools;
 
-use super::{package, Error};
+use super::{Error, package};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 /// A reference to a package

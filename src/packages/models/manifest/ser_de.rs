@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
 use serde::{
-    de::{Error, Unexpected},
     Deserialize, Deserializer,
+    de::{Error, Unexpected},
 };
 
 use crate::hash::Hash;
