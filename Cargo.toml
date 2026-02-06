@@ -91,7 +91,7 @@ indicatif = { version = "0.18", features = ["improved_unicode", "tokio"] }
 itertools = "0.14"
 log = "0.4"
 md-5 = "0.10"
-phf = { version = "0.12", default-features = false }
+phf = { version = "0.13", default-features = false }
 quick-xml = { version = "0.39", optional = true, features = ["serialize"] }
 quork = { version = "0.9", default-features = false, features = [
     "traits",
