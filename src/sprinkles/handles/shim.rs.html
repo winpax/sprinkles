@@ -113,16 +113,16 @@
 <a href=#113 id=113 data-nosnippet>113</a>    /// - Deleting the shim failed
 <a href=#114 id=114 data-nosnippet>114</a>    /// - Deleting the executable failed
 <a href=#115 id=115 data-nosnippet>115</a>    </span><span class="kw">pub fn </span>delete(<span class="kw-2">&amp;</span><span class="self">self</span>, flags: DeleteFlags) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-<a href=#116 id=116 data-nosnippet>116</a>        <span class="kw">if </span>flags.is_executable() {
-<a href=#117 id=117 data-nosnippet>117</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(executable) = <span class="self">self</span>.executable() {
-<a href=#118 id=118 data-nosnippet>118</a>                std::fs::remove_file(executable)<span class="question-mark">?</span>;
-<a href=#119 id=119 data-nosnippet>119</a>            }
+<a href=#116 id=116 data-nosnippet>116</a>        <span class="kw">if </span>flags.is_executable()
+<a href=#117 id=117 data-nosnippet>117</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(executable) = <span class="self">self</span>.executable()
+<a href=#118 id=118 data-nosnippet>118</a>        {
+<a href=#119 id=119 data-nosnippet>119</a>            std::fs::remove_file(executable)<span class="question-mark">?</span>;
 <a href=#120 id=120 data-nosnippet>120</a>        }
 <a href=#121 id=121 data-nosnippet>121</a>
-<a href=#122 id=122 data-nosnippet>122</a>        <span class="kw">if </span>flags.is_shim() {
-<a href=#123 id=123 data-nosnippet>123</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(shim) = <span class="self">self</span>.shim() {
-<a href=#124 id=124 data-nosnippet>124</a>                std::fs::remove_file(shim)<span class="question-mark">?</span>;
-<a href=#125 id=125 data-nosnippet>125</a>            }
+<a href=#122 id=122 data-nosnippet>122</a>        <span class="kw">if </span>flags.is_shim()
+<a href=#123 id=123 data-nosnippet>123</a>            &amp;&amp; <span class="kw">let </span><span class="prelude-val">Some</span>(shim) = <span class="self">self</span>.shim()
+<a href=#124 id=124 data-nosnippet>124</a>        {
+<a href=#125 id=125 data-nosnippet>125</a>            std::fs::remove_file(shim)<span class="question-mark">?</span>;
 <a href=#126 id=126 data-nosnippet>126</a>        }
 <a href=#127 id=127 data-nosnippet>127</a>
 <a href=#128 id=128 data-nosnippet>128</a>        <span class="prelude-val">Ok</span>(())
