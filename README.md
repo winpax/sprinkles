@@ -11,6 +11,12 @@
 View the latest documentation on [Github Pages](https://winpax.github.io/sprinkles/) (the [docs.rs](https://docs.rs/sprinkles-rs) builds are currently failing).
 
 > [!WARNING]
+> This library has been merged into the sfsu repository.
+> There may be updates to the library and this repo in future,
+> but as of now I need to prioritise the sfsu project and
+> seperating the projects makes it harder and slower to iterate.
+
+> [!WARNING]
 > This library is currently unstable, and is not recommended for use in production.
 > There will be breaking changes in the future, and the API may change.
 
